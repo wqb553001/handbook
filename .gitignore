@@ -1,5 +1,8 @@
 .hbuilderx
 .vite
 *.iml
-/node_modules/.vite/
-/node_modules/.bin/
+.project
+.DS_Store
+
+node_modules/
+unpackage/
