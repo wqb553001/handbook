@@ -1,7 +1,7 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
-			"path": "pages/index/index",
+			"path": "pages/finance/finance",
 			"style": {
 				"navigationBarTitleText": "%schema.tb.working%"
 			}
@@ -32,11 +32,24 @@
             }
             
         }
+        // ,{
+        //     "path" : "pages/finance/finance",
+        //     "style" :                                                                                    
+        //     {
+        //         "navigationBarTitleText": "",
+        //         "enablePullDownRefresh": false
+        //     }
+            
+        // }
     ],
 	"tabBar": {
 		"list": [
+			// {
+			// 	"pagePath": "pages/index/index",
+			// 	"text": "%schema.tb.working%"
+			// },
 			{
-				"pagePath": "pages/index/index",
+				"pagePath": "pages/finance/finance",
 				"text": "%schema.tb.working%"
 			},
 			
