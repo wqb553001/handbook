@@ -41,9 +41,13 @@
                 ]
             },
             /* ios打包配置 */
-            "ios" : {},
+            "ios" : {
+                "dSYMs" : false
+            },
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "ad" : {}
+            }
         }
     },
     /* 快应用特有相关 */
@@ -70,33 +74,26 @@
     },
     "vueVersion" : "3",
     "fallbackLocale" : "zh-Hans",
-	"h5": {
-		"devServer": {
-			"proxy": {
-				"/5173": {
-					"target": "http://localhost:5173",
-					"changeOrigin": true,
-					"pathRewrite": {
-						"^/5173": "/"
-					}
-				},
-				"/5173": {
-					"target": "https://www.baidu.com/api",
-					"changeOrigin": true,
-					"pathRewrite": {
-						"^/5173": "/"
-					}
-				},
-				"/8800": {
-					"target": "https://www.taobao.com/api",
-					"changeOrigin": true,
-					"pathRewrite": {
-						"^/8800": ""
-					}
-				}
-			}
-		}
-	}
+    "h5" : {
+        "devServer" : {
+            "proxy" : {
+                "/5173" : {
+                    "target" : "https://www.baidu.com/api",
+                    "changeOrigin" : true,
+                    "pathRewrite" : {
+                        "^/5173" : "/"
+                    }
+                },
+                "/8800" : {
+                    "target" : "https://www.taobao.com/api",
+                    "changeOrigin" : true,
+                    "pathRewrite" : {
+                        "^/8800" : ""
+                    }
+                }
+            }
+        }
+    }
 }
 // ,
 // "h5" : {
