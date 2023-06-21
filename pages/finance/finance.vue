@@ -1,57 +1,146 @@
 <template>
 	<view class="container">
 		
-		<uni-card title="基础卡片" :isFull="true" sub-title="副标题" extra="额外信息">
-			<text>这是一个通栏卡片 ，通栏没有外边距，左右会贴合父元素。</text>
+		<uni-card title="人生劝勉" :isFull="true" sub-title="投资有风险" extra="今年你笑了么">
+			<text>投资什么都不抵投资健康！</text>
 		</uni-card>
 		<uni-card :is-shadow="false" is-full>
-			<text class="uni-h6">分组组件可用于将组件分组，添加间隔，以产生明显的区块。</text>
+			<text class="uni-h6">人生最赚的生活方式是悠闲！</text>
 		</uni-card>
 		
-		<uni-section title="试算" type="line" style="background-color: #eee;">
-			<uni-group margin-top="20">
+		<uni-section title="试算" type="line" style="background-color: #eee;"> 
+			<uni-group title="投资信息:">
 				<view>
 				  <uni-forms-item label="预估收益比 %">
-				  	<uni-data-select @change="selectExpectValueChange" v-model="selectExpectValue" :localdata="selectExpectValueRange"  :clear="false" ></uni-data-select>
+					<uni-data-select @change="selectExpectValueChange" v-model="selectExpectValue" :localdata="selectExpectValueRange"  :clear="false" ></uni-data-select>
 				  </uni-forms-item>
 				  <uni-forms border>
-				  	<uni-forms-item label="总金:">
-				  		<uni-easyinput @change="inputTotalAmountChange" v-model="totalAmount" :inputBorder="true" placeholder="请输入账户总金" ></uni-easyinput>
-				  	</uni-forms-item>
-				  </uni-forms>				  	
+					<uni-forms-item label="总金:">
+						<uni-easyinput @change="inputTotalAmountChange" v-model="totalAmount" :inputBorder="true" placeholder="请输入账户总金" ></uni-easyinput>
+					</uni-forms-item>
+				  </uni-forms>
 				  <uni-forms border>
-					 <uni-forms-item label="单价:">
-					 	<uni-easyinput @change="inputUnitPriceChange" v-model="unitPrice" :inputBorder="true" placeholder="请输入预购单价"></uni-easyinput>
+					 <uni-forms-item label="股票代码:">
+						<uni-easyinput @change="inputStockCodeChange" v-model="stockCode" :inputBorder="true" placeholder="请输入股票代码"></uni-easyinput>
 					 </uni-forms-item>
 				  </uni-forms>
-				  
-				  <!-- <view class="button-sp-area">
-					  <button @click="calculateInvestMoney" type="default" plain="true">试算</button>
-				  </view> -->
-				
-				  <view> 
-					  <t-table  title="自动试算:">
-						<t-tr>
-							<t-th>建议投资金额		</t-th>
-							<t-th>入手股数			</t-th>
-							<t-th>预期收益值（正）	</t-th>
-							<t-th>预期收益值（负）	</t-th>
-						</t-tr>
-						<t-tr v-for="item in tableData" >
-							<t-td>{{ item.calculateAdviseInvestMoney    }}</t-td>
-							<t-td>{{ item.tradeCount 			        }}</t-td>
-							<t-td>{{ item.expectIncomeMoney 			}}</t-td>
-							<t-td>{{ item.expectOutcomeMoney 			}}</t-td>
-						</t-tr>
-					  </t-table>					
-				 </view>
-				 
-			   </view>
+				  <uni-forms border>
+					 <uni-forms-item label="单价:">
+						<uni-easyinput @change="inputUnitPriceChange" v-model="unitPrice" :inputBorder="true" placeholder="请输入预购单价"></uni-easyinput>
+					 </uni-forms-item>
+				  </uni-forms>
+				</view>
 			</uni-group>
+				
+			<uni-group title="做多试算:">
+			  <view> 
+				<uni-table border stripe emptyText="暂无更多数据" >
+					<uni-tr>
+						<uni-th>建议投资金额	</uni-th>
+						<uni-th>入手股数		</uni-th>
+						<uni-th>原单价		</uni-th>
+						<uni-th>涨出+值		</uni-th>
+						<uni-th>跌出-值		</uni-th>
+						<uni-th>+预收		</uni-th>
+						<uni-th>-预收		</uni-th>
+						<uni-th>操作			</uni-th>
+					</uni-tr>
+					<uni-tr v-for="(item, i) in tableUpData" :key="i+1">
+						<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
+						<uni-td>{{ item.tradeCount 			        }}</uni-td>
+						<uni-td>{{ item.unitPrice 			        }}</uni-td>
+						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
+						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
+						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
+						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
+						<uni-td style="text-align: center;">
+							<view class="uni-group">
+								<button @tap="addOne(item)" class="uni-button" size="mini" type="primary">收录</button>
+								<button @tap="updateOne(item)" class="uni-button" size="mini" type="warn">更新</button>
+							</view>
+						</uni-td>
+					</uni-tr>
+				  </uni-table>					
+			 </view>
+			</uni-group>
+				 
+			<uni-group title="做空试算:">
+				  <uni-table border stripe emptyText="暂无更多数据" >					
+					<uni-tr>
+						<uni-th>序号			</uni-th>
+						<uni-th>建议做空金额	</uni-th>
+						<uni-th>入手股数		</uni-th>
+						<uni-th>原单价		</uni-th>
+						<uni-th>跌出+值		</uni-th>
+						<uni-th>张出-值		</uni-th>
+						<uni-th>+预收		</uni-th>
+						<uni-th>-预收		</uni-th>
+						<uni-th>操作			</uni-th>
+					</uni-tr>
+					<uni-tr v-for="(item, i) in tableUpData" :key="i+1">
+						<uni-td>{{ i + 1    						}}</uni-td>
+						<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
+						<uni-td>{{ item.tradeCount 			        }}</uni-td>
+						<uni-td>{{ item.unitPrice 			        }}</uni-td>
+						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
+						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
+						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
+						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
+						<uni-td style="text-align: center;">
+							<view class="uni-group">
+								<button @tap="addOne(item)" class="uni-button" size="mini" type="primary">收录</button>
+							</view>
+						</uni-td>
+					</uni-tr>
+				</uni-table>					
+			</uni-group>
+			
+		</uni-section>
+		
+		<uni-section title="展示" type="line" style="background-color: #eee;"> 
+			<uni-group title="展示做多:">
+			  <view> 
+				<uni-table border stripe emptyText="暂无更多数据" >
+					<uni-tr>
+						<uni-th>序号			</uni-th>
+						<uni-th>股票编码		</uni-th>
+						<uni-th>建议投资金额	</uni-th>
+						<uni-th>入手股数		</uni-th>
+						<uni-th>原单价		</uni-th>
+						<uni-th>涨出+值		</uni-th>
+						<uni-th>跌出-值		</uni-th>
+						<uni-th>+预收		</uni-th>
+						<uni-th>-预收		</uni-th>
+						<uni-th>收录时间		</uni-th>
+						<uni-th>操作			</uni-th>
+					</uni-tr>
+					<uni-tr v-for="(item, i) in tableUpShowData" :key="i+1">
+						<uni-td>{{ i + 1    						}}</uni-td>
+						<uni-td>{{ item.stockCode					}}</uni-td>
+						<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
+						<uni-td>{{ item.tradeCount 			        }}</uni-td>
+						<uni-td>{{ item.unitPrice 			        }}</uni-td>
+						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
+						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
+						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
+						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
+						<uni-td>{{ item.updateTime 					}}</uni-td>
+						<uni-td>
+							<view class="uni-group">
+								<button @tap="addOne(item)" class="uni-button" size="mini" type="primary">收录</button>
+								<!-- <button @tap="delOne(item)" class="uni-button" size="mini" type="warn">删除</button> -->
+							</view>
+						</uni-td>
+					</uni-tr>
+				  </uni-table>					
+			 </view>
+			</uni-group>
+			
 			<uni-group title="参考计算规则" >
 				<view class="warp">
 					<view class="box">
-						<view class="title">示例：10000$</view>
+						<view class="title">示例：10000$
+						</view>
 						<t-table @change="change">
 							<t-tr>
 								<t-th>编号					</t-th>
@@ -69,7 +158,6 @@
 							</t-tr>
 						</t-table>
 					</view>
-					
 				</view>
 			</uni-group>
 			
@@ -140,6 +228,7 @@
 </template>
 
 <script>
+	import getdateTime from '@/common/getdateTime.js';
 	import tTable from '@/components/t-table/t-table.vue';
 	import tTh from '@/components/t-table/t-th.vue';
 	import tTr from '@/components/t-table/t-tr.vue';
@@ -155,7 +244,7 @@
 		data() {
 			return {
 				tableList: [// 示例金额：10000$
-					// 	编号	|预期收益值（%）				|建议出手收益值（%）			|正收益				|负收益				|投入资金占比（%）				|投入资金额				
+					//编号	|预期收益比（%）				|建议出手收益比（%）			|正收益%				|负收益%				|投入资金比（%）					|投入资金额				
 					{id: 0, expect_value: '1~5', 		advise_value: '+3	|-2', 	up_radio: '3',		down_radio: '-2', 	advise_invest_ratio: '10', 		advise_invest_money: '1000' },
 					{id: 1, expect_value: '5~10', 		advise_value: '+8	|-2', 	up_radio: '8',		down_radio: '-2', 	advise_invest_ratio: '20', 		advise_invest_money: '2000' },
 					{id: 2, expect_value: '10~20', 		advise_value: '+14	|-2', 	up_radio: '14',		down_radio: '-2', 	advise_invest_ratio: '20', 		advise_invest_money: '2000' },
@@ -166,9 +255,13 @@
 					{id: 7,	expect_value: '>500',		advise_value: '+300	|-50',	up_radio: '300',	down_radio: '-50', 	advise_invest_ratio: '5',		advise_invest_money: '500'	}
 				]
 				,value: ''
-				,tableData:[]
+				,tableUpData:[]
+				,tableUpShowData:[]
+				,tableDownData:[]
+				,tableDownShowData:[]
 				,totalAmount:''
 				,selectExpectValue:''
+				,stockCode:''
 				,unitPrice:''
 				,range:[]
 				,input:''
@@ -176,14 +269,31 @@
 			};
 		}
 		,async created(){
+			var that = this;
+			// 表格数据加载 
+			// this.refreshFromStorage();
+			// uni.clearStorage()
+			var keyStr = "inStorageStockList";
+			uni.getStorage({
+				key:keyStr,
+				success: function(resp){
+					console.log("返回值："+ JSON.stringify(resp.data))
+					that.tableUpShowData = resp.data
+					// that.tableUpData = Object.assign(that.tableUpData,resp.data);
+				},
+				fail:function(){
+					console.log("未取得 key:"+keyStr);
+				}
+			});
+			
+			
 			var rangeValue = []
-			for (var i = 0; i < this.tableList.length; i++) {
-				rangeValue.push({value:this.tableList[i].id, text:this.tableList[i].expect_value})
+			for (var i = 0; i < that.tableList.length; i++) {
+				rangeValue.push({value:that.tableList[i].id, text:that.tableList[i].expect_value})
 			}
-			this.selectExpectValueRange = rangeValue;
+			that.selectExpectValueRange = rangeValue;
 		}
 		,onReady() {
-			
 		},
 		methods: {
 			change(e) {
@@ -192,35 +302,192 @@
 			,inputTotalAmountChange(e) {			
 				this.calculateInvestMoney();
 			}
+			,inputStockCodeChange(e){
+				this.calculateInvestMoney();
+			}
 			,selectExpectValueChange(e) {		
 				this.calculateInvestMoney();
 			}
 			,inputUnitPriceChange(e) {		
 				this.calculateInvestMoney();
 			}
-			,calculateInvestMoney(){
-				// calculateAdviseInvestMoney :建议投资金额	|tradeCount :入手股数	|expectIncomeMoney :预期收益值
+			,calculateInvestMoney(){				
 				console.log("选取："+this.selectExpectValue);
+				var item = this.calculateItem(this);
 				var scheme = [];
-				this.tableList.forEach((val,index)=>{
-					if(val.id === this.selectExpectValue){
+				scheme.push(item);
+				this.tableUpData = scheme;
+				console.log("计算所得："+JSON.stringify(this.tableUpData));
+			}
+			,calculateItem(that){
+				// calculateAdviseInvestMoney :建议投资金额	|tradeCount :入手股数	|expectIncomeMoney :预期收益值
+				var item = {}
+				that.tableList.forEach((val,index)=>{
+					if(val.id === that.selectExpectValue){
 						console.log("选取了："+ JSON.stringify(val))
 						console.log("建议出手收益值（%）:"+ val.advise_value);
-						var calculateAdviseInvestMoney = val.advise_invest_ratio / 100 * this.totalAmount;
+						var calculateAdviseInvestMoney = val.advise_invest_ratio / 100 * that.totalAmount;
 						console.log("建议投资金额:"+ calculateAdviseInvestMoney);
-						console.log("投资单价:"+ this.unitPrice);
-						let tradeCount = parseInt(calculateAdviseInvestMoney / this.unitPrice) ;
-						var expectIncomeMoney = parseInt(val.up_radio * calculateAdviseInvestMoney / 100);
-						var expectOutcomeMoney = parseInt(val.down_radio * calculateAdviseInvestMoney / 100);
-						scheme.push({
+						console.log("投资单价:"+ that.unitPrice);
+						let tradeCount = parseInt(calculateAdviseInvestMoney / that.unitPrice) ;
+						item = {
+							stockCode:that.stockCode, 
 							calculateAdviseInvestMoney:calculateAdviseInvestMoney, 
 							tradeCount:isNaN(tradeCount)?0:tradeCount, 
-							expectIncomeMoney:expectIncomeMoney,
-							expectOutcomeMoney:expectOutcomeMoney,
-							});
+							unitPrice:isNaN(that.unitPrice)?0:that.unitPrice, 
+							upOutUnitPrice:(1 + val.up_radio/100) * that.unitPrice,
+							downOutUnitPrice:(1 + val.down_radio/100) * that.unitPrice,
+							expectIncomeMoney:parseInt(val.up_radio * calculateAdviseInvestMoney / 100),
+							expectOutcomeMoney:parseInt(val.down_radio * calculateAdviseInvestMoney / 100),
+						}
 					}
-				})
-				this.tableData = scheme
+				})				
+				return item;
+			}
+			//删除
+			,delOne(item) {
+				var dataStr = JSON.stringify(item);
+				console.log("点击删除"+ dataStr)
+				var keyStr = "inStorageStockList"
+				uni.getStorage({
+					key:keyStr,
+					success: function(resp){
+						console.log("返回值："+ JSON.stringify(resp.data))
+					},
+					fail:function(){
+						console.log("未取得 key:"+keyStr);						
+					}
+				});
+				
+			}
+			//收录
+			,addOne(item) {
+				var that = this; 
+				/** 追加信息 */
+				this.appendInfo(this, item);
+				
+				var itemJson = JSON.stringify(item);
+				console.log("点击收录"+ itemJson)
+				var keyStr = "inStorageStockList"
+				var stockSet = []
+				uni.getStorage({
+					key:keyStr,
+					success: function(resp){
+						var rsd = resp.data;
+						console.log("old返回值："+ JSON.stringify(rsd))
+						var saveData = []
+						if(rsd instanceof Array){
+							//遍历检查是否存在重复，存在则更新
+							console.log("遍历检查是否存在重复，存在则更新")
+							rsd.forEach((val,i)=>{
+								if(item.stockCode == val.stockCode){
+									uni.showModal({
+									        title: '提示',
+									        // 提示文字
+									        content: '该股票编码已存在,是否覆盖？',
+									        // 取消按钮的文字自定义
+									        cancelText: "取消",
+									        // 确认按钮的文字自定义
+									        confirmText: "替换",
+									        //删除字体的颜色
+									        confirmColor:'red',
+									        //取消字体的颜色
+									        cancelColor:'#000000',
+									        success: function(res) {
+									        if (res.confirm) {
+									            // 执行确认后的操作
+												// 替换
+												console.log("替换："+item.stockCode)
+												rsd.splice(i, 1, item);
+									        }else {
+									            // 执行取消后的操作
+												console.log("放弃替换，保持原数据："+item.stockCode)
+									        }
+									    }
+									})
+									
+								}else{
+									// 添加
+									console.log("添加："+item.stockCode)
+									rsd.push(item);
+								}
+							});
+							
+							uni.setStorage({
+								key:keyStr,
+								data:rsd				
+							});
+							saveData = rsd
+						}else{
+							stockSet.push(item)
+							uni.setStorage({
+								key:keyStr,
+								data:stockSet				
+							});
+							saveData = stockSet
+						}
+						
+						that.tableUpShowData = saveData
+						console.log("new更新值："+ JSON.stringify(that.tableUpShowData))
+					},
+					fail:function(){
+						stockSet.push(item);
+						uni.setStorage({
+							key:keyStr,
+							data:stockSet				
+						});
+						that.tableUpShowData = stockSet
+						console.log("首次，则新增！数据："+JSON.stringify(that.tableUpShowData))
+					}
+				});
+			}
+			,appendInfo(that, item){	/** 追加信息 */
+				// 追加‘新增时间’
+				var timeStr = getdateTime.dateTimeStr('y-m-d h:i:s')
+				that.$set(item,"updateTime",timeStr)
+			}
+			,updateOne(item){
+				var that = this;
+				that.appendInfo(that, item);
+				var keyStr = "inStorageStockList"
+				var stockSet = []
+				uni.getStorage({
+					key:keyStr,
+					success: function(resp){
+						var rsd = resp.data;
+						console.log("old返回值："+ JSON.stringify(rsd))
+						var saveData = []
+						if(rsd instanceof Array){
+							rsd.forEach((val,index)=>{
+								if(val.stockCode == item.stockCode){									
+									rsd.splice(index, 1, item);
+									uni.setStorage({
+										key:keyStr,
+										data:rsd				
+									});
+								}
+							})
+							saveData = rsd
+						}else{
+							stockSet.push(item)
+							uni.setStorage({
+								key:keyStr,
+								data:stockSet				
+							});
+							saveData = stockSet
+						}
+						that.tableUpShowData = saveData;
+						console.log("new更新值："+ JSON.stringify(that.tableUpShowData))
+					},
+					fail:function(){
+						stockSet.push(item);
+						uni.setStorage({
+							key:keyStr,
+							data:stockSet				
+						});
+						console.log("首次，则新增！数据："+JSON.stringify(stockSet))
+					}
+				});
 			}
 			,edit(item) {
 				uni.showToast({
@@ -234,7 +501,23 @@
 			,confirm(e) {
 				console.log(e);
 			}
-		}
+			,clearStorage(){
+				// 清空缓存 非常危险
+				uni.clearStorage()
+			}
+			// ,readProxyObj:function(proxyObj){
+			// 	if(proxyObj==null) return;
+			// 	var respObj = {}
+			// 	for(const key in proxyObj){
+			// 		this.$set(respObj, key, proxyObj.get(key))
+			// 	}
+			// 	return respObj;
+			// }
+			
+		},
+		
+		
+		
 	}
 </script>
 

@@ -32,22 +32,22 @@
             }
             
         }
-        // ,{
-        //     "path" : "pages/finance/finance",
-        //     "style" :                                                                                    
-        //     {
-        //         "navigationBarTitleText": "",
-        //         "enablePullDownRefresh": false
-        //     }
+        ,{
+            "path" : "pages/finance/stock-info",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "记录",
+                "enablePullDownRefresh": false
+            }
             
-        // }
+        }
     ],
 	"tabBar": {
 		"list": [
-			// {
-			// 	"pagePath": "pages/index/index",
-			// 	"text": "%schema.tb.working%"
-			// },
+			{
+				"pagePath": "pages/finance/stock-info",
+				"text": "记录"
+			},
 			{
 				"pagePath": "pages/finance/finance",
 				"text": "%schema.tb.working%"
