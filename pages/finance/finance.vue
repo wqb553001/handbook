@@ -233,6 +233,7 @@
 	import tTh from '@/components/t-table/t-th.vue';
 	import tTr from '@/components/t-table/t-tr.vue';
 	import tTd from '@/components/t-table/t-td.vue';
+	import { Decimal } from 'decimal.js';
 	
 	export default {
 		components: {
@@ -279,13 +280,11 @@
 				success: function(resp){
 					console.log("返回值："+ JSON.stringify(resp.data))
 					that.tableUpShowData = resp.data
-					// that.tableUpData = Object.assign(that.tableUpData,resp.data);
 				},
 				fail:function(){
 					console.log("未取得 key:"+keyStr);
 				}
 			});
-			
 			
 			var rangeValue = []
 			for (var i = 0; i < that.tableList.length; i++) {
@@ -325,18 +324,17 @@
 				that.tableList.forEach((val,index)=>{
 					if(val.id === that.selectExpectValue){
 						console.log("选取了："+ JSON.stringify(val))
-						console.log("建议出手收益值（%）:"+ val.advise_value);
-						var calculateAdviseInvestMoney = val.advise_invest_ratio / 100 * that.totalAmount;
-						console.log("建议投资金额:"+ calculateAdviseInvestMoney);
-						console.log("投资单价:"+ that.unitPrice);
-						let tradeCount = parseInt(calculateAdviseInvestMoney / that.unitPrice) ;
+						var totalAmount = (that.totalAmount=="")?0:that.totalAmount;
+						var unitPrice = (that.unitPrice=="")?0:that.unitPrice;
+						var calculateAdviseInvestMoney = new Decimal(val.advise_invest_ratio).div(new Decimal(100)).mul(new Decimal(totalAmount));
+						let tradeCount = parseInt(calculateAdviseInvestMoney / unitPrice) ;
 						item = {
 							stockCode:that.stockCode, 
 							calculateAdviseInvestMoney:calculateAdviseInvestMoney, 
 							tradeCount:isNaN(tradeCount)?0:tradeCount, 
-							unitPrice:isNaN(that.unitPrice)?0:that.unitPrice, 
-							upOutUnitPrice:(1 + val.up_radio/100) * that.unitPrice,
-							downOutUnitPrice:(1 + val.down_radio/100) * that.unitPrice,
+							unitPrice:isNaN(unitPrice)?0:unitPrice, 
+							upOutUnitPrice:(new Decimal(val.up_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPrice)),
+							downOutUnitPrice:(new Decimal(val.down_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPrice)),
 							expectIncomeMoney:parseInt(val.up_radio * calculateAdviseInvestMoney / 100),
 							expectOutcomeMoney:parseInt(val.down_radio * calculateAdviseInvestMoney / 100),
 						}
@@ -361,7 +359,14 @@
 				
 			}
 			//收录
-			,addOne(item) {
+			,addOne(item) { 
+				/* 【过程】：
+				1.补充操作信息；
+				2.没有数据则直接添加；
+				3.相同‘股票编码’确定替换或是取消更新；
+				4.保存到内存中；
+				5.展示到表格中
+				*/
 				var that = this; 
 				/** 追加信息 */
 				this.appendInfo(this, item);
@@ -373,60 +378,73 @@
 				uni.getStorage({
 					key:keyStr,
 					success: function(resp){
-						var rsd = resp.data;
-						console.log("old返回值："+ JSON.stringify(rsd))
+						var respData = resp.data;
+						console.log("old返回值："+ JSON.stringify(respData))
 						var saveData = []
-						if(rsd instanceof Array){
-							//遍历检查是否存在重复，存在则更新
-							console.log("遍历检查是否存在重复，存在则更新")
-							rsd.forEach((val,i)=>{
+						if(respData instanceof Array){
+							//遍历检查是否存在重复，存在则判断是否替换
+							console.log("遍历检查是否存在重复，存在则判断是否替换")
+							var flag = false;
+							respData.forEach((val,i)=>{
 								if(item.stockCode == val.stockCode){
+									// 存在重复
+									flag = true;
+									console.log("存在重复……")
+									// 此处，异步执行。暂时未找到办法解决，使其同步执行。
+									// 弹窗选取
 									uni.showModal({
-									        title: '提示',
-									        // 提示文字
-									        content: '该股票编码已存在,是否覆盖？',
-									        // 取消按钮的文字自定义
-									        cancelText: "取消",
-									        // 确认按钮的文字自定义
-									        confirmText: "替换",
-									        //删除字体的颜色
-									        confirmColor:'red',
-									        //取消字体的颜色
-									        cancelColor:'#000000',
-									        success: function(res) {
-									        if (res.confirm) {
-									            // 执行确认后的操作
+										title: '提示',
+										// 提示文字
+										content: '该股票编码已存在,是否覆盖？',
+										// 取消按钮的文字自定义
+										cancelText: "取消",
+										// 确认按钮的文字自定义
+										confirmText: "替换",
+										//删除字体的颜色
+										confirmColor:'red',
+										//取消字体的颜色
+										cancelColor:'#000000',
+										success: function(res) {
+											if (res.confirm) {
+												// 执行确认后的操作
 												// 替换
 												console.log("替换："+item.stockCode)
-												rsd.splice(i, 1, item);
-									        }else {
-									            // 执行取消后的操作
+												console.log("替换前："+ JSON.stringify(respData))
+												respData.splice(i, 1, item);
+												console.log("替换后："+ JSON.stringify(respData))
+												// 由于是异步执行，所以，只得补充冗余执行。待后续，解决了 同步执行问题，可省去下部内容
+												saveData = respData
+												uni.setStorage({
+													key:keyStr,
+													data:saveData				
+												});
+												that.tableUpShowData = saveData
+											}else {
+												// 执行取消后的操作
 												console.log("放弃替换，保持原数据："+item.stockCode)
-									        }
-									    }
-									})
-									
-								}else{
-									// 添加
-									console.log("添加："+item.stockCode)
-									rsd.push(item);
+											}
+										}
+									});
 								}
 							});
 							
-							uni.setStorage({
-								key:keyStr,
-								data:rsd				
-							});
-							saveData = rsd
+							// 添加新数据
+							if(!flag){
+								// 添加
+								console.log("添加："+item.stockCode)
+								respData.push(item);
+							}
+							saveData = respData
+							
 						}else{
 							stockSet.push(item)
-							uni.setStorage({
-								key:keyStr,
-								data:stockSet				
-							});
 							saveData = stockSet
 						}
 						
+						uni.setStorage({
+							key:keyStr,
+							data:saveData				
+						});
 						that.tableUpShowData = saveData
 						console.log("new更新值："+ JSON.stringify(that.tableUpShowData))
 					},
@@ -441,10 +459,33 @@
 					}
 				});
 			}
-			,appendInfo(that, item){	/** 追加信息 */
-				// 追加‘新增时间’
-				var timeStr = getdateTime.dateTimeStr('y-m-d h:i:s')
-				that.$set(item,"updateTime",timeStr)
+			,async showModal(i, item, respData){
+				await uni.showModal({
+					title: '提示',
+					// 提示文字
+					content: '该股票编码已存在,是否覆盖？',
+					// 取消按钮的文字自定义
+					cancelText: "取消",
+					// 确认按钮的文字自定义
+					confirmText: "替换",
+					//删除字体的颜色
+					confirmColor:'red',
+					//取消字体的颜色
+					cancelColor:'#000000',
+					success: async function(res) {
+						if (res.confirm) {
+							// 执行确认后的操作
+							// 替换
+							console.log("替换："+item.stockCode)
+							console.log("替换前："+ JSON.stringify(respData))
+							respData.splice(i, 1, item);
+							console.log("替换后："+ JSON.stringify(respData))
+						}else {
+							// 执行取消后的操作
+							console.log("放弃替换，保持原数据："+item.stockCode)
+						}
+					}
+				});
 			}
 			,updateOne(item){
 				var that = this;
@@ -489,30 +530,17 @@
 					}
 				});
 			}
+			,appendInfo(that, item){	/** 追加信息 */
+				// 追加‘新增时间’
+				var timeStr = getdateTime.dateTimeStr('y-m-d h:i:s')
+				that.$set(item,"updateTime",timeStr)
+			}
 			,edit(item) {
 				uni.showToast({
 					title: item.name,
 					icon: 'none'
 				});
 			}
-			,open(){
-				this.$refs.calendar.open();
-			}
-			,confirm(e) {
-				console.log(e);
-			}
-			,clearStorage(){
-				// 清空缓存 非常危险
-				uni.clearStorage()
-			}
-			// ,readProxyObj:function(proxyObj){
-			// 	if(proxyObj==null) return;
-			// 	var respObj = {}
-			// 	for(const key in proxyObj){
-			// 		this.$set(respObj, key, proxyObj.get(key))
-			// 	}
-			// 	return respObj;
-			// }
 			
 		},
 		
