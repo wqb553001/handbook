@@ -225,7 +225,7 @@
 				,input:''
 				
 				,type: 'center'
-				,msgType: ''
+				,msgType: 'success'
 				,messageText: '这是一条成功提示'
 				
 			};
@@ -346,8 +346,10 @@
 				});
 			}
 			,messageToggle(type) {
-				this.msgType = 'warn'
+				this.type = 'center'
+				this.msgType = type
 				this.messageText = `股票信息已清空~`
+				// this.offset: window.screen.height / 2
 				this.$refs.message.open()
 			}
 			,edit(item) {
