@@ -288,7 +288,7 @@
 			}
 			//删除
 			,delOne(item) {
-				console.log("点击删除"+ JSON.stringify(item))
+				console.log("点击删除"+ JSON.stringify(item));
 			}
 			//更新
 			,updateOne(item) {
@@ -303,7 +303,7 @@
 					var keyStr = "inStorageStockList";
 					// 弹窗选取
 					uni.showModal({
-						title: '提示',
+						title: '警示',
 						// 提示文字
 						content: '确定清空股票信息？',
 						// 取消按钮的文字自定义
