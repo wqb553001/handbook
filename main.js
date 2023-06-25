@@ -22,10 +22,6 @@ app.$mount()
 
 
 import messages from './locale/index'
-let i18nConfig = {
-  locale: uni.getLocale(),// 获取已设置的语言
-  messages
-}
 
 
 // VUE3
@@ -35,7 +31,8 @@ import { createI18n } from 'vue-i18n'
 const i18n = createI18n({
     legacy: false, //处理报错Uncaught (in promise) SyntaxError: Not available in legacy mode (at message-compiler.esm-bundler.js:54:19)
     locale: uni.getLocale(), // 获取已设置的语言, 'zh'
-    messages
+    globalInjection: true,
+	messages
 })
 
 export function createApp() {
@@ -46,3 +43,4 @@ export function createApp() {
   }
 }
 // #endif
+

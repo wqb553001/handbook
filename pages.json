@@ -41,9 +41,9 @@
             }
             
         },{
-            "path" : "pages/finance/popup",
+            "path" : "pages/index/index",
             "style": {
-              "navigationBarTitleText": "Popup 弹出层",
+              "navigationBarTitleText": "登录",
               "app-plus": {
                 "softinputMode": "adjustResize"
               }
@@ -56,11 +56,12 @@
 			{
 				"pagePath": "pages/finance/stock-info",
 				"text": "记录"
-			},{
-				"pagePath": "pages/finance/popup",
-				"text": "弹窗"
-			},
-			{
+			}
+			// ,{
+			// 	"pagePath": "pages/finance/popup",
+			// 	"text": "弹窗"
+			// }
+			,{
 				"pagePath": "pages/finance/finance",
 				"text": "%schema.tb.working%"
 			},
@@ -71,8 +72,8 @@
 			}
 			// ,
 			// {
-			// 	"pagePath": "pages/desc/desc",
-			// 	"text": "详情"
+			// 	"pagePath": "pages/index/index",
+			// 	"text": "登录"
 			// }
 		]
 	},

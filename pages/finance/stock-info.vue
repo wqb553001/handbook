@@ -8,31 +8,11 @@
 			<text class="uni-h6">人生最赚的生活方式是悠闲！</text>
 		</uni-card>
 		<uni-section title="试算" type="line" style="background-color: #eee;"> 
-			<uni-group title="投资信息:">
-				<view>
-				  <uni-forms-item label="预估收益比 %">
-					<uni-data-select @change="selectExpectValueChange" v-model="selectExpectValue" :localdata="selectExpectValueRange"  :clear="false" ></uni-data-select>
-				  </uni-forms-item>
-				  <uni-forms border>
-					<uni-forms-item label="总金:">
-						<uni-easyinput @change="inputTotalAmountChange" v-model="totalAmount" :inputBorder="true" placeholder="请输入账户总金" ></uni-easyinput>
-					</uni-forms-item>
-				  </uni-forms>
-				  <uni-forms border>
-					 <uni-forms-item label="股票代码:">
-						<uni-easyinput @change="inputStockCodeChange" v-model="stockCode" :inputBorder="true" placeholder="请输入股票代码"></uni-easyinput>
-					 </uni-forms-item>
-				  </uni-forms>
-				  <uni-forms border>
-					 <uni-forms-item label="单价:">
-						<uni-easyinput @change="inputUnitPriceChange" v-model="unitPrice" :inputBorder="true" placeholder="请输入预购单价"></uni-easyinput>
-					 </uni-forms-item>
-				  </uni-forms>
-				</view>
-			</uni-group>
+			
 			<uni-group title="做多试算:">
 			  <button @click="refreshFromStorage" class="popup-success button-text success-text" style="padding-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary" >刷新</button>
-			  <button @click="removeStockFroStoragem" class="popup-success warn-text" style="margin-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary">清空股票信息</button>
+			  <button @click="inputDialogToggle" class="popup-success warn-text" style="margin-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary">清空股票信息</button>
+			  <!-- <button @click="removeStockFroStoragem" class="popup-success warn-text" style="margin-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary">清空股票信息</button> -->
 			  <view>
 				<uni-table border stripe emptyText="暂无更多数据" >
 					<uni-tr>
@@ -185,6 +165,15 @@
 				<uni-popup-message :type="msgType" :message="messageText" :duration="2000"></uni-popup-message>
 			</uni-popup>
 		</view>
+		<view>
+			<!-- 输入框示例 -->
+			<uni-popup ref="inputDialog" type="dialog">
+				<uni-popup-dialog ref="inputClose"  mode="input" title="输入内容" 
+					placeholder="请输入管理员密码" @confirm="dialogInputConfirm"></uni-popup-dialog>
+			</uni-popup>
+		</view>
+		
+		
 	</view>
 </template>
 
@@ -233,15 +222,11 @@
 		,async created(){
 			var that = this;
 			// 表格数据加载 
-			// this.refreshFromStorage();
-			// uni.clearStorage()
 			var keyStr = "inStorageStockList";
 			uni.getStorage({
 				key:keyStr,
 				success: function(resp){
-					console.log("返回值："+ JSON.stringify(resp.data))
 					that.tableUpData = resp.data
-					// that.tableUpData = Object.assign(that.tableUpData,resp.data);
 				},
 				fail:function(){
 					console.log("未取得 key:"+keyStr);
@@ -297,7 +282,7 @@
 			//清空股票信息 inStorageStockList
 			,removeStockFroStoragem(e) {
 				var that = this;
-				if(that.tableUpData==null||that.tableUpData.length == 0){
+				if(that.tableUpData == null||that.tableUpData.length == 0){
 					that.messageToggle('warn');
 				}else{
 					var keyStr = "inStorageStockList";
@@ -305,7 +290,7 @@
 					uni.showModal({
 						title: '警示',
 						// 提示文字
-						content: '确定清空股票信息？',
+						content: '确定清空股票信息？\r\n 该操作非常危险，会清空所有的股票信息，且不可找回，请谨慎操作！',
 						// 取消按钮的文字自定义
 						cancelText: "取消",
 						// 确认按钮的文字自定义
@@ -349,8 +334,26 @@
 				this.type = 'center'
 				this.msgType = type
 				this.messageText = `股票信息已清空~`
-				// this.offset: window.screen.height / 2
 				this.$refs.message.open()
+			}
+			,inputDialogToggle() {
+				this.$refs.inputDialog.open()
+			}
+			,dialogInputConfirm(val) {
+				uni.showLoading({
+					title: '3秒后会关闭'
+				})
+
+				setTimeout(() => {
+					uni.hideLoading()
+					console.log(val)
+					this.value = val
+					// 关闭窗口后，恢复默认内容
+					this.$refs.inputDialog.close()
+					if(val == "admin"){
+						this.removeStockFroStoragem()
+					}
+				}, 1)
 			}
 			,edit(item) {
 				uni.showToast({
@@ -388,6 +391,9 @@
 		margin: 20upx;
 	}
 
+	.uni-table-th{
+		color: #3B424D;
+	}
 	// .button {
 	// 	font-size: 24upx;
 	// }
