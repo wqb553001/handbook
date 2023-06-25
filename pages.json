@@ -50,6 +50,15 @@
             }
             
         }
+        ,{
+            "path" : "pages/example/example",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
     ],
 	"tabBar": {
 		"list": [

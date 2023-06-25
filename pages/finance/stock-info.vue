@@ -26,9 +26,8 @@
 						<uni-th>+预收		</uni-th>
 						<uni-th>-预收		</uni-th>
 						<uni-th>收录时间		</uni-th>
-						<uni-th>操作			</uni-th>
 					</uni-tr>
-					<uni-tr v-for="(item, i) in tableUpData" >
+					<uni-tr v-for="(item, i) in tableUpShowData" >
 						<uni-td>{{ i+1    							}}</uni-td>
 						<uni-td>{{ item.stockCode					}}</uni-td>
 						<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
@@ -39,12 +38,6 @@
 						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
 						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
 						<uni-td>{{ item.updateTime 					}}</uni-td>
-						<uni-td>
-							<view class="uni-group">
-								<button @tap="updateOne(item)" class="uni-button popup-success warn-text" size="mini" type="primary">清空</button>
-								<button @tap="delOne(item)" class="uni-button" size="mini" type="warn">删除</button>
-							</view>
-						</uni-td>
 					</uni-tr>
 				  </uni-table>					
 			 </view>
@@ -52,30 +45,39 @@
 				 
 			<uni-group title="做空试算:">
 			 <view> 
-				  <t-table>
-					<t-tr>
-						<t-th>建议投资金额	</t-th>
-						<t-th>入手股数		</t-th>
-						<t-th>跌出+值		</t-th>
-						<t-th>涨出-值		</t-th>
-						<t-th>+预收			</t-th>
-						<t-th>-预收			</t-th>
-					</t-tr>
-					<t-tr v-for="item in tableDownData" >
-						<t-td>{{ item.calculateAdviseInvestMoney    }}</t-td>
-						<t-td>{{ item.tradeCount 			        }}</t-td>
-						<t-td>{{ item.expectIncomeMoney 			}}</t-td>
-						<t-td>{{ item.expectOutcomeMoney 			}}</t-td>
-					</t-tr>
-				  </t-table>					
+				  <uni-table border stripe emptyText="暂无更多数据" >
+				  	<uni-tr>
+				  		<uni-th>序号			</uni-th>
+				  		<uni-th>股票编码		</uni-th>
+				  		<uni-th>建议投资金额	</uni-th>
+				  		<uni-th>入手股数		</uni-th>
+				  		<uni-th>原单价		</uni-th>
+				  		<uni-th>跌出+值		</uni-th>
+				  		<uni-th>涨入-值		</uni-th>
+				  		<uni-th>+预赚		</uni-th>
+				  		<uni-th>-预赔		</uni-th>
+				  		<uni-th>收录时间		</uni-th>
+				  	</uni-tr>
+				  	<uni-tr v-for="(item, i) in tableDownShowData" :key="i+1">
+				  		<uni-td>{{ i + 1    						}}</uni-td>
+				  		<uni-td>{{ item.stockCode					}}</uni-td>
+				  		<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
+				  		<uni-td>{{ item.tradeCount 			        }}</uni-td>
+				  		<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
+				  		<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
+				  		<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
+				  		<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
+				  		<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
+				  		<uni-td>{{ item.updateTime 					}}</uni-td>
+				  	</uni-tr>
+				    </uni-table>
 			 </view>
 			</uni-group>
 			
 			<uni-group title="参考计算规则" >
 				<view class="warp">
 					<view class="box">
-						<view class="title">示例：10000$
-						</view>
+						<view class="title">示例：10000$</view>
 						<t-table @change="change">
 							<t-tr>
 								<t-th>编号					</t-th>
@@ -84,7 +86,7 @@
 								<t-th>建议投入资金占比（%）	</t-th>
 								<t-th>投入资金额				</t-th>
 							</t-tr>
-							<t-tr v-for="item in tableList" :key="item.id">
+							<t-tr v-for="item in upTableList" :key="item.id">
 								<t-td>{{ item.id + 1 				}}</t-td>
 								<t-td>{{ item.expect_value 			}}</t-td>
 								<t-td>{{ item.advise_value 			}}</t-td>
@@ -97,67 +99,6 @@
 			</uni-group>
 			
 		</uni-section>
-		
-		<uni-section title="卡片分组" type="line" height="1300 rpx;">
-			
-			<uni-group title="card 模式" mode="card" height="500 rpx;">
-				<view> 分组内容 </view>
-				<view>
-				  <uni-section title="预期收益值" type="line">
-				    <uni-data-select
-				        v-model="value"
-				        :localdata="range"
-				        @change="change"
-				        :clear="false"
-				    ></uni-data-select>
-				    </uni-section>
-					<uni-section title="去除空格" subTitle="使用 trim 属性 ,可以控制返回内容的空格 " type="line" padding>
-						<text class="uni-subtitle">输入内容：{{ '"'+value+'"' }}</text>
-						<uni-easyinput class="uni-mt-5" trim="all" v-model="value" placeholder="请输入内容" @input="input"></uni-easyinput>
-					</uni-section>
-				</view>
-				<view>
-					<uni-table border stripe emptyText="暂无更多数据" >
-						<!-- 表头行 -->
-						<uni-tr>
-							<uni-th align="center">日期</uni-th>
-							<uni-th align="center">姓名</uni-th>
-							<uni-th align="left">地址</uni-th>
-						</uni-tr>
-						<!-- 表格数据行 -->
-						<uni-tr>
-							<uni-td>2020-10-20</uni-td>
-							<uni-td>Jeson</uni-td>
-							<uni-td>北京市海淀区</uni-td>
-						</uni-tr>
-						<uni-tr>
-							<uni-td>2020-10-21</uni-td>
-							<uni-td>HanMeiMei</uni-td>
-							<uni-td>北京市海淀区</uni-td>
-						</uni-tr>
-						<uni-tr>
-							<uni-td>2020-10-22</uni-td>
-							<uni-td>LiLei</uni-td>
-							<uni-td>北京市海淀区</uni-td>
-						</uni-tr>
-						<uni-tr>
-							<uni-td>2020-10-23</uni-td>
-							<uni-td>Danner</uni-td>
-							<uni-td>北京市海淀区</uni-td>
-						</uni-tr>
-					</uni-table>
-				
-				 </view>
-			</uni-group>
-		
-			<uni-group mode="card">
-				<view>分组1</view>
-				<view>分组1</view>
-				<view>分组1</view>
-				<view>分组1</view>
-			</uni-group>
-		</uni-section>
-
 		
 		<view>
 			<!-- 提示信息弹窗 -->
@@ -192,7 +133,7 @@
 		},
 		data() {
 			return {
-				tableList: [// 示例金额：10000$
+				upTableList: [// 示例金额：10000$
 					// 	编号	|预期收益值（%）				|建议出手收益值（%）			|正收益				|负收益				|投入资金占比（%）				|投入资金额				
 					{id: 0, expect_value: '1~5', 		advise_value: '+3	|-2', 	up_radio: '3',		down_radio: '-2', 	advise_invest_ratio: '10', 		advise_invest_money: '1000' },
 					{id: 1, expect_value: '5~10', 		advise_value: '+8	|-2', 	up_radio: '8',		down_radio: '-2', 	advise_invest_ratio: '20', 		advise_invest_money: '2000' },
@@ -220,43 +161,34 @@
 			};
 		}
 		,async created(){
-			var that = this;
+			var _this = this;
 			// 表格数据加载 
-			var keyStr = "inStorageStockList";
-			uni.getStorage({
-				key:keyStr,
-				success: function(resp){
-					that.tableUpData = resp.data
-				},
-				fail:function(){
-					console.log("未取得 key:"+keyStr);
-				}
-			});
+			this.loadTableStockList("inStorageUpStockList", "tableUpShowData", _this);
+			this.loadTableStockList("inStorageDownStockList", "tableDownShowData", _this);
 			
 			// 下拉选
 			var rangeValue = []
-			for (var i = 0; i < this.tableList.length; i++) {
-				rangeValue.push({value:this.tableList[i].id, text:this.tableList[i].expect_value})
+			for (var i = 0; i < this.upTableList.length; i++) {
+				rangeValue.push({value:this.upTableList[i].id, text:this.upTableList[i].expect_value})
 			}
 			this.selectExpectValueRange = rangeValue;
 		}
 		,onReady() {
-			var keyStr = "inStorageStockList";
-			uni.getStorage({
-				key:keyStr,
-				success: function(resp){
-					console.log("返回值："+ JSON.stringify(resp.data))
-					this.tableUpData = JSON.parse(JSON.stringify(resp.data))
-					// this.tableUpData = Object.assign(this.tableUpData,resp.data);
-					console.log("赋值："+ JSON.stringify(this.tableUpData))
-				},
-				fail:function(){
-					console.log("未取得 key:"+keyStr);
-				}
-			});
 		},
 		methods: {
-			change(e) {
+			loadTableStockList(key, table_tag_key, _this){
+				uni.getStorage({
+					key:key,
+					success: function(resp){
+						console.log("返回值："+ JSON.stringify(resp.data))
+						_this.$set(_this, table_tag_key, resp.data);
+					},
+					fail:function(){
+						console.log("未取得 key:"+key);
+					}
+				});
+			}
+			,change(e) {
 				console.log(e.detail);
 			}
 			,inputTotalAmountChange(e) {			
@@ -279,13 +211,13 @@
 			,updateOne(item) {
 				console.log("点击更新"+ JSON.stringify(item))
 			}
-			//清空股票信息 inStorageStockList
+			//清空股票信息 inStorageUpStockList
 			,removeStockFroStoragem(e) {
 				var that = this;
 				if(that.tableUpData == null||that.tableUpData.length == 0){
 					that.messageToggle('warn');
 				}else{
-					var keyStr = "inStorageStockList";
+					var keyStr = "inStorageUpStockList";
 					// 弹窗选取
 					uni.showModal({
 						title: '警示',
@@ -317,7 +249,7 @@
 			// 刷新-读取最新数据
 			,refreshFromStorage(e){
 				var that = this;
-				var keyStr = "inStorageStockList";
+				var keyStr = "inStorageUpStockList";
 				uni.getStorage({
 					key:keyStr,
 					success: function(resp){
@@ -375,12 +307,12 @@
 </script>
 
 <style lang="scss">
-	@mixin flex {
-		/* #ifndef APP-NVUE */
-		display: flex;
-		/* #endif */
-		flex-direction: row;
-	}
+	// @mixin flex {
+	// 	/* #ifndef APP-NVUE */
+	// 	display: flex;
+	// 	/* #endif */
+	// 	flex-direction: row;
+	// }
 		
 	// table
 	.title {
@@ -394,9 +326,6 @@
 	.uni-table-th{
 		color: #3B424D;
 	}
-	// .button {
-	// 	font-size: 24upx;
-	// }
 	// 未生效
 	// table{table-layout:fixed;}
 	// table tr td:first-child,table tr td:first-child{width:20rpx;}
@@ -456,10 +385,6 @@
 		/* #ifdef APP-NVUE */
 		flex: 1;
 		/* #endif */
-	}
-
-	.box {
-		@include flex;
 	}
 
 	.button {
