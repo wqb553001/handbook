@@ -36,7 +36,7 @@
             "path" : "pages/finance/stock-info",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "记录",
+                "navigationBarTitleText": "%schema.tb.looking%",
                 "enablePullDownRefresh": false
             }
             
@@ -64,7 +64,7 @@
 		"list": [
 			{
 				"pagePath": "pages/finance/stock-info",
-				"text": "记录"
+				"text": "%schema.tb.looking%"
 			}
 			// ,{
 			// 	"pagePath": "pages/finance/popup",
@@ -73,9 +73,8 @@
 			,{
 				"pagePath": "pages/finance/finance",
 				"text": "%schema.tb.working%"
-			},
-			
-			{
+			}
+			,{
 				"pagePath": "pages/list/list",
 				"text": "%schema.tb.list%"
 			}

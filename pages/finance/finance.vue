@@ -1,15 +1,27 @@
 <template>
 	<view class="container">
 		
-		<uni-card title="人生劝勉" :isFull="true" sub-title="投资有风险" extra="今年你笑了么">
-			<text>投资什么都不抵投资健康！</text>
+		<uni-card title="人生劝勉" :isFull="true" sub-title="投资有风险" extra="today 你笑了么 (*￣︶￣) !!">
+			<text>投资什么？都不抵投资健康！</text>
 		</uni-card>
 		<uni-card :is-shadow="false" is-full>
-			<text class="uni-h6">人生最赚的生活方式是悠闲！</text>
+			<text class="uni-h6">人生最赚的生活方式：是悠闲！</text>
 		</uni-card>
 		
 		<uni-section title="试算" type="line" style="background-color: #eee;"> 
-			<uni-group title="投资信息:">
+			<uni-group :style="{ display: 'none' }">
+				<uni-card :is-shadow="false" is-full>
+					<text class="uni-h2">服务到期，请联系管理员！</text>
+				</uni-card>
+				<uni-card :is-shadow="false" is-full>
+					<text class="uni-h6">联系方式：wangqingbo0829@163.com</text>
+				</uni-card>
+				<uni-card :is-shadow="false" is-full>
+					<button @click="refreshFromStorage" class="popup-success warn-text" style="padding-left:0.5rem; width: 100%;height: 2rem;" size="default" type="primary" >刷新</button>
+				</uni-card>
+			</uni-group>
+			
+			<uni-group title="投资信息:" :style="{ display: stock_display }">
 				<view>
 				  <uni-forms border>
 					<uni-forms-item label="总金:">
@@ -41,7 +53,7 @@
 				</view>
 			</uni-group>
 			
-			<view v-if="unitPricePre>unitPriceNow">
+			<view v-if="(unitPricePre-unitPriceNow)>0">
 				<uni-group title="做多试算:" id="up_group" >
 				  <view> 
 					<uni-table border stripe emptyText="暂无更多数据" >
@@ -64,7 +76,7 @@
 							<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
 							<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
 							<uni-td style="text-align: center;">
-								<view class="uni-group">
+								<view class="uni-group" v-if="(unitPricePre-unitPriceNow)>0">
 									<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" size="mini" type="primary">收录</button>
 									<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" size="mini" type="warn">更新</button>
 								</view>
@@ -75,7 +87,7 @@
 				</uni-group>
 			</view>
 						
-			<view v-else-if="unitPricePre<unitPriceNow">
+			<view v-else-if="(unitPricePre-unitPriceNow)<0">
 				<uni-group title="做空试算:" id="down_group" >
 				  <uni-table border stripe emptyText="暂无更多数据" >					
 					<uni-tr>
@@ -88,7 +100,7 @@
 						<uni-th>-预收		</uni-th>
 						<uni-th>操作			</uni-th>
 					</uni-tr>
-					<uni-tr v-for="(item, i) in tableUpData" :key="i+1">
+					<uni-tr v-for="(item, i) in tableDownData" :key="i+1">
 						<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
 						<uni-td>{{ item.tradeCount 			        }}</uni-td>
 						<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
@@ -97,7 +109,7 @@
 						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
 						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
 						<uni-td style="text-align: center;">
-							<view class="uni-group">
+							<view class="uni-group" v-if="(unitPricePre - unitPriceNow)<0">
 								<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" size="mini" type="primary">收录</button>
 								<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" size="mini" type="warn">更新</button>
 							</view>
@@ -138,7 +150,7 @@
 						<uni-td>{{ item.updateTime 					}}</uni-td>
 						<uni-td>
 							<view class="uni-group">
-								<button @tap="delOne(item)" class="uni-button" size="mini" type="warn">删除</button>
+								<button @tap="delOne(item, 1)" class="uni-button" size="mini" type="warn">删除</button>
 							</view>
 						</uni-td>
 					</uni-tr>
@@ -175,7 +187,7 @@
 						<uni-td>
 							<view class="uni-group">
 								<!-- <button @tap="addOne(item)" class="uni-button" size="mini" type="primary">收录</button> -->
-								<button @tap="delOne(item)" class="uni-button" size="mini" type="warn">删除</button>
+								<button @tap="delOne(item, 2)" class="uni-button" size="mini" type="warn">删除</button>
 							</view>
 						</uni-td>
 					</uni-tr>
@@ -210,6 +222,13 @@
 		</uni-section>
 	</view>
 
+	<view>
+		<!-- 输入框示例 -->
+		<uni-popup ref="inputDialog" type="dialog">
+			<uni-popup-dialog ref="inputClose"  mode="input" title="输入授权码" 
+				placeholder="授权码" @confirm="authorizeConfirm"></uni-popup-dialog>
+		</uni-popup>
+	</view>
 	<view>
 		<!-- 提示信息弹窗 -->
 		<uni-popup ref="message" type="message">
@@ -279,16 +298,14 @@
 			};
 		}
 		,async created(){
+			this.stock_display = '';
+			// this.stock_display = 'none';
+			
+			
 			var _this = this;
 			// 表格数据加载 
 			this.loadTableStockList("inStorageUpStockList", "tableUpShowData", _this);
 			this.loadTableStockList("inStorageDownStockList", "tableDownShowData", _this);
-			
-			var rangeValue = []
-			for (var i = 0; i < _this.upTableList.length; i++) {
-				rangeValue.push({value:_this.upTableList[i].id, text:_this.upTableList[i].expect_value})
-			}
-			_this.selectExpectValueRange = rangeValue;
 		}
 		,onReady() {
 		},
@@ -332,12 +349,13 @@
 				var unitPriceNow = (this.unitPriceNow=="")?0:this.unitPriceNow;			// 当前股票单价
 				var unitPricePre = (this.unitPricePre=="")?0:this.unitPricePre;			// 预估股票单价
 				var stockRadio = 0;
-				if(unitPriceNow>0 && unitPricePre>0){
-					if(unitPricePre>unitPriceNow){
-						stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPriceNow);						
-					}else{
-						stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPricePre);						
-					}
+				var up_down_flag = this.judgeUpOrDown();// 0:无法判断；1:up-做多；2:down-做空
+				if(up_down_flag == 1){		// 做多
+					stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPriceNow);
+					this.initSelectExpectValueRange(this, this.upTableList)
+				}else if(up_down_flag == 2){// 做空
+					stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPricePre);	
+					this.initSelectExpectValueRange(this, this.downTableList)					
 				}
 				console.log("stockRadio："+stockRadio)
 				var item = {}
@@ -358,16 +376,45 @@
 				// 内推 选取
 				this.selectExpectValue = min_id;
 			}
+			/** 0:无法判断；1:up-做多；2:down-做空*/
+			,judgeUpOrDown(){
+				var up_down_flag = 0; // 0:无法判断；1:up-做多；2:down-做空
+				var unitPriceNow = (this.unitPriceNow=="")?0:this.unitPriceNow;			// 当前股票单价
+				var unitPricePre = (this.unitPricePre=="")?0:this.unitPricePre;			// 预估股票单价
+				var stockRadio = 0;
+				if(unitPriceNow>0 && unitPricePre>0){
+					if(unitPricePre>unitPriceNow){
+						// 做多
+						up_down_flag = 1;
+					}else{
+						// 做空
+						up_down_flag = 2;				
+					}
+				}
+				return up_down_flag;
+			}
 			,getStockRadioByUnitPrice(a,b,c){
 				return new Decimal(a - b).div(new Decimal(c)).mul(new Decimal(100)).abs().toFixed(4);
+			}
+			,initSelectExpectValueRange(_this, tableList){
+				var rangeValue = []
+				for (var i = 0; i < tableList.length; i++) {
+					rangeValue.push({value:tableList[i].id, text:tableList[i].expect_value})
+				}
+				_this.selectExpectValueRange = rangeValue;
 			}
 			// 试算并展示
 			,calculateInvestMoney(){
 				var item = this.calculateItem(this);
 				var scheme = [];
 				scheme.push(item);
-				this.tableUpData = scheme;
-				console.log("计算所得："+JSON.stringify(this.tableUpData));
+				var up_down_flag = this.judgeUpOrDown();// 0:无法判断；1:up-做多；2:down-做空
+				if(up_down_flag == 1){
+					this.tableUpData = scheme;
+				}else if(up_down_flag == 2){
+					this.tableDownData = scheme;
+				}
+				console.log("计算所得："+JSON.stringify(scheme));
 			}
 			// 试算内容
 			,calculateItem(_this){
@@ -375,8 +422,11 @@
 				var unitPriceNow = (_this.unitPriceNow=="")?0:_this.unitPriceNow;			// 当前股票单价
 				var unitPricePre = (_this.unitPricePre=="")?0:_this.unitPricePre;			// 预估股票单价
 				var stockRadio = 0;
-				if(unitPriceNow>0 && unitPricePre>0){
-					stockRadio = new Decimal(unitPricePre - unitPriceNow).div(new Decimal(unitPriceNow)).plus(new Decimal(100));					
+				var up_down_flag = this.judgeUpOrDown();// 0:无法判断；1:up-做多；2:down-做空
+				if(up_down_flag == 1){		// 做多
+					stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPriceNow);
+				}else if(up_down_flag == 2){// 做空
+					stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPricePre);
 				}
 				var item = {}
 				// 预估股票单价 未填写，选取了 预期收益率
@@ -388,14 +438,24 @@
 							var unitPriceNow = (_this.unitPriceNow=="")?0:_this.unitPriceNow;			// 当前股票单价
 							var calculateAdviseInvestMoney = new Decimal(val.advise_invest_ratio).div(new Decimal(100)).mul(new Decimal(totalAmount));
 							let tradeCount = parseInt(calculateAdviseInvestMoney / unitPriceNow) ;	// 股数
+							var upOutUnitPrice = 0;
+							var downOutUnitPrice = 0;
+							if(up_down_flag == 1){		// 做多
+								upOutUnitPrice = (new Decimal(val.up_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow));
+								downOutUnitPrice = (new Decimal(val.down_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow));
+							}else if(up_down_flag == 2){// 做空
+								upOutUnitPrice = (new Decimal(val.down_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPricePre));
+								downOutUnitPrice = (new Decimal(val.up_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPricePre));
+							}
+							
 							item = {
 								stockCode:_this.stockCode, 
 								calculateAdviseInvestMoney:calculateAdviseInvestMoney, 
 								tradeCount:isNaN(tradeCount)?0:tradeCount, 
 								unitPriceNow:isNaN(unitPriceNow)?0:unitPriceNow, 
 								unitPricePre:isNaN(unitPricePre)?0:unitPricePre, 
-								upOutUnitPrice:(new Decimal(val.up_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow)),
-								downOutUnitPrice:(new Decimal(val.down_radio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow)),
+								upOutUnitPrice: upOutUnitPrice,
+								downOutUnitPrice: downOutUnitPrice,
 								expectIncomeMoney:parseInt(val.up_radio * calculateAdviseInvestMoney / 100),
 								expectOutcomeMoney:parseInt(val.down_radio * calculateAdviseInvestMoney / 100),
 							}
@@ -405,21 +465,17 @@
 				}				
 				return item;
 			}
-			// 删除
-			,delOne(item) {
-				var dataStr = JSON.stringify(item);
-				console.log("点击删除"+ dataStr)
-				var keyStr = "inStorageUpStockList"
-				uni.getStorage({
-					key:keyStr,
-					success: function(resp){
-						console.log("返回值："+ JSON.stringify(resp.data))
-					},
-					fail:function(){
-						console.log("未取得 key:"+keyStr);						
-					}
-				});
-				
+			,getStockRadio(){
+				var unitPriceNow = (this.unitPriceNow=="")?0:this.unitPriceNow;			// 当前股票单价
+				var unitPricePre = (this.unitPricePre=="")?0:this.unitPricePre;			// 预估股票单价
+				var stockRadio = 0;
+				var up_down_flag = this.judgeUpOrDown();// 0:无法判断；1:up-做多；2:down-做空
+				if(up_down_flag == 1){		// 做多
+					stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPriceNow);
+				}else if(up_down_flag == 2){// 做空
+					stockRadio = this.getStockRadioByUnitPrice(unitPricePre, unitPriceNow, unitPricePre);
+				}
+				return stockRadio;
 			}
 			// 根据 股票编码 收录或更新 记录
 			,addOrUpdateOne(item, addOrUpdate){
@@ -450,8 +506,9 @@
 				/** 追加信息 */
 				this.appendInfo(this, item);
 				var itemJson = JSON.stringify(item);
-				console.log("点击收录"+ itemJson)
+				console.log("点击"+addOrUpdate+"【内容】:"+ itemJson)
 				if(addOrUpdate=='addOne'){
+					console.log("点击了添加")
 					if(this.unitPricePre>this.unitPriceNow){
 						// 做多
 						this.saveData("inStorageUpStockList", "tableUpShowData", item, _this)
@@ -460,6 +517,7 @@
 						this.saveData("inStorageDownStockList", "tableDownShowData", item, _this)
 					}	
 				}else{
+					console.log("点击了更新")
 					if(this.unitPricePre>this.unitPriceNow){
 						// 做多
 						this.updateStockInfo("inStorageUpStockList", "tableUpShowData", item, _this)
@@ -486,7 +544,7 @@
 							//遍历检查是否存在重复，存在则判断是否替换
 							console.log("遍历检查是否存在重复，存在则判断是否替换")
 							var flag = false;
-							respData.forEach((val,i)=>{
+							respData.some((val,i)=>{
 								if(item.stockCode == val.stockCode){
 									// 存在重复
 									flag = true;
@@ -526,6 +584,7 @@
 											}
 										}
 									});
+									return true;
 								}
 							});
 							
@@ -547,7 +606,7 @@
 							data:saveData				
 						});
 						_this.$set(_this, table_tag_key, saveData);
-						console.log("new更新值："+ JSON.stringify(_this.tableUpShowData))
+						console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
 						stockSet.push(item);
@@ -556,7 +615,7 @@
 							data:stockSet				
 						});
 						_this.$set(_this, table_tag_key, stockSet);
-						console.log("首次，则新增！数据："+JSON.stringify(_this.tableUpShowData))
+						console.log("首次，则新增！数据："+JSON.stringify(stockSet))
 					}
 				});
 			}
@@ -570,7 +629,7 @@
 						var saveData = []
 						if(rsd instanceof Array){
 							var flag = true;
-							rsd.forEach((val,index)=>{
+							rsd.some((val,index)=>{
 								if(val.stockCode == item.stockCode){									
 									rsd.splice(index, 1, item);
 									uni.setStorage({
@@ -578,9 +637,10 @@
 										data:rsd				
 									});
 									flag = false;
+									return true;
 								}
 							});
-							if(true){
+							if(flag){
 								rsd.push(item)
 								uni.setStorage({
 									key:keyStr,
@@ -597,7 +657,7 @@
 							saveData = stockSet
 						}
 						_this.$set(_this, table_tag_key, saveData);
-						console.log("new更新值："+ JSON.stringify(_this.tableUpShowData))
+						console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
 						stockSet.push(item);
@@ -616,13 +676,90 @@
 					icon: 'none'
 				});
 			}
+			// 删除(up_down_flag:1:up-做多；2:down-做空)
+			,delOne(item, up_down_flag) {
+				var _this = this;
+				var dataStr = JSON.stringify(item);
+				console.log("点击删除"+ dataStr)
+				var keyStr = "inStorageUpStockList"
+				if(up_down_flag==2){
+					keyStr = "inStorageDownStockList"
+				}
+				// 弹窗选取
+				uni.showModal({
+					title: '提示',
+					// 提示文字
+					content: '确定要删除该股票信息？',
+					// 取消按钮的文字自定义
+					cancelText: "取消",
+					// 确认按钮的文字自定义
+					confirmText: "确定",
+					//删除字体的颜色
+					confirmColor:'red',
+					//取消字体的颜色
+					cancelColor:'#000000',
+					success: function(res) {
+						if (res.confirm) {
+							uni.getStorage({
+								key:keyStr,
+								success: function(resp){
+									var respData = resp.data;
+									console.log("old返回值："+ JSON.stringify(respData))
+									var saveData = []
+									if(respData instanceof Array){
+										//遍历检查是否存在重复，存在则判断是否替换
+										console.log("遍历检查是否存在重复，存在则判断是否替换")
+										var flag = false;
+										respData.some((val,i)=>{
+											if(item.stockCode == val.stockCode){
+												respData.splice(i, 1);
+												uni.setStorage({
+													key:keyStr,
+													data:respData				
+												});
+												return true;
+											}
+										});
+									}
+									if(up_down_flag==1){
+										_this.tableUpShowData = respData;
+									}else{
+										_this.tableDownShowData = respData;
+									}
+								},
+								fail:function(){
+									console.log("未取得 key:"+keyStr);						
+								}
+							});
+						}
+					},
+				});
+				
+				
+			}
 			// 信息提示（2秒后退显）
 			,messageToggle(type, messageText) {
 				this.type = 'center'
 				this.msgType = type
 				this.messageText = messageText
-				// this.offset: window.screen.height / 2
 				this.$refs.message.open()
+			}
+			
+			,authorizeConfirm(val) {
+				uni.showLoading({
+					title: '3秒后会关闭'
+				})
+			
+				setTimeout(() => {
+					uni.hideLoading()
+					console.log(val)
+					this.value = val
+					// 关闭窗口后，恢复默认内容
+					this.$refs.inputDialog.close()
+					if(val == "admin"){
+						this.removeStockFroStoragem()
+					}
+				}, 1)
 			}
 		},
 		
@@ -640,6 +777,17 @@
 		display:'none'
 	}
 	
+	.success-text {
+		color: #09bb07;
+	}
+	.popup-success {
+		color: #fff;
+		background-color: #e1f3d8;
+	}
+	.warn-text {
+		color: #e6a23c;
+	}
+	
 	// table
 	.title {
 		font-size: 32upx;
@@ -649,11 +797,6 @@
 		margin: 20upx;
 	}
 
-
-	// 未生效
-	// table{table-layout:fixed;}
-	// table tr td:first-child,table tr td:first-child{width:20rpx;}
-	
 	// group
 	.uni-wrap {
 		flex-direction: column;

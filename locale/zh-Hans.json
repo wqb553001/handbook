@@ -25,7 +25,8 @@
 	
 	
     "schema.tb.list": "列表",
-    "schema.tb.working": "运用",
+    "schema.tb.looking": "查看",
+    "schema.tb.working": "收录",
     "schema.btitle.list": "方法库",
     "schema.name": "姓名",
 	"schema.add": "新增",
