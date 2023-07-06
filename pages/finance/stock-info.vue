@@ -1,42 +1,37 @@
 <template>
 	<view class="container">
-		
-		<uni-card title="人生劝勉" :isFull="true" sub-title="投资有风险" extra="今年你笑了么">
-			<text>投资什么都不抵投资健康！</text>
-		</uni-card>
-		<uni-card :is-shadow="false" is-full>
-			<text class="uni-h6">人生最赚的生活方式是悠闲！</text>
-		</uni-card>
+		<view>
+			<uni-card title="人生劝勉" :isFull="true" sub-title="投资有风险" extra="today 你笑了么 (*￣︶￣) !!">
+				<text>投资什么？都不抵投资健康！</text>
+			</uni-card>
+			<uni-card :is-shadow="false" is-full>
+				<text class="uni-h6">人生最赚的生活方式：是悠闲！</text>
+			</uni-card>
+		</view>
 		<uni-section title="试算" type="line" style="background-color: #eee;"> 
 			
 			<uni-group title="做多试算:">
-			  <button @click="refreshFromStorage" class="popup-success button-text success-text" style="padding-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary" >刷新</button>
-			  <button @click="inputDialogToggle" class="popup-success warn-text" style="margin-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary">清空股票信息</button>
-			  <!-- <button @click="removeStockFroStoragem" class="popup-success warn-text" style="margin-left:0.5rem; width: 40%;height: 2rem;" size="mini" type="primary">清空股票信息</button> -->
+			  <button @click="removeStorageInputDialogToggle(1)" class="popup-success warn-text" style="height: 2rem;background-color: #e1f3d8; color: #e6a23c;line-height: 1.8;" size="mini" type="warn">清除</button>
+			  <button @click="tableToExcel(1)" class="popup-success warn-text" style="width:40%; height: 2rem;background-color: #e1f3d8; color: #09bb07;line-height: 1.8;" size="mini" type="warn">导	出</button>
+			<button @click="refreshFromStorage" class="popup-success button-text success-text" style="width:40%;height: 2rem; background-color: #e1f3d8; color: #09bb07;line-height: 1.8;" size="mini" type="primary" >刷	新</button>
 			  <view>
 				<uni-table border stripe emptyText="暂无更多数据" >
 					<uni-tr>
-						<uni-th>序号			</uni-th>
-						<uni-th>股票代码		</uni-th>
-						<uni-th>建议投资金额	</uni-th>
-						<uni-th>入手股数		</uni-th>
-						<uni-th>原单价		</uni-th>
-						<uni-th>涨出+值		</uni-th>
-						<uni-th>跌出-值		</uni-th>
-						<uni-th>+预收		</uni-th>
-						<uni-th>-预收		</uni-th>
-						<uni-th>收录时间		</uni-th>
+						<uni-th v-for="headerObj in tableUpDataHeader">{{headerObj.value}}</uni-th>
 					</uni-tr>
 					<uni-tr v-for="(item, i) in tableUpShowData" >
 						<uni-td>{{ i+1    							}}</uni-td>
 						<uni-td>{{ item.stockCode					}}</uni-td>
-						<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
 						<uni-td>{{ item.tradeCount 			        }}</uni-td>
-						<uni-td>{{ item.unitPrice 			        }}</uni-td>
+						<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
 						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
 						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
 						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
 						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
+						<uni-td>{{ item.upRadio 			        }}</uni-td>
+						<uni-td>{{ item.downRadio 			        }}</uni-td>
+						<uni-td>{{ item.calculAdvsIvsMoney  }}</uni-td>
+						<uni-td>{{ item.adviseInvestRatio 			}}</uni-td>
 						<uni-td>{{ item.updateTime 					}}</uni-td>
 					</uni-tr>
 				  </uni-table>					
@@ -44,30 +39,29 @@
 			</uni-group>
 				 
 			<uni-group title="做空试算:">
-			 <view> 
+			
+				<button @click="removeStorageInputDialogToggle(2)" class="popup-success warn-text" style="height: 2rem;background-color: #e1f3d8; color: #e6a23c;line-height: 1.8;" size="mini" type="warn">清除</button>
+				<button @click="tableToExcel(2)" class="popup-success warn-text" style="width:40%; height: 2rem;background-color: #e1f3d8; color: #09bb07;line-height: 1.8;" size="mini" type="warn">导	出</button>
+				<button @click="refreshFromStorage" class="popup-success button-text success-text" style="width:40%;height: 2rem; background-color: #e1f3d8; color: #09bb07;line-height: 1.8;" size="mini" type="primary" >刷	新</button>
+				
+				<view> 
 				  <uni-table border stripe emptyText="暂无更多数据" >
 				  	<uni-tr>
-				  		<uni-th>序号			</uni-th>
-				  		<uni-th>股票编码		</uni-th>
-				  		<uni-th>建议投资金额	</uni-th>
-				  		<uni-th>入手股数		</uni-th>
-				  		<uni-th>原单价		</uni-th>
-				  		<uni-th>跌出+值		</uni-th>
-				  		<uni-th>涨入-值		</uni-th>
-				  		<uni-th>+预赚		</uni-th>
-				  		<uni-th>-预赔		</uni-th>
-				  		<uni-th>收录时间		</uni-th>
+						<uni-th v-for="head in tableDownDataHeader">{{head.value}}</uni-th>
 				  	</uni-tr>
 				  	<uni-tr v-for="(item, i) in tableDownShowData" :key="i+1">
 				  		<uni-td>{{ i + 1    						}}</uni-td>
 				  		<uni-td>{{ item.stockCode					}}</uni-td>
-				  		<uni-td>{{ item.calculateAdviseInvestMoney  }}</uni-td>
 				  		<uni-td>{{ item.tradeCount 			        }}</uni-td>
 				  		<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
 				  		<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
 				  		<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
 				  		<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
 				  		<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
+						<uni-td>{{ item.upRadio 			        }}</uni-td>
+						<uni-td>{{ item.downRadio 			        }}</uni-td>
+				  		<uni-td>{{ item.calculAdvsIvsMoney  		}}</uni-td>
+						<uni-td>{{ item.adviseInvestRatio 			}}</uni-td>
 				  		<uni-td>{{ item.updateTime 					}}</uni-td>
 				  	</uni-tr>
 				    </uni-table>
@@ -110,7 +104,7 @@
 			<!-- 输入框示例 -->
 			<uni-popup ref="inputDialog" type="dialog">
 				<uni-popup-dialog ref="inputClose"  mode="input" title="输入内容" 
-					placeholder="请输入管理员密码" @confirm="dialogInputConfirm"></uni-popup-dialog>
+					placeholder="请输入管理员密码" @confirm="removeStorageBeforeDialogInputConfirm"></uni-popup-dialog>
 			</uni-popup>
 		</view>
 		
@@ -123,6 +117,8 @@
 	import tTh from '@/components/t-table/t-th.vue';
 	import tTr from '@/components/t-table/t-tr.vue';
 	import tTd from '@/components/t-table/t-td.vue';
+	import { exportExcel } from '@/common/util/excelUtil.js'
+	import { formatNumber,formatDateThis,getUnixTime } from "@/common/util/dateUtil.js"
 	
 	export default {
 		components: {
@@ -144,9 +140,41 @@
 					{id: 6,	expect_value: '200~500',	advise_value: '+200	|-50',	up_radio: '200',	down_radio: '-50', 	advise_invest_ratio: '10',		advise_invest_money: '1000'	},
 					{id: 7,	expect_value: '>500',		advise_value: '+300	|-50',	up_radio: '300',	down_radio: '-50', 	advise_invest_ratio: '5',		advise_invest_money: '500'	}
 				]
+				,tableUpDataHeader: [
+					 {key:'i',					value:'序号'}
+					,{key:'stockCode',			value:'股票代码'}
+					,{key:'tradeCount',			value:'股数'}
+					,{key:'unitPriceNow',		value:'原单价'}
+					,{key:'upOutUnitPrice',		value:'涨出+单价'}
+					,{key:'downOutUnitPrice',	value:'跌入-单价'}
+					,{key:'expectIncomeMoney',	value:'+预赚'}
+					,{key:'expectOutcomeMoney',	value:'-预赔'}
+					,{key:'upRadio',			value:'+控涨率'}
+					,{key:'downRadio',			value:'-控跌率'}
+					,{key:'calculAdvsIvsMoney',	value:'建议投资金额'}
+					,{key:'adviseInvestRatio',	value:'投资占比'}
+					,{key:'updateTime',			value:'收录时间'}
+				]
+				,tableDownDataHeader: [
+					 {key:'i',					value:'序号'}
+					,{key:'stockCode',			value:'股票代码'}
+					,{key:'tradeCount',			value:'股数'}
+					,{key:'unitPriceNow',		value:'原单价'}
+					,{key:'downOutUnitPrice',	value:'跌入+单价'}
+					,{key:'upOutUnitPrice',		value:'涨出-单价'}
+					,{key:'expectIncomeMoney',	value:'+预赚'}
+					,{key:'expectOutcomeMoney',	value:'-预赔'}
+					,{key:'upRadio',			value:'+控涨率'}
+					,{key:'downRadio',			value:'-控跌率'}
+					,{key:'calculAdvsIvsMoney',	value:'建议投资金额'}
+					,{key:'adviseInvestRatio',	value:'投资占比'}
+					,{key:'updateTime',			value:'收录时间'}
+				]
 				,value: ''
 				,tableUpData:[]
+				,tableUpShowData:[]
 				,tableDownData:[]
+				,tableDownShowData:[]
 				,totalAmount:''
 				,selectExpectValue:''
 				,stockCode:''
@@ -156,8 +184,8 @@
 				
 				,type: 'center'
 				,msgType: 'success'
-				,messageText: '这是一条成功提示'
-				
+				,messageText: ''
+				,clickRemoveStorageFlag:0
 			};
 		}
 		,async created(){
@@ -166,12 +194,6 @@
 			this.loadTableStockList("inStorageUpStockList", "tableUpShowData", _this);
 			this.loadTableStockList("inStorageDownStockList", "tableDownShowData", _this);
 			
-			// 下拉选
-			var rangeValue = []
-			for (var i = 0; i < this.upTableList.length; i++) {
-				rangeValue.push({value:this.upTableList[i].id, text:this.upTableList[i].expect_value})
-			}
-			this.selectExpectValueRange = rangeValue;
 		}
 		,onReady() {
 		},
@@ -212,78 +234,92 @@
 				console.log("点击更新"+ JSON.stringify(item))
 			}
 			//清空股票信息 inStorageUpStockList
-			,removeStockFroStoragem(e) {
-				var that = this;
-				if(that.tableUpData == null||that.tableUpData.length == 0){
-					that.messageToggle('warn');
-				}else{
-					var keyStr = "inStorageUpStockList";
-					// 弹窗选取
-					uni.showModal({
-						title: '警示',
-						// 提示文字
-						content: '确定清空股票信息？\r\n 该操作非常危险，会清空所有的股票信息，且不可找回，请谨慎操作！',
-						// 取消按钮的文字自定义
-						cancelText: "取消",
-						// 确认按钮的文字自定义
-						confirmText: "确定",
-						//删除字体的颜色
-						confirmColor:'red',
-						//取消字体的颜色
-						cancelColor:'#000000',
-						success: function(res) {
-							if (res.confirm) {
-								// 执行确认后的操作
-								uni.removeStorage({
-									key:keyStr
-								})
-								that.tableUpData = [];
-							}else {
-								// 执行取消后的操作
-								console.log("放弃清空股票，保持原数据。")
-							}
-						}
-					});
-				}
-			}
-			// 刷新-读取最新数据
-			,refreshFromStorage(e){
+			,removeStockFromStorage(up_down_flag) {
 				var that = this;
 				var keyStr = "inStorageUpStockList";
-				uni.getStorage({
-					key:keyStr,
-					success: function(resp){
-						console.log("返回值："+ JSON.stringify(resp.data))
-						that.tableUpData = resp.data
-						console.log("返回值："+ JSON.stringify(that.tableUpData))
-					},
-					fail:function(){
-						console.log("未取得 key:"+keyStr);
+				var up_down_flag_text = '【做多】';
+				var up_down_data_name = "tableUpShowData";
+				if(up_down_flag == 2){	// 默认操作【做多】，判断为【做空】时，修改
+					up_down_flag_text = '【做空】'
+					up_down_data_name = "tableDownShowData";
+					keyStr = "inStorageDownStockList";
+				}
+				
+				// 弹窗选取
+				uni.showModal({
+					title: '警示',
+					// 提示文字
+					content: '确定清空股票信息？\r\n 该操作非常危险，会清空所有'+up_down_flag_text+'的股票信息，且不可找回，请谨慎操作！',
+					// 取消按钮的文字自定义
+					cancelText: "取消",
+					// 确认按钮的文字自定义
+					confirmText: "确定",
+					//删除字体的颜色
+					confirmColor:'red',
+					//取消字体的颜色
+					cancelColor:'#000000',
+					success: function(res) {
+						if (res.confirm) {
+							// 执行确认后的操作
+							uni.removeStorage({
+								key:keyStr
+							})
+							that.$set(that, up_down_data_name, []);
+						}else {
+							// 执行取消后的操作
+							console.log("放弃清空股票，保持原数据。")
+						}
+						// 清空缓存数据 标识值：0-默认；1-up-做多；2-down-做空
+						this.clickRemoveStorageFlag = 0;		
 					}
 				});
 			}
-			,messageToggle(type) {
+			// 刷新-读取最新数据
+			,refreshFromStorage(e){
+				var _this = this;
+				// 表格数据加载 
+				this.loadTableStockList("inStorageUpStockList", "tableUpShowData", _this);
+				this.loadTableStockList("inStorageDownStockList", "tableDownShowData", _this);
+			}
+			,messageToggle(type, messageText) {
 				this.type = 'center'
 				this.msgType = type
-				this.messageText = `股票信息已清空~`
+				this.messageText = messageText
 				this.$refs.message.open()
 			}
-			,inputDialogToggle() {
+			,removeStorageInputDialogToggle(up_down_flag) {
+				var _this = this;
+				if(up_down_flag == 1){
+					if(_this.tableUpShowData == null||_this.tableUpShowData.length == 0){
+						_this.messageToggle('warn', `【做多】股票信息已清空~`);
+						return;
+					}
+				}
+				if(up_down_flag == 2){
+					if(_this.tableDownShowData == null||_this.tableDownShowData.length == 0){
+						_this.messageToggle('warn', `【做空】股票信息已清空~`);
+						return;
+					}
+				}
 				this.$refs.inputDialog.open()
+				// 清空缓存数据 标识值：0-默认；1-up-做多；2-down-做空
+				this.clickRemoveStorageFlag = up_down_flag				
 			}
-			,dialogInputConfirm(val) {
+			,removeStorageBeforeDialogInputConfirm(val) {
+				var _this = this;
 				uni.showLoading({
 					title: '3秒后会关闭'
 				})
 
 				setTimeout(() => {
 					uni.hideLoading()
-					console.log(val)
-					this.value = val
+					console.log("_this.clickRemoveStorageFlag:"+this.clickRemoveStorageFlag)
 					// 关闭窗口后，恢复默认内容
 					this.$refs.inputDialog.close()
-					if(val == "admin"){
-						this.removeStockFroStoragem()
+					if(val.toUpperCase() == "ADMIN"){
+						this.removeStockFromStorage(this.clickRemoveStorageFlag)
+					}else{
+						this.messageToggle('warn', '密码输入有误！')
 					}
 				}, 1)
 			}
@@ -293,16 +329,54 @@
 					icon: 'none'
 				});
 			}
-			,open(){
-				this.$refs.calendar.open();
-			}
 			,confirm(e) {
 				console.log(e);
 			}
 			,inputStockCodeChange(){
 				
 			}
-		}
+			,tableToExcel(up_down_flag) {
+			  var _this = this;
+			  var tableDataHeader = _this.tableUpDataHeader;
+			  var tableShowData = _this.tableUpShowData;
+			  if(up_down_flag == 2){
+			  	tableDataHeader = _this.tableDownDataHeader;
+			  	tableShowData = _this.tableDownShowData;
+			  }
+			  let worksheet = 'sheet1'
+			  let headerFun = function(){
+					var tdTag = '';
+					  tableDataHeader.forEach((v,i)=>{
+						  tdTag += ('<td>'+v.value+'</td>');
+					  });
+					  return tdTag;
+				  }
+			  let headerStr = '<tr>'+ headerFun() + '</tr>'
+			  // let str = '<tr><td>姓名</td><td>电话</td><td>邮箱</td></tr>'
+			  //循环遍历，每行加入tr标签，每个单元格加td标签
+			  tableShowData.forEach((item,i)=>{
+				  headerStr += '<tr>'+'<td>'+(i+1)+'</td>';
+				  tableDataHeader.forEach((v,i)=>{
+					if(i==0)return;
+					headerStr += ('<td>'+item[v.key]+'</td>');
+				  });
+				  headerStr += '</tr>'
+			  });
+			  //下载的表格模板数据
+			  let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+				xmlns:x="urn:schemas-microsoft-com:office:excel"
+				xmlns="http://www.w3.org/TR/REC-html40">
+				<head><!--[if gte mso 9]><xml encoding="UTF-8"><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+				<x:Name>${worksheet}</x:Name>
+				<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>
+				</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+				</head><body><table>${headerStr}</table></body></html>`
+			  //下载模板
+			  exportExcel(template, 'excel')
+			}
+		},
+		
+		
 	}
 </script>
 
@@ -404,7 +478,6 @@
 
 	.button-text {
 		color: #fff;
-		font-size: 12px;
 	}
 
 	.popup-content {
