@@ -140,32 +140,32 @@
 					{id: 6,	expect_value: '200~500',	advise_value: '+200	|-50',	up_radio: '200',	down_radio: '-50', 	advise_invest_ratio: '10',		advise_invest_money: '1000'	},
 					{id: 7,	expect_value: '>500',		advise_value: '+300	|-50',	up_radio: '300',	down_radio: '-50', 	advise_invest_ratio: '5',		advise_invest_money: '500'	}
 				]
-				,tableUpDataHeader: [
+				,tableUpDataHeader: [// 做多
 					 {key:'i',					value:'序号'}
 					,{key:'stockCode',			value:'股票代码'}
 					,{key:'tradeCount',			value:'股数'}
 					,{key:'unitPriceNow',		value:'原单价'}
-					,{key:'upOutUnitPrice',		value:'涨出+单价'}
-					,{key:'downOutUnitPrice',	value:'跌入-单价'}
+					,{key:'upOutUnitPrice',		value:'涨出+单价 ↑'}
+					,{key:'downOutUnitPrice',	value:'跌出-单价 ↓'}
 					,{key:'expectIncomeMoney',	value:'+预赚'}
 					,{key:'expectOutcomeMoney',	value:'-预赔'}
-					,{key:'upRadio',			value:'+控涨率'}
-					,{key:'downRadio',			value:'-控跌率'}
+					,{key:'upRadio',			value:'+控涨率 ↑'}
+					,{key:'downRadio',			value:'-控跌率 ↓'}
 					,{key:'calculAdvsIvsMoney',	value:'建议投资金额'}
 					,{key:'adviseInvestRatio',	value:'投资占比'}
 					,{key:'updateTime',			value:'收录时间'}
 				]
-				,tableDownDataHeader: [
+				,tableDownDataHeader: [// 做空
 					 {key:'i',					value:'序号'}
 					,{key:'stockCode',			value:'股票代码'}
 					,{key:'tradeCount',			value:'股数'}
 					,{key:'unitPriceNow',		value:'原单价'}
-					,{key:'downOutUnitPrice',	value:'跌入+单价'}
-					,{key:'upOutUnitPrice',		value:'涨出-单价'}
+					,{key:'downOutUnitPrice',	value:'跌入+单价 ↓'}
+					,{key:'upOutUnitPrice',		value:'涨入-单价 ↑'}
 					,{key:'expectIncomeMoney',	value:'+预赚'}
 					,{key:'expectOutcomeMoney',	value:'-预赔'}
-					,{key:'upRadio',			value:'+控涨率'}
-					,{key:'downRadio',			value:'-控跌率'}
+					,{key:'upRadio',			value:'+控跌率 ↓'}
+					,{key:'downRadio',			value:'-控涨率 ↑'}
 					,{key:'calculAdvsIvsMoney',	value:'建议投资金额'}
 					,{key:'adviseInvestRatio',	value:'投资占比'}
 					,{key:'updateTime',			value:'收录时间'}
@@ -203,6 +203,7 @@
 					key:key,
 					success: function(resp){
 						console.log("返回值："+ JSON.stringify(resp.data))
+						// 更新数据
 						_this.$set(_this, table_tag_key, resp.data);
 					},
 					fail:function(){
@@ -249,7 +250,7 @@
 				uni.showModal({
 					title: '警示',
 					// 提示文字
-					content: '确定清空股票信息？\r\n 该操作非常危险，会清空所有'+up_down_flag_text+'的股票信息，且不可找回，请谨慎操作！',
+					content: '确定清空'+up_down_flag_text+'信息？\r\n 危险！清空不可找回，请谨慎操作！',
 					// 取消按钮的文字自定义
 					cancelText: "取消",
 					// 确认按钮的文字自定义
@@ -264,6 +265,7 @@
 							uni.removeStorage({
 								key:keyStr
 							})
+							// 刷空数据
 							that.$set(that, up_down_data_name, []);
 						}else {
 							// 执行取消后的操作
@@ -301,6 +303,7 @@
 						return;
 					}
 				}
+				// 弹输入框
 				this.$refs.inputDialog.open()
 				// 清空缓存数据 标识值：0-默认；1-up-做多；2-down-做空
 				this.clickRemoveStorageFlag = up_down_flag				

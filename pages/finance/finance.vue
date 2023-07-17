@@ -62,8 +62,8 @@
 							<uni-th>建议投资金额	</uni-th>
 							<uni-th>股数			</uni-th>
 							<uni-th>原单价		</uni-th>
-							<uni-th>涨出+单价	</uni-th>
-							<uni-th>跌入-单价	</uni-th>
+							<uni-th>涨出+单价 ↑	</uni-th>
+							<uni-th>跌出-单价 ↓	</uni-th>
 							<uni-th>+预赚		</uni-th>
 							<uni-th>-预赔		</uni-th>
 							<uni-th>操作			</uni-th>
@@ -95,8 +95,8 @@
 						<uni-th>建议做空金额	</uni-th>
 						<uni-th>股数			</uni-th>
 						<uni-th>原单价		</uni-th>
-						<uni-th>跌出+单价	</uni-th>
-						<uni-th>涨入-单价	</uni-th>
+						<uni-th>跌入+单价 ↓	</uni-th>
+						<uni-th>涨入-单价 ↑	</uni-th>
 						<uni-th>+预赚		</uni-th>
 						<uni-th>-预赔		</uni-th>
 						<uni-th>操作			</uni-th>
@@ -132,8 +132,8 @@
 						<uni-th>股数			</uni-th>
 						<uni-th>原单价		</uni-th>
 						<uni-th>预单价		</uni-th>
-						<uni-th>涨出+单价	</uni-th>
-						<uni-th>跌入-单据	</uni-th>
+						<uni-th>涨出+单价 ↑	</uni-th>
+						<uni-th>跌出-单价 ↓	</uni-th>
 						<uni-th>+预赚		</uni-th>
 						<uni-th>-预赔		</uni-th>
 						<uni-th>收录时间		</uni-th>
@@ -170,8 +170,8 @@
 						<uni-th>股数			</uni-th>
 						<uni-th>原单价		</uni-th>
 						<uni-th>预单价		</uni-th>
-						<uni-th>跌出+值		</uni-th>
-						<uni-th>涨入-值		</uni-th>
+						<uni-th>跌入+值	↓	</uni-th>
+						<uni-th>涨入-值	↑	</uni-th>
 						<uni-th>+预赚		</uni-th>
 						<uni-th>-预赔		</uni-th>
 						<uni-th>收录时间		</uni-th>
