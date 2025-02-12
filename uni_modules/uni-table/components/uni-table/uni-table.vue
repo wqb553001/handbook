@@ -1,7 +1,7 @@
 <template>
 	<view class="uni-table-scroll" :class="{ 'table--border': border, 'border-none': !noData }">
 		<!-- #ifdef H5 -->
-		<table class="uni-table" border="0" cellpadding="0" cellspacing="0" :class="{ 'table--stripe': stripe }" :style="{ 'min-width': minWidth + 'px' }">
+		<table class="uni-table" border="0" cellpadding="0" cellspacing="0" :class="{ 'table--stripe': stripe }" >
 			<slot></slot>
 			<tr v-if="noData" class="uni-table-loading">
 				<td class="uni-table-text" :class="{ 'empty-border': border }">{{ emptyText }}</td>
@@ -10,7 +10,7 @@
 		</table>
 		<!-- #endif -->
 		<!-- #ifndef H5 -->
-		<view class="uni-table" :style="{ 'min-width': minWidth + 'px' }" :class="{ 'table--stripe': stripe }">
+		<view class="uni-table" :class="{ 'table--stripe': stripe }">
 			<slot></slot>
 			<view v-if="noData" class="uni-table-loading">
 				<view class="uni-table-text" :class="{ 'empty-border': border }">{{ emptyText }}</view>
