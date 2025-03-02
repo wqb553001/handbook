@@ -11,7 +11,7 @@
 		<view>
 			<!-- 提示信息弹窗 -->
 			<uni-popup ref="message" type="message">
-				<uni-popup-message :type="msgType" :message="messageText" :duration="2000"></uni-popup-message>
+				<uni-popup-message :type="msgType" :message="messageText" :duration="duration"></uni-popup-message>
 			</uni-popup>
 		</view>
 
@@ -25,12 +25,12 @@
 				type: 'center',
 				msgType: 'success',
 				messageText: '这是一条成功提示',
-				value: ''
+				value: '',
+				duration: 2000
 			}
 		},
 		onReady() {},
 		methods: {
-			
 			messageToggle(type) {
 				this.msgType = type
 				this.messageText = `这是一条${type}消息提示`

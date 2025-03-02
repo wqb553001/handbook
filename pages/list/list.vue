@@ -13,9 +13,9 @@
 				<h3 style="margin-bottom: 10rpx;">【{{content1.subject}}】:</h3>
 				<view style="display: flex;">
 					<!-- image 默认宽度 320px、高度 240px -->
-					<image src="../../static/img/work-flow.png" mode="aspectFit" ></image>
+					<image src="http://cdn.xny.world/handbook/work-flow.png" mode="aspectFit" ></image>
 					<navigator url="../desc/desc" open-type="navigate" >
-						<image src="../../static/img/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
+						<image src="http://cdn.xny.world/handbook/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
 					</navigator>
 				</view>
 				
@@ -31,9 +31,9 @@
 			 <view>
 				<h3>【{{content2.subject}}】:</h3>
 				<view style="display: flex;">
-					<image src="../../static/img/smart-engine.png" mode="aspectFit" ></image>
+					<image src="http://cdn.xny.world/handbook/smart-engine.png" mode="aspectFit" ></image>
 					<navigator url="../desc/desc" open-type="navigate" >
-						<image src="../../static/img/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
+						<image src="http://cdn.xny.world/handbook/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
 					</navigator>
 				</view>
 			 </view>
@@ -47,9 +47,9 @@
 			 <view>
 				<h3 style="margin-bottom: 10rpx;">【做事优先级】:</h3>
 				<view style="display: flex;">
-					<image src="../../static/img/four-piece-do-thing.png" mode="aspectFit" ></image>
+					<image src="http://cdn.xny.world/handbook/four-piece-do-thing.png" mode="aspectFit" ></image>
 					<navigator url="../desc/desc" open-type="navigate" >
-						<image src="../../static/img/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
+						<image src="http://cdn.xny.world/handbook/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
 					</navigator>
 				</view>
 			</view>
@@ -63,9 +63,9 @@
 			 <view>
 				<h3 style="margin-bottom: 10rpx;">【七招养成读书好习惯】:</h3>
 				<view style="display: flex;">
-					<image src="../../static/img/seven-style-have-goog-habit.png" mode="aspectFit" ></image>
+					<image src="http://cdn.xny.world/handbook/seven-style-have-goog-habit.png" mode="aspectFit" ></image>
 					<navigator url="../desc/desc" open-type="navigate" >
-						<image src="../../static/img/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
+						<image src="http://cdn.xny.world/handbook/right-direct.png" mode="aspectFit" style="width: 120rpx;background-color: #F6FCFC;"></image>
 					</navigator>
 				</view>
 			</view>

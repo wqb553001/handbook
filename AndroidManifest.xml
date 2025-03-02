@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" 
+  package="io.dcloud.nativeresouce">
+    <!--permissions-->
+
+    <application>
+        <!--meta-data-->
+        <meta-data android:name="DCLOUD_PRIVACY_PROMPT" android:value="template"/>
+		<meta-data android:name="dcloud_appkey" android:value="6b400770a7a3bbadfe2ba7ed85917778" />
+    </application>
+</manifest>

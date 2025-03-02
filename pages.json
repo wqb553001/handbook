@@ -40,7 +40,17 @@
                 "enablePullDownRefresh": false
             }
             
-        },{
+        }
+        ,{
+            "path" : "pages/finance/rule",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "%schema.tb.rule%",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+		,{
             "path" : "pages/index/index",
             "style": {
               "navigationBarTitleText": "登录",
@@ -75,9 +85,13 @@
 				"text": "%schema.tb.working%"
 			}
 			,{
-				"pagePath": "pages/list/list",
-				"text": "%schema.tb.list%"
+				"pagePath": "pages/finance/rule",
+				"text": "%schema.tb.rule%"
 			}
+			// ,{
+			// 	"pagePath": "pages/list/list",
+			// 	"text": "%schema.tb.list%"
+			// }
 			// ,
 			// {
 			// 	"pagePath": "pages/index/index",

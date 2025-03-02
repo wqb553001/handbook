@@ -30,7 +30,7 @@
 						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
 						<uni-td>{{ item.upRadio 			        }}</uni-td>
 						<uni-td>{{ item.downRadio 			        }}</uni-td>
-						<uni-td>{{ item.calculAdvsIvsMoney  }}</uni-td>
+						<uni-td>{{ item.calculAdvsIvsMoney  		}}</uni-td>
 						<uni-td>{{ item.adviseInvestRatio 			}}</uni-td>
 						<uni-td>{{ item.updateTime 					}}</uni-td>
 					</uni-tr>
@@ -68,29 +68,6 @@
 			 </view>
 			</uni-group>
 			
-			<uni-group title="参考计算规则" >
-				<view class="warp">
-					<view class="box">
-						<view class="title">示例：10000$</view>
-						<t-table @change="change">
-							<t-tr>
-								<t-th>编号					</t-th>
-								<t-th>预期收益值（%）			</t-th>
-								<t-th>建议出手收益值（%）		</t-th>
-								<t-th>建议投入资金占比（%）	</t-th>
-								<t-th>投入资金额				</t-th>
-							</t-tr>
-							<t-tr v-for="item in upTableList" :key="item.id">
-								<t-td>{{ item.id + 1 				}}</t-td>
-								<t-td>{{ item.expect_value 			}}</t-td>
-								<t-td>{{ item.advise_value 			}}</t-td>
-								<t-td>{{ item.advise_invest_ratio 	}}</t-td>
-								<t-td>{{ item.advise_invest_money 	}}</t-td>
-							</t-tr>
-						</t-table>
-					</view>
-				</view>
-			</uni-group>
 			
 		</uni-section>
 		
@@ -129,18 +106,7 @@
 		},
 		data() {
 			return {
-				upTableList: [// 示例金额：10000$
-					// 	编号	|预期收益值（%）				|建议出手收益值（%）			|正收益				|负收益				|投入资金占比（%）				|投入资金额				
-					{id: 0, expect_value: '1~5', 		advise_value: '+3	|-2', 	up_radio: '3',		down_radio: '-2', 	advise_invest_ratio: '10', 		advise_invest_money: '1000' },
-					{id: 1, expect_value: '5~10', 		advise_value: '+8	|-2', 	up_radio: '8',		down_radio: '-2', 	advise_invest_ratio: '20', 		advise_invest_money: '2000' },
-					{id: 2, expect_value: '10~20', 		advise_value: '+14	|-2', 	up_radio: '14',		down_radio: '-2', 	advise_invest_ratio: '20', 		advise_invest_money: '2000' },
-					{id: 3, expect_value: '20~50', 		advise_value: '+35	|-2', 	up_radio: '35',		down_radio: '-2', 	advise_invest_ratio: '15', 		advise_invest_money: '1500' },
-					{id: 4, expect_value: '50~100', 	advise_value: '+60	|-8', 	up_radio: '60',		down_radio: '-8', 	advise_invest_ratio: '10', 		advise_invest_money: '1000' },
-					{id: 5, expect_value: '100~200', 	advise_value: '+120	|-10', 	up_radio: '120',	down_radio: '-10', 	advise_invest_ratio: '10', 		advise_invest_money: '1000' },
-					{id: 6,	expect_value: '200~500',	advise_value: '+200	|-50',	up_radio: '200',	down_radio: '-50', 	advise_invest_ratio: '10',		advise_invest_money: '1000'	},
-					{id: 7,	expect_value: '>500',		advise_value: '+300	|-50',	up_radio: '300',	down_radio: '-50', 	advise_invest_ratio: '5',		advise_invest_money: '500'	}
-				]
-				,tableUpDataHeader: [// 做多
+				tableUpDataHeader: [// 做多
 					 {key:'i',					value:'序号'}
 					,{key:'stockCode',			value:'股票代码'}
 					,{key:'tradeCount',			value:'股数'}
