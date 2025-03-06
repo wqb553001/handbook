@@ -1,7 +1,7 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
-			"path": "pages/finance/finance",
+			"path": "pages/stock/add",
 			"style": {
 				"navigationBarTitleText": "%schema.tb.working%"
 			}
@@ -33,7 +33,7 @@
             
         }
         ,{
-            "path" : "pages/finance/stock-info",
+            "path" : "pages/stock/show",
             "style" :                                                                                    
             {
                 "navigationBarTitleText": "%schema.tb.looking%",
@@ -42,7 +42,7 @@
             
         }
         ,{
-            "path" : "pages/finance/rule",
+            "path" : "pages/stock/rule",
             "style" :                                                                                    
             {
                 "navigationBarTitleText": "%schema.tb.rule%",
@@ -73,19 +73,19 @@
 	"tabBar": {
 		"list": [
 			{
-				"pagePath": "pages/finance/stock-info",
+				"pagePath": "pages/stock/show",
 				"text": "%schema.tb.looking%"
 			}
 			// ,{
-			// 	"pagePath": "pages/finance/popup",
+			// 	"pagePath": "pages/stock/popup",
 			// 	"text": "弹窗"
 			// }
 			,{
-				"pagePath": "pages/finance/finance",
+				"pagePath": "pages/stock/add",
 				"text": "%schema.tb.working%"
 			}
 			,{
-				"pagePath": "pages/finance/rule",
+				"pagePath": "pages/stock/rule",
 				"text": "%schema.tb.rule%"
 			}
 			// ,{

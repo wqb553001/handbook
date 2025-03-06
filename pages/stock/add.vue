@@ -10,6 +10,8 @@
 		</view>
 		
 		<uni-section title="试算" type="line" style="background-color: #eee;"> 
+		
+			<button @click="refreshFromStorage" class="button large" style="float: right; margin: 0 10px 50px 0; background-color: #09bb07;" type="primary" >刷新规则</button>
 			<uni-group :style="{ display: 'none' }">
 				<uni-card :is-shadow="false" is-full>
 					<text class="uni-h2">服务到期，请联系管理员！</text>
@@ -42,7 +44,7 @@
 				  </uni-forms>
 				  <uni-forms border>
 					 <uni-forms-item label="预估单价:" labelWidth="100px">
-						<uni-easyinput @change="inputunitPricePreChange" v-model="unitPricePre" :inputBorder="true" placeholder="请输入预估单价"></uni-easyinput>
+						<uni-easyinput @change="inputUnitPricePreChange" v-model="unitPricePre" :inputBorder="true" placeholder="请输入预估单价"></uni-easyinput>
 					 </uni-forms-item>
 				  </uni-forms>
 				
@@ -51,179 +53,177 @@
 						<uni-data-select @change="selectExpectValueChange" v-model="selectExpectValue" :localdata="selectExpectValueRange"  :clear="false" ></uni-data-select>
 					</uni-forms-item>
 				  </uni-forms>
+				  <uni-forms border>
+					 <uni-forms-item label="实际股数:" labelWidth="100px">
+						<uni-easyinput @change="inputTradeRealCountChange" v-model="tradeRealCount" :inputBorder="true" placeholder="请输入实际股数"></uni-easyinput>
+					 </uni-forms-item>
+				  </uni-forms>
 				</view>
 			</uni-group>
 			
 			<view v-if="(unitPricePre-unitPriceNow)>0">
 				<uni-group title="做多试算:" id="up_group" >
-				  <view> 
-					<uni-table border stripe emptyText="暂无更多数据" >
-						<uni-tr>
-							<uni-th>建议投资金额	</uni-th>
-							<uni-th>股数			</uni-th>
-							<uni-th>原单价		</uni-th>
-							<uni-th>涨出+单价 ↑	</uni-th>
-							<uni-th>跌出-单价 ↓	</uni-th>
-							<uni-th>+预赚		</uni-th>
-							<uni-th>-预赔		</uni-th>
-							<uni-th>股票编码		</uni-th>
-							<uni-th>操作			</uni-th>
-						</uni-tr>
-						<uni-tr v-for="(item, i) in tableUpData" :key="i+1">
-							<uni-td>{{ item.calculAdvsIvsMoney  		}}</uni-td>
-							<uni-td>{{ item.tradeCount 			        }}</uni-td>
-							<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
-							<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
-							<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
-							<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
-							<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
-							<uni-td>{{ item.stockCode					}}</uni-td>
-							<uni-td style="text-align: center;">
-								<view class="uni-group" v-if="(unitPricePre-unitPriceNow)>0">
-									<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" size="mini" type="primary" v-if="isNewStockCode">新收</button>
-									<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" size="mini" type="warn" v-if="isNewStockCode == false">更新</button>
-								</view>
-							</uni-td>
-						</uni-tr>
-					  </uni-table>					
+					
+				 <view class="table">
+				     <view class="tr">
+				 		<view class="th">股票代码	</view>
+				 		<view class="th">建议投金额	</view>
+				 		<view class="th">实际投金额	</view>
+				 		<view class="th">建议股数	</view>
+				 		<view class="th">实际股数	</view>
+				 		<view class="th">◎原单价		</view>
+				 		<view class="th">跌出+单价 ↓	</view>
+				 		<view class="th">涨出-单价 ↑	</view>
+				 		<view class="th">+○预赚		</view>
+				 		<view class="th">+●实赚		</view>
+				 		<view class="th">-○预赔		</view>
+				 		<view class="th">-●实赔		</view>
+				 		<view class="th">操作		</view>
+				     </view>
+				     <block v-for="(item, index) in tableUpData" :key="index">
+				        <view class="tr">
+				         <view class="td">{{item.stockCode}}</view>
+				 		<view class="td">{{ item.calculAdvsIvsMoney  		}}</view>
+				 		<view class="td">{{ item.calculRealIvsMoney  		}}</view>
+				 		<view class="td">{{ item.tradeCount 			    }}</view>
+				 		<view class="td">{{ item.tradeRealCount 			}}</view>
+				 		<view class="td">{{ item.unitPriceNow 			    }}</view>
+				 		<view class="td">{{ item.downOutUnitPrice 			}}</view>
+				 		<view class="td">{{ item.upOutUnitPrice 			}}</view>
+				 		<view class="td">{{ item.expectIncomeMoney 			}}</view>
+				 		<view class="td">{{ item.expectIncomeMoneyReal 		}}</view>
+				 		<view class="td">{{ item.expectOutcomeMoney 		}}</view>
+				 		<view class="td">{{ item.expectOutcomeMoneyReal 	}}</view>
+				 		<view class="td">
+				 			<view class="uni-group" v-if="(unitPricePre - unitPriceNow)>0">
+				 				<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" style="background-color: #e1f3d8; color: #09bb07;" size="mini" type="primary" v-if="isNewStockCode">新收</button>
+				 				<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" style="background-color: #e1f3d8; color: #e6a23c;" size="mini" type="warn" v-if="isNewStockCode==false">更新</button>
+				 			</view>
+				 		</view>
+				        </view>
+				     </block>
 				 </view>
+				 
 				</uni-group>
 			</view>
 						
 			<view v-else-if="(unitPricePre-unitPriceNow)<0">
 				<uni-group title="做空试算:" id="down_group" >
-				  <uni-table border stripe emptyText="暂无更多数据" >					
-					<uni-tr>
-						<uni-th>建议做空金额	</uni-th>
-						<uni-th>股数			</uni-th>
-						<uni-th>原单价		</uni-th>
-						<uni-th>跌入+单价 ↓	</uni-th>
-						<uni-th>涨入-单价 ↑	</uni-th>
-						<uni-th>+预赚		</uni-th>
-						<uni-th>-预赔		</uni-th>
-						<uni-th>操作			</uni-th>
-					</uni-tr>
-					<uni-tr v-for="(item, i) in tableDownData" :key="i+1">
-						<uni-td>{{ item.calculAdvsIvsMoney  		}}</uni-td>
-						<uni-td>{{ item.tradeCount 			        }}</uni-td>
-						<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
-						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
-						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
-						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
-						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
-						<uni-td style="text-align: center;">
-							<view class="uni-group" v-if="(unitPricePre - unitPriceNow)<0">
-								<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" style="background-color: #e1f3d8; color: #09bb07;" size="mini" type="primary" v-if="isNewStockCode">新收</button>
-								<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" style="background-color: #e1f3d8; color: #e6a23c;" size="mini" type="warn" v-if="isNewStockCode==false">更新</button>
+					<view class="table">
+					    <view class="tr">
+							<view class="th">股票代码	</view>
+							<view class="th">建议投金额	</view>
+							<view class="th">实际投金额	</view>
+							<view class="th">建议股数	</view>
+							<view class="th">实际股数	</view>
+							<view class="th">◎原单价		</view>
+							<view class="th">跌入+单价 ↓	</view>
+							<view class="th">涨入-单价 ↑	</view>
+							<view class="th">+○预赚		</view>
+							<view class="th">+●实赚		</view>
+							<view class="th">-○预赔		</view>
+							<view class="th">-●实赔		</view>
+							<view class="th">操作		</view>
+					    </view>
+					    <block v-for="(item, index) in tableDownData" :key="index">
+					       <view class="tr">
+					        <view class="td">{{item.stockCode}}</view>
+							<view class="td">{{ item.calculAdvsIvsMoney  		}}</view>
+							<view class="td">{{ item.calculRealIvsMoney  		}}</view>
+							<view class="td">{{ item.tradeCount 			    }}</view>
+							<view class="td">{{ item.tradeRealCount 			}}</view>
+							<view class="td">{{ item.unitPriceNow 			    }}</view>
+							<view class="td">{{ item.downOutUnitPrice 			}}</view>
+							<view class="td">{{ item.upOutUnitPrice 			}}</view>
+							<view class="td">{{ item.expectIncomeMoney 			}}</view>
+							<view class="td">{{ item.expectIncomeMoneyReal 		}}</view>
+							<view class="td">{{ item.expectOutcomeMoney 		}}</view>
+							<view class="td">{{ item.expectOutcomeMoneyReal 	}}</view>
+							<view class="td">
+								<view class="uni-group" v-if="(unitPricePre - unitPriceNow)<0">
+									<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" style="background-color: #e1f3d8; color: #09bb07;" size="mini" type="primary" v-if="isNewStockCode">新收</button>
+									<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" style="background-color: #e1f3d8; color: #e6a23c;" size="mini" type="warn" v-if="isNewStockCode==false">更新</button>
+								</view>
 							</view>
-						</uni-td>
-					</uni-tr>
-				  </uni-table>					
+					       </view>
+					    </block>
+					</view>
+					
 				</uni-group>
 			</view>
 		</uni-section>
 		
-		<uni-section title="展示" type="line" style="background-color: #eee;"> 
+		<uni-section title="展示(万位分隔)" type="line" style="background-color: #eee;"> 
 			<uni-group title="展示做多:">
-			  <view> 
-				<uni-table border stripe emptyText="暂无更多数据" >
-					<uni-tr>
-						<uni-th>序号			</uni-th>
-						<uni-th>股票编码		</uni-th>
-						<uni-th>建议投资金额	</uni-th>
-						<uni-th>股数			</uni-th>
-						<uni-th>◎原单价		</uni-th>
-						<uni-th>↑ 预单价		</uni-th>
-						<uni-th>涨出+单价 ↑	</uni-th>
-						<uni-th>跌出-单价 ↓	</uni-th>
-						<uni-th>+预赚		</uni-th>
-						<uni-th>-预赔		</uni-th>
-						<uni-th>收录时间		</uni-th>
-						<uni-th>操作			</uni-th>
-					</uni-tr>
-					<uni-tr v-for="(item, i) in tableUpShowData" :key="i+1">
-						<uni-td>{{ i + 1    						}}</uni-td>
-						<uni-td>{{ item.stockCode					}}</uni-td>
-						<uni-td>{{ item.calculAdvsIvsMoney			}}</uni-td>
-						<uni-td>{{ item.tradeCount 			        }}</uni-td>
-						<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
-						<uni-td>{{ item.unitPricePre 			    }}</uni-td>
-						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
-						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
-						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
-						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
-						<uni-td>{{ item.updateTime 					}}</uni-td>
-						<uni-td>
-							<view class="uni-group">
+				<view class="table">
+					<view class="tr">
+						<view class="th">股票代码</view>
+						<view class="th" v-for="headerObj in tableUpDataHeader">{{headerObj.value}}</view>
+						<view class="th" style="min-width: 200rpx;">操作</view>
+					</view>
+					<block v-for="(item, index) in tableUpShowData" :key="index">
+					   <view class="tr">
+						<view class="td">{{item.stockCode}}</view>
+						<view class="td">{{ index+1    							}}</view>
+						<view class="td">{{ item.calculAdvsIvsMoney  			}}</view>
+						<view class="td">{{ item.calculRealIvsMoney  			}}</view>
+						<view class="td">{{ item.tradeCount 			        }}</view>
+						<view class="td">{{ item.tradeRealCount 			    }}</view>
+						<view class="td">{{ item.unitPriceNow 			    	}}</view>
+						<view class="td">{{ item.unitPricePre 			    	}}</view>
+						<view class="td">{{ item.upOutUnitPrice 				}}</view>
+						<view class="td">{{ item.downOutUnitPrice 				}}</view>
+						<view class="td">{{ item.expectIncomeMoney 				}}</view>
+						<view class="td">{{ item.expectIncomeMoneyReal  		}}</view>
+						<view class="td">{{ item.expectOutcomeMoney 			}}</view>
+						<view class="td">{{ item.expectOutcomeMoneyReal  		}}</view>
+						<view class="td">{{ item.updateTime  					}}</view>
+						<view class="td" style="min-width: 200rpx;">
+							<view >
+								<button @tap="edit(item, 1)" class="uni-button" size="mini" type="primary">改</button>
 								<button @tap="delOne(item, 1)" class="uni-button" size="mini" type="warn">删</button>
 							</view>
-						</uni-td>
-					</uni-tr>
-				  </uni-table>					
-			 </view>
+						</view>
+					   </view>
+					</block>
+				</view>
+				
 			</uni-group>
 			<uni-group title="展示做空:">
-			  <view> 
-				<uni-table border stripe emptyText="暂无更多数据" >
-					<uni-tr>
-						<uni-th>序号			</uni-th>
-						<uni-th>股票编码		</uni-th>
-						<uni-th>建议投资金额	</uni-th>
-						<uni-th>股数			</uni-th>
-						<uni-th>◎原单价		</uni-th>
-						<uni-th>↓ 预单价		</uni-th>
-						<uni-th>跌入+单价 ↓	</uni-th>
-						<uni-th>涨入-单价 ↑	</uni-th>
-						<uni-th>+预赚		</uni-th>
-						<uni-th>-预赔		</uni-th>
-						<uni-th>收录时间		</uni-th>
-						<uni-th>操作			</uni-th>
-					</uni-tr>
-					<uni-tr v-for="(item, i) in tableDownShowData" :key="i+1">
-						<uni-td>{{ i + 1    						}}</uni-td>
-						<uni-td>{{ item.stockCode					}}</uni-td>
-						<uni-td>{{ item.calculAdvsIvsMoney			}}</uni-td>
-						<uni-td>{{ item.tradeCount 			        }}</uni-td>
-						<uni-td>{{ item.unitPriceNow 			    }}</uni-td>
-						<uni-td>{{ item.unitPricePre 			    }}</uni-td>
-						<uni-td>{{ item.downOutUnitPrice 			}}</uni-td>
-						<uni-td>{{ item.upOutUnitPrice 				}}</uni-td>
-						<uni-td>{{ item.expectIncomeMoney 			}}</uni-td>
-						<uni-td>{{ item.expectOutcomeMoney 			}}</uni-td>
-						<uni-td>{{ item.updateTime 					}}</uni-td>
-						<uni-td>
-							<view class="uni-group">
+				<view class="table">
+					<view class="tr">
+						<view class="th">股票代码</view>
+						<view class="th" v-for="headerObj in tableDownDataHeader">{{headerObj.value}}</view>
+						<view class="th" style="min-width: 200rpx;">操作</view>
+					</view>
+					<block v-for="(item, index) in tableDownShowData" :key="index">
+					   <view class="tr">
+						<view class="td">{{item.stockCode}}</view>
+						<view class="td">{{ index+1    							}}</view>
+						<view class="td">{{ item.calculAdvsIvsMoney  			}}</view>
+						<view class="td">{{ item.calculRealIvsMoney  			}}</view>
+						<view class="td">{{ item.tradeCount 			        }}</view>
+						<view class="td">{{ item.tradeRealCount 			    }}</view>
+						<view class="td">{{ item.unitPriceNow 			    	}}</view>
+						<view class="td">{{ item.unitPricePre 			    	}}</view>
+						<view class="td">{{ item.upOutUnitPrice 				}}</view>
+						<view class="td">{{ item.downOutUnitPrice 				}}</view>
+						<view class="td">{{ item.expectIncomeMoney 				}}</view>
+						<view class="td">{{ item.expectIncomeMoneyReal  		}}</view>
+						<view class="td">{{ item.expectOutcomeMoney 			}}</view>
+						<view class="td">{{ item.expectOutcomeMoneyReal  		}}</view>
+						<view class="td">{{ item.updateTime  					}}</view>
+						<view class="td" style="min-width: 200rpx;">
+							<view >
+								<button @tap="edit(item, 2)" class="uni-button" size="mini" type="primary">改</button>
 								<button @tap="delOne(item, 2)" class="uni-button" size="mini" type="warn">删</button>
 							</view>
-						</uni-td>
-					</uni-tr>
-				  </uni-table>
-			 </view>
-			</uni-group>
-			
-			<!-- <uni-group title="参考计算规则" >
-				<view class="warp">
-					<view class="box">
-						<view class="title">示例：10000$</view>
-						<t-table @change="change">
-							<t-tr>
-								<t-th>编号					</t-th>
-								<t-th>预期收益值（%）			</t-th>
-								<t-th>建议出手收益值（%）		</t-th>
-								<t-th>建议投入资金占比（%）	</t-th>
-								<t-th>投入资金额				</t-th>
-							</t-tr>
-							<t-tr v-for="(item, index) in tableUpRuleData" :key="index">
-								<t-td>{{ index + 1 					}}</t-td>
-								<t-td>{{ item.expectValue 			}}</t-td>
-								<t-td>+{{item.upRatio}} 	|	{{item.downRatio}}</t-td>
-								<t-td>{{ item.adviseInvestRatio 	}}</t-td>
-								<t-td>{{ item.adviseIinvestMoney 	}}</t-td>
-							</t-tr>
-						</t-table>
-					</view>
+						</view>
+					   </view>
+					</block>
 				</view>
-			</uni-group> -->
+			  
+			</uni-group>
 			
 		</uni-section>
 		
@@ -288,6 +288,7 @@
 	import tTd from '@/components/t-table/t-td.vue';
 	import { Decimal } from 'decimal.js';
 	import { formatMoney } from '@/common/util/formatMoney.js'
+import { jsonString } from '../../uni_modules/uview-plus/libs/function/test';
 	
 	export default {
 		components: {
@@ -337,10 +338,52 @@
 				,stockCode:''
 				,unitPriceNow:''
 				,unitPricePre:''
+				,tradeRealCount:''
 				,range:[]
 				,input:''
 				,isNewStockCode: true
-				
+				,tableUpDataHeader: [// 做多
+					// {key:'stockCode',				value:'股票代码'}
+					{key:'i',						value:'序号'}
+					,{key:'calculAdvsIvsMoney',		value:'建议投金额'}
+					,{key:'calculRealIvsMoney',		value:'实际投金额'}
+					,{key:'tradeCount',				value:'建议股数'}
+					,{key:'tradeRealCount',			value:'实际股数'}
+					,{key:'unitPriceNow',			value:'◎原单价'}
+					,{key:'unitPricePre',			value:'↑ 预单价'}
+					,{key:'upOutUnitPrice',			value:'涨出+单价 ↑'}
+					,{key:'downOutUnitPrice',		value:'跌出-单价 ↓'}
+					,{key:'expectIncomeMoney',		value:'+○预赚'}
+					,{key:'expectIncomeMoneyReal',	value:'+●实赚'}
+					,{key:'expectOutcomeMoney',		value:'-○预赔'}
+					,{key:'expectOutcomeMoneyReal',	value:'-●实赔'}
+					,{key:'updateTime',				value:'收录时间'}
+					// ,{key:'upRatio',				value:'+控涨率 ↑'}
+					// ,{key:'downRatio',				value:'-控跌率 ↓'}
+					// ,{key:'adviseInvestRatio',		value:'投资占比'}
+					// ,{key:'opt',					value:'操作'}
+				]
+				,tableDownDataHeader: [// 做空
+					// {key:'stockCode',				value:'股票代码'}
+					{key:'i',						value:'序号'}
+					,{key:'calculAdvsIvsMoney',		value:'建议投金'}
+					,{key:'calculRealIvsMoney',		value:'实际投金'}
+					,{key:'tradeCount',				value:'建议股数'}
+					,{key:'tradeRealCount',			value:'实际股数'}
+					,{key:'unitPriceNow',			value:'◎原单价'}
+					,{key:'unitPricePre',			value:'↓ 预单价'}
+					,{key:'downOutUnitPrice',		value:'跌入+单价 ↓'}
+					,{key:'upOutUnitPrice',			value:'涨入-单价 ↑'}
+					,{key:'expectIncomeMoney',		value:'+○预赚'}
+					,{key:'expectIncomeMoneyReal',	value:'+●实赚'}
+					,{key:'expectOutcomeMoney',		value:'-○预赔'}
+					,{key:'expectOutcomeMoneyReal',	value:'-●实赔'}
+					,{key:'updateTime',				value:'收录时间'}
+					// ,{key:'upRatio',				value:'+控跌率 ↓'}
+					// ,{key:'downRatio',				value:'-控涨率 ↑'}
+					// ,{key:'adviseInvestRatio',		value:'投资占比'}
+					// ,{key:'opt',					value:'操作'}
+				]
 			};
 		}
 		,async created(){
@@ -393,42 +436,57 @@
 					_this.tableDownRuleData = _this.tableDownRuleDataInit
 				}
 			}
+			,refreshFromStorage(){
+				// 规则数据-异步加载
+				this.loadTableRuleList("inStorageUpRuleDataList", "tableUpRuleData", 1, this);
+				this.loadTableRuleList("inStorageDownRuleDataList", "tableDownRuleData", 2, this);
+			}
 			,change(e) {
 				console.log(e.detail);
 			}
 			,inputTotalAmountChange(e) {			
-				this.calculateInvestMoney();
+				this.calculateInvestMoney(false);
 			}
 			// 股票代码-变更
 			,inputStockCodeChange(e){
-				this.calculateInvestMoney();
+				this.freshNewStockFlag();
+				this.calculateInvestMoney(false);
+			}
+			// 现单价
+			,inputUnitPriceNowChange(e) {
+				this.freshNewStockFlag();
+				this.unitPriceChange();
+				this.calculateInvestMoney(false);
+			}
+			// 预单价
+			,inputUnitPricePreChange(e) {
+				this.freshNewStockFlag();
+				this.unitPriceChange();
+				this.calculateInvestMoney(false);
+			}
+			// 预期收益率 改选
+			,selectExpectValueChange(e) {
+				this.calculateInvestMoney(false);
+			}
+			// 实际股数
+			,inputTradeRealCountChange(e) {
+				this.unitPriceChange();
+				this.calculateInvestMoney(true);
+			}
+			,freshNewStockFlag(){
 				var _this = this;
 				uni.getStorage({
-					key: _this.stockCode,
+					key: _this.judgeUpOrDown() + "-" + _this.stockCode,
 					success: function(resp){
 						console.log("返回值："+ JSON.stringify(resp.data))
 						_this.isNewStockCode = false
 						// _this.$set(_this, table_tag_key, resp.data);
 					},
 					fail:function(){
-						console.log("未取得 key:"+_this.stockCode);
+						console.log("未取得 key:"+_this.judgeUpOrDown() + "-" + _this.stockCode);
 						_this.isNewStockCode = true
 					}
 				});
-			}
-			// 现单价
-			,inputUnitPriceNowChange(e) {
-				this.unitPriceChange();
-				this.calculateInvestMoney();
-			}
-			// 预单价
-			,inputunitPricePreChange(e) {
-				this.unitPriceChange();
-				this.calculateInvestMoney();
-			}			
-			// 预期收益率 改选
-			,selectExpectValueChange(e) {
-				this.calculateInvestMoney();
 			}
 			// 单价变更
 			,unitPriceChange(){
@@ -470,8 +528,8 @@
 				_this.selectExpectValueRange = rangeValue;
 			}
 			// 试算并展示
-			,calculateInvestMoney(){
-				var item = this.calculateItem(this);
+			,calculateInvestMoney(isTradeRealCountChange){
+				var item = this.calculateItem(isTradeRealCountChange, this);
 				var scheme = [];
 				scheme.push(item);
 				var up_down_flag = this.judgeUpOrDown();// 0:无法判断；1:up-做多；2:down-做空
@@ -480,17 +538,19 @@
 				}else if(up_down_flag == 2){
 					this.tableDownData = scheme;
 				}
+				this.tradeRealCount = item.tradeRealCount
 				console.log("计算所得："+JSON.stringify(scheme));
 			}
 			// 试算内容
-			,calculateItem(_this){
+			,calculateItem(isTradeRealCountChange, _this){
 				// calculAdvsIvsMoney :建议投资金额	|tradeCount :入手股数	|expectIncomeMoney :预期收益值
 				var unitPriceNow = (_this.unitPriceNow=="")?0:_this.unitPriceNow;			// 当前股票单价
 				var unitPricePre = (_this.unitPricePre=="")?0:_this.unitPricePre;			// 预估股票单价
 				var stockRatio = 0;
-				var tableList = _this.tableUpRuleData;
+				var tableList = [];
 				var up_down_flag = this.judgeUpOrDown();// 0:无法判断；1:up-做多；2:down-做空
 				if(up_down_flag == 1){		// 做多
+					tableList = _this.tableUpRuleData;
 					stockRatio = this.getStockUpRatioByUnitPrice(unitPriceNow, unitPricePre);
 				}else if(up_down_flag == 2){// 做空
 					tableList = _this.tableDownRuleData;
@@ -514,50 +574,88 @@
 							}else{						// 做空
 								downRatio = val.upRatio
 							}
-							ratio = new Decimal(ratio).toFixed(4)
+							ratio = _this.decimal(ratio)
 							var totalAmount = (_this.totalAmount=="")?0:_this.totalAmount;
 							var unitPriceNow = (_this.unitPriceNow=="")?0:_this.unitPriceNow;			// 当前股票单价
 							// 建议投资金额 = 投入资金占 * 总金
-							var calculAdvsIvsMoney = new Decimal(val.adviseInvestRatio).div(new Decimal(100)).mul(new Decimal(totalAmount));
-							var tradeCount = parseInt(calculAdvsIvsMoney / unitPriceNow) ;	// 股数
+							var calculAdvsIvsMoney = (new Decimal(val.adviseInvestRatio).div(new Decimal(100)).mul(new Decimal(totalAmount))).toFixed(4);
+							// 股数
+							var tradeCount = parseInt(calculAdvsIvsMoney / unitPriceNow) ;
+							calculAdvsIvsMoney = _this.formatNumberWithSeparator(tradeCount * unitPriceNow);
+							
+							var calculRealIvsMoney = calculAdvsIvsMoney; 
+							var tradeRealCount = tradeCount
+							// 实际股数
+							if(isTradeRealCountChange) {
+								tradeRealCount = _this.tradeRealCount;
+								calculRealIvsMoney = _this.formatNumberWithSeparator(_this.tradeRealCount * unitPriceNow)
+							}
+							
 							var upOutUnitPrice = 0;
 							var downOutUnitPrice = 0;
 							var expectIncomeMoney = 0;
+							var expectIncomeMoneyReal = 0;
 							var expectOutcomeMoney = 0;
+							var expectOutcomeMoneyReal = 0;
 							if(up_down_flag == 1){		// 做多
 								// 上涨卖出价 = （上涨界限 ÷ 100 + 1）× 做多购入价
-								upOutUnitPrice = (new Decimal(ratio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow)).toFixed(4);
+								// upOutUnitPrice = _this.formatNumberWithSeparator((new Decimal(ratio).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow)));
+								upOutUnitPrice = _this.formatNumberWithSeparator((ratio/100+1) * unitPriceNow);
 								// 下跌卖出价 = （下跌界限 × （-1）÷ 100 + 1） × 购入价 = 购入价 × (1 - 下跌界限/100) 
-								downOutUnitPrice = (new Decimal(val.downRatio).mul(new Decimal(-1)).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow)).toFixed(4);
-								// 上涨赚取 = （上涨卖出价 - 做多购入价）× 交易数量
-								expectIncomeMoney = new Decimal(upOutUnitPrice).sub(new Decimal(unitPriceNow)).mul(new Decimal(tradeCount)).toFixed(4);
-								// 下跌赔付 = （下跌卖出价 - 做多购入价）× 交易数量
-								expectOutcomeMoney = new Decimal(downOutUnitPrice).sub(new Decimal(unitPriceNow)).mul(new Decimal(tradeCount)).toFixed(4);
+								// downOutUnitPrice = _this.formatNumberWithSeparator((new Decimal(val.downRatio).mul(new Decimal(-1)).div(new Decimal(100)).add(new Decimal(1))).mul(new Decimal(unitPriceNow)));
+								downOutUnitPrice = _this.formatNumberWithSeparator(((val.downRatio*-1)/100+1) * unitPriceNow);
+								// 上涨赚取 = （上涨卖出价 - 做多购入价）× 推荐交易数量
+								// expectIncomeMoney = _this.formatNumberWithSeparator(new Decimal(upOutUnitPrice).sub(new Decimal(unitPriceNow)).mul(new Decimal(tradeCount)));
+								expectIncomeMoney = _this.formatNumberWithSeparator((upOutUnitPrice - unitPriceNow) * tradeCount);
+								// 实赚 = （上涨卖出价 - 做多购入价）× 实际交易数量
+								// expectIncomeMoneyReal = _this.formatNumberWithSeparator(new Decimal(upOutUnitPrice).sub(new Decimal(unitPriceNow)).mul(new Decimal(tradeRealCount)));
+								expectIncomeMoneyReal = _this.formatNumberWithSeparator((upOutUnitPrice - unitPriceNow) * tradeRealCount);
+								// 下跌赔付 = （下跌卖出价 - 做多购入价）× 推荐交易数量
+								// expectOutcomeMoney = _this.formatNumberWithSeparator(new Decimal(downOutUnitPrice).sub(new Decimal(unitPriceNow)).mul(new Decimal(tradeCount)));
+								expectOutcomeMoney = _this.formatNumberWithSeparator((downOutUnitPrice - unitPriceNow) * tradeCount);
+								// 实赔 = (下跌卖出价 - 做多购入价) × 实际交易数量
+								// expectOutcomeMoneyReal = _this.formatNumberWithSeparator(new Decimal(downOutUnitPrice).sub(new Decimal(unitPriceNow)).mul(new Decimal(tradeRealCount)));
+								expectOutcomeMoneyReal = _this.formatNumberWithSeparator((downOutUnitPrice - unitPriceNow) * tradeRealCount);
 							}else if(up_down_flag == 2){// 做空
-								// 上涨购入价 = 1 +（上涨界限 ÷ 100）× 做空卖出价
-								upOutUnitPrice = new Decimal(1).add(new Decimal(val.downRatio).div(new Decimal(100))).mul(new Decimal(unitPriceNow)).toFixed(4);
+								// 上涨购入价 = （1 +上涨界限 ÷ 100）× 做空卖出价
+								// upOutUnitPrice = _this.formatNumberWithSeparator(new Decimal(1).add(new Decimal(val.downRatio).div(new Decimal(100))).mul(new Decimal(unitPriceNow)));
+								upOutUnitPrice = _this.formatNumberWithSeparator((1 + val.downRatio/100) * unitPriceNow);
 								// 下跌购入价 = 做空卖出价 ÷（下跌界限 ÷ 100 + 1）
-								downOutUnitPrice = new Decimal(unitPriceNow).div(new Decimal(ratio).div(new Decimal(100)).add(new Decimal(1))).toFixed(4);
-								// 下跌赚取 = （做空卖出价 - 下跌购入价）× 交易数量
-								expectIncomeMoney = new Decimal(unitPriceNow).sub(new Decimal(downOutUnitPrice)).mul(new Decimal(tradeCount)).toFixed(4);
-								// 上涨赔付 = (做空卖出价 - 上涨购入价) × 交易数量
-								expectOutcomeMoney = new Decimal(unitPriceNow).sub(new Decimal(upOutUnitPrice)).mul(new Decimal(tradeCount)).toFixed(4);
+								// downOutUnitPrice = _this.formatNumberWithSeparator(new Decimal(unitPriceNow).div(new Decimal(ratio).div(new Decimal(100)).add(new Decimal(1))));
+								downOutUnitPrice = _this.formatNumberWithSeparator(unitPriceNow / (ratio/100 + 1));
+								// 下跌赚取 = （做空卖出价 - 下跌购入价）× 推荐交易数量
+								// expectIncomeMoney = _this.formatNumberWithSeparator(new Decimal(unitPriceNow).sub(new Decimal(downOutUnitPrice)).mul(new Decimal(tradeCount)));
+								expectIncomeMoney = _this.formatNumberWithSeparator((unitPriceNow - downOutUnitPrice) * tradeCount);
+								// 实赚 = （做空卖出价 - 下跌购入价）× 实际交易数量
+								// expectIncomeMoneyReal =  _this.formatNumberWithSeparator(new Decimal(unitPriceNow).sub(new Decimal(downOutUnitPrice)).mul(new Decimal(tradeRealCount)));
+								expectIncomeMoneyReal =  _this.formatNumberWithSeparator((unitPriceNow - downOutUnitPrice) * tradeRealCount);
+								// 上涨赔付 = (做空卖出价 - 上涨购入价) × 推荐交易数量
+								// expectOutcomeMoney = _this.formatNumberWithSeparator(new Decimal(unitPriceNow).sub(new Decimal(upOutUnitPrice)).mul(new Decimal(tradeCount)));
+								expectOutcomeMoney = _this.formatNumberWithSeparator((unitPriceNow - upOutUnitPrice) * tradeCount);
+								// 实赔 = (做空卖出价 - 上涨购入价) × 实际交易数量
+								// expectOutcomeMoneyReal = _this.formatNumberWithSeparator(new Decimal(unitPriceNow).sub(new Decimal(upOutUnitPrice)).mul(new Decimal(tradeRealCount)));
+								expectOutcomeMoneyReal = _this.formatNumberWithSeparator((unitPriceNow - upOutUnitPrice) * tradeRealCount);
 							}
 							
 							item = {
 								stockCode:	_this.stockCode, 
 								calculAdvsIvsMoney:	calculAdvsIvsMoney, 
+								calculRealIvsMoney: calculRealIvsMoney,
 								tradeCount:		isNaN(tradeCount)?0:tradeCount, 
+								tradeRealCount:	isNaN(tradeRealCount)?0:tradeRealCount, 
 								unitPriceNow:	isNaN(unitPriceNow)?0:unitPriceNow, 
 								unitPricePre:	isNaN(unitPricePre)?0:unitPricePre, 
-								upOutUnitPrice: 	upOutUnitPrice,
-								downOutUnitPrice: 	downOutUnitPrice,
-								expectIncomeMoney:	expectIncomeMoney,
-								expectOutcomeMoney:	expectOutcomeMoney,
-								upRatio:			ratio,
-								downRatio:			downRatio,
-								adviseInvestRatio:	val.adviseInvestRatio,
+								upOutUnitPrice: 		upOutUnitPrice,
+								downOutUnitPrice: 		downOutUnitPrice,
+								expectIncomeMoney:		expectIncomeMoney,
+								expectIncomeMoneyReal:	expectIncomeMoneyReal,
+								expectOutcomeMoney:		expectOutcomeMoney,
+								expectOutcomeMoneyReal:	expectOutcomeMoneyReal,
+								upRatio:				ratio,
+								downRatio:				downRatio,
+								adviseInvestRatio:		val.adviseInvestRatio,
 							}
+							console.log("计算收录："+JSON.stringify(item))
 							return true;
 						}						
 					});
@@ -573,7 +671,7 @@
 				return this.getStockRatioByUnitPrice(now, will, now);
 			}
 			,getStockRatioByUnitPrice(a, b, c){
-				// (a - b) / c × 100
+				// |(a - b) / c × 100|
 				return new Decimal(a - b).div(new Decimal(c)).mul(new Decimal(100)).abs().toFixed();
 			}
 			// 根据 股票编码 收录或更新 记录
@@ -611,11 +709,11 @@
 					if((this.unitPricePre-this.unitPriceNow)>0){
 						// 做多
 						console.log("添加做多")
-						this.saveData("inStorageUpStockList", "tableUpShowData", item, _this)
+						this.saveData("inStorageUpStockList", "tableUpShowData", item, 1, _this)
 					}else{
 						// 做空
 						console.log("添加做空")
-						this.saveData("inStorageDownStockList", "tableDownShowData", item, _this)
+						this.saveData("inStorageDownStockList", "tableDownShowData", item, 2, _this)
 					}	
 				}else{
 					console.log("点击了更新")
@@ -634,9 +732,8 @@
 				// var timeStr = getdateTime.dateTimeStr('y-m-d h:i:s')
 				_this.$set(item, "updateTime", timeStr)
 			}
-			,saveData(keyStr, table_tag_key, item, _this){
+			,saveData(keyStr, table_tag_key, item, up_down, _this){
 				var stockSet = []
-				var that = this
 				uni.getStorage({
 					key:keyStr,
 					success: function(resp){
@@ -709,7 +806,7 @@
 							data:saveData				
 						});
 						_this.$set(_this, table_tag_key, saveData);
-						that.isNewStockCode = false
+						_this.isNewStockCode = false
 						console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
@@ -724,7 +821,7 @@
 				});
 				// 单独存一份 股票代码
 				uni.setStorage({
-					key:item.stockCode,
+					key:up_down +"-"+ item.stockCode,
 					data:true				
 				});
 				
@@ -782,26 +879,29 @@
 			}
 			/** 0:无法判断；1:up-做多；2:down-做空*/
 			,judgeUpOrDown(){
-				var up_down_flag = 0; // 0:无法判断；1:up-做多；2:down-做空
+				var up_down_flag = 1; // 1:up-做多；2:down-做空（默认做多）
 				var unitPriceNow = (this.unitPriceNow=="")?0:this.unitPriceNow;			// 当前股票单价
 				var unitPricePre = (this.unitPricePre=="")?0:this.unitPricePre;			// 预估股票单价
 				var stockRatio = 0;
 				if(unitPriceNow>0 && unitPricePre>0){
-					if((unitPricePre-unitPriceNow)>0){
-						// 做多
-						up_down_flag = 1;
-					}else{
+					if((unitPricePre-unitPriceNow)<0){
 						// 做空
 						up_down_flag = 2;				
 					}
 				}
 				return up_down_flag;
 			}
-			,edit(item) {
-				uni.showToast({
-					title: item.name,
-					icon: 'none'
-				});
+			,edit(item, up_down_flag) {
+				this.stockCode = item.stockCode
+				this.unitPriceNow = item.unitPriceNow
+				this.unitPricePre = item.unitPricePre
+				this.selectExpectValue = item.selectExpectValue
+				this.tradeRealCount = item.tradeRealCount
+				// 总金 * 占比 / 100 = 建议投资金额  ==>  总金 = 建议投资金额 / 占比 × 100 
+				this.totalAmount = this.decimal((item.calculAdvsIvsMoney).replace(/,/g, "") / item.adviseInvestRatio * 100)
+				this.inputTradeRealCountChange(this)
+				this.isNewStockCode = false
+				this.calculateInvestMoney(true)
 			}
 			// 删除(up_down_flag:1:up-做多；2:down-做空)
 			,delOne(item, up_down_flag) {
@@ -844,7 +944,7 @@
 													data:respData				
 												});
 												setTimeout(uni.removeStorage({
-													key:item.stockCode
+													key:up_down_flag + "-" + item.stockCode
 												}), 2000);
 												return true;
 											}
@@ -894,7 +994,38 @@
 						this.removeStockFroStoragem()
 					}
 				}, 1)
-			}
+			},
+			decimal(num) {
+				// 检查输入是否为整数
+				if (Number.isInteger(num)) {
+					// 如果是整数，直接返回
+					return num;
+				} else {
+					// 如果有小数，则四舍五入保留4位小数
+					return Math.round(num * 10000) / 10000;
+				}
+			},
+			formatNumberWithSeparator(number) {
+				// 检查输入是否为整数
+				if (!Number.isInteger(number)) {
+					// 如果有小数，则四舍五入保留4位小数
+					number = Math.round(number * 10000) / 10000;
+				}
+				// 如果是整数，直接使用
+			    let numStr = number.toString();
+			    let [integerPart, decimalPart] = numStr.split('.');
+			    
+			    // 处理整数部分
+			    integerPart = integerPart.replace(/(\d)(?=(\d{4})+(?!\d))/g, '$1,');
+			    
+			    // 如果有小数部分，拼接回去
+			    if (decimalPart) {
+			        return `${integerPart}.${decimalPart}`;
+			    } else {
+			        return integerPart;
+			    }
+			},
+			
 		},
 		
 		
@@ -970,4 +1101,93 @@
 	.uni-pb-5 {
 	  padding-bottom: 10px;
 	}
+	
+	
+	// -----------------------
+	// 固定首行首列
+	.table-container{
+	  width: 100%;
+	  height: 70vh;
+	  position: absolute;
+	}
+	/* 下面这里必须要有overflow:auto;,结合上面外部的 position: absolute; 才可以实现首行首列固定 */
+	.table{
+	  width: 100%;
+	  max-height: 70vh;
+	  overflow:auto;
+	  position: relative;
+	}
+	.tr {
+	      display: flex;
+		  min-width: max-content; /* 保留内容宽度基准 */
+		  width: 100%;    /* 至少充满容器宽度 */
+	  }
+	.th,.td {
+		flex: 1;  /* 关键：自动分配剩余空间 */
+	    /* 对每个单元格设置宽高, 宽同表格一致 */
+	    min-width: 150rpx;
+		// max-width: 300rpx; /* 添加最大宽度限制 */
+	    height: 60rpx;
+	    /* 每个格背景设置透明, 滑动的时候就好隐藏 */
+	    // background-color: #fff;
+	    display: flex;
+	    justify-content: center;
+	    align-items: center;
+		font-size: 14px;
+		color: #6a6a6a;
+		border-top: 1px solid #e8e8e8; /* 边框 */
+		border-right: 1px solid #e8e8e8; /* 右侧边框 */
+		border-bottom: 1px solid #e8e8e8; /* 底部边框 */
+	}
+	.th{
+	    /* 设置背景色, 滑动的时候就不会重叠字样了. */
+	    background-color: #f4f6ff;
+	    text-align: center;
+		font-weight: bold;
+	}
+	 
+	/* 表头部分 */
+	.tr:first-child {
+	    /* 将第一个格设置 sticky, 往上滑则固定住 */
+	    position: sticky;
+	    top: 0;
+	    /* 提升表格的重叠权重, 显示出来, 同时将内容设置为透明, 就实现了固定表头的效果 */
+	    z-index: 3;
+	    background-color: aqua;
+	}
+	
+	/* 隔行背景色 */
+	.tr:nth-child(even) .td {
+		background-color: #f8f9fa; /* 偶数行 */
+	}
+	.tr:nth-child(odd) .td {
+		background-color: #ffffff; /* 奇数行 */
+	}
+	 
+	/* 首行第一个单元格进行固定 */
+	/* 每行第一个单元格进行固定, 宽度和表格一致对齐 */
+	.th:first-child,
+	.td:first-child{
+	    position: sticky;
+	    // width: 200rpx;
+	    left: 0;
+		z-index: 2;
+		flex: 0 0 150rpx; /* 固定宽度不参与flex分配 */
+	    // background-color: aquamarine;
+		// background-color: #f4f6ff !important; /* 覆盖隔行颜色 */
+	}
+	 
+	/* 将滚动条设置隐藏 */
+	::-webkit-scrollbar {
+	    width: 0;
+	    height: 0;
+	}
+	
+	/* 防止列挤压 */
+	.th:not(:first-child),
+	.td:not(:first-child) {
+	  flex-shrink: 0;
+	}
+	
+	
 </style>

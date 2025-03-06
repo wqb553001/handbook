@@ -2,8 +2,8 @@
     "name" : "xny-handbook-stock",
     "appid" : "__UNI__26014AE",
     "description" : "自定义股票价格快算",
-    "versionName" : "1.0.0",
-    "versionCode" : "100",
+    "versionName" : "1.0.1",
+    "versionCode" : 101,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -38,7 +38,8 @@
                     "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
                     "<uses-feature android:name=\"android.hardware.camera\"/>",
                     "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
-                ]
+                ],
+                "minSdkVersion" : 21
             },
             /* ios打包配置 */
             "ios" : {
@@ -96,6 +97,9 @@
                     }
                 }
             }
+        },
+        "uniStatistics" : {
+            "enable" : false
         }
     }
 }
