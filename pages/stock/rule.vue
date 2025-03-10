@@ -9,6 +9,27 @@
 			</uni-card>
 		</view>
 		
+		<uni-section title="习惯设置" type="line" style="background-color: #eee;">
+		  <uni-forms border>
+			<uni-forms-item label="字体颜色:" labelWidth="82px" id="colorRadio" >
+				<!-- <input type="radio" name="selectedColor" v-model="selectedColorValue" value="1" >红涨绿跌</input>
+				<input type="radio" name="selectedColor" v-model="selectedColorValue" value="2" >红跌绿涨</input>
+				<input type="radio" name="selectedColor" v-model="selectedColorValue" value="0" >不设置</input> -->
+				<radio-group @change="radioColorChange" class="value checked" style="font-size: 13px;">
+					<label class="radio">
+						<radio style="zoom: 0.8;" value="1" :checked="selectedColorValue == '1'" />红涨绿跌
+					</label>                      
+					<label class="radio">         
+					    <radio style="zoom: 0.8;" value="2" :checked="selectedColorValue == '2'" />红跌绿涨
+					</label>                      
+					<label class="radio">         
+					    <radio style="zoom: 0.8;" value="0" :checked="selectedColorValue == '0'" />不区分
+					</label>
+				</radio-group>
+			</uni-forms-item>
+		  </uni-forms>
+		</uni-section>
+		
 		<uni-section title="试算" type="line" style="background-color: #eee;"> 
 			<uni-group :style="{ display: 'none' }">
 				<uni-card :is-shadow="false" is-full>
@@ -55,34 +76,6 @@
 			</uni-group>
 			
 			<view>
-				<!-- <uni-group title="设置规则:" id="up_group" >
-				  <view> 
-					<uni-table border stripe emptyText="暂无更多数据" >
-						<uni-tr>
-							<uni-th>区间界限（%）	</uni-th>
-							<uni-th>{{benifitRatio+'(%)'	}}	</uni-th>
-							<uni-th>{{lossRatio+'(%)'		}}	</uni-th>
-							<uni-th>投入占比（%）		</uni-th>
-							<uni-th>操作				</uni-th>
-						</uni-tr>
-						<uni-tr v-for="(item, i) in tableRuleShowData" :key="i+1">
-							<uni-td>{{ item.expectEnd  			}}</uni-td>
-							<uni-td>{{ benifitFlag 	+ item.upRatio 				}}</uni-td>
-							<uni-td>{{ lossFlag 	+ item.downRatio 			}}</uni-td>
-							<uni-td>{{ item.adviseInvestRatio	}}</uni-td>
-							<uni-td style="text-align: center;">
-								<view class="uni-group">
-									<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" size="mini" type="primary" v-if="isNewExpectEnd">新收</button>
-									<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" size="mini" type="warn" v-if="isNewExpectEnd==false">更新</button>
-								</view>
-							</uni-td>
-						</uni-tr>
-					  </uni-table>					
-				 </view>
-				</uni-group> -->
-				
-				
-				
 				<uni-group title="设置规则" >
 					<view class="warp">
 						<view class="box">
@@ -95,10 +88,14 @@
 									<t-th>操作				</t-th>
 								</t-tr>
 								<t-tr v-for="(item, index) in tableRuleShowData" :key="index+1">
-									<t-td>{{ item.expectEnd  							}}</t-td>
-									<t-td>{{ benifitFlag 	+ item.upRatio 				}}</t-td>
-									<t-td>{{ lossFlag 		+ item.downRatio 			}}</t-td>
-									<t-td>{{ item.adviseInvestRatio						}}</t-td>
+									<t-td>{{ item.expectEnd  		}}</t-td>
+									<t-td>
+										<span :style="fontColor.up">{{ benifitFlag 	+ item.upRatio}}</span>
+									</t-td>
+									<t-td>
+										<span :style="fontColor.down" >{{lossFlag + item.downRatio}}</span>
+									</t-td>
+									<t-td>{{ item.adviseInvestRatio  }}</t-td>
 									<t-td style="text-align: center;">
 										<view class="uni-group">
 											<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" size="mini" type="primary" v-if="isNewExpectEnd">新收</button>
@@ -128,7 +125,9 @@
 					<uni-tr v-for="(item, index) in tableUpRuleData" :key="index+1" >
 						<uni-td style="padding: 0px 4px;">{{ index + 1    			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectValue 		}}</uni-td>
-						<uni-td style="padding: 0px 4px;">＋{{ item.upRatio}} 	|	－{{item.downRatio}}</uni-td>
+						<uni-td style="padding: 0px 4px;">
+							<span :style="fontColor.up">＋{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >－{{item.downRatio}}</span>
+						</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.adviseInvestRatio 	}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.updateTime 			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectEnd 			}}</uni-td>
@@ -156,7 +155,9 @@
 					<uni-tr v-for="(item, index) in tableDownRuleData" :key="index+1">
 						<uni-td style="padding: 0px 4px;">{{ index + 1    			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectValue 		}}</uni-td>
-						<uni-td style="padding: 0px 4px;">－{{ item.upRatio}} 	|	＋{{item.downRatio}}</uni-td>
+						<uni-td style="padding: 0px 4px;">
+							<span :style="fontColor.up">－{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >＋{{item.downRatio}}</span>
+						</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.adviseInvestRatio 	}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.updateTime 			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectEnd 			}}</uni-td>
@@ -171,40 +172,43 @@
 			</uni-group>
 		</uni-section>
 			
-			<uni-group title="做多规则:" >
-				<uni-table border stripe emptyText="暂无更多数据">
-					<uni-tr>
-						<uni-th style="width: 60px; " align="center">编号					</uni-th>
-						<uni-th style="min-width: 60px; " align="center" >预期收益值（%）		</uni-th>
-						<uni-th style="min-width: 80px;" align="center">建议出手收益值（%）	</uni-th>
-						<uni-th style="min-width: 30px;" align="center">投入占比</uni-th>
-					</uni-tr>
-					<uni-tr v-for="(item, index) in tableUpRuleData" :key="index+1">
-						<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
-						<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
-						<uni-td style="padding: 0px 4px; text-align: center;">＋{{ item.upRatio}} 	|	－{{item.downRatio}}</uni-td>
-						<uni-td style="padding: 0px 4px; text-align: center;">{{ item.adviseInvestRatio 	}}</uni-td>
-					</uni-tr>
-				  </uni-table>					
-			</uni-group>
-			<uni-group title="做空规则:" >
-				<uni-table border stripe emptyText="暂无更多数据">
-					<uni-tr>
-						<uni-th style="width: 60px;" align="center">编号					</uni-th>
-						<uni-th style="min-width: 60px; " align="center">预期收益值（%）		</uni-th>
-						<uni-th style="min-width: 80px; " align="center">建议出手收益值（%）	</uni-th>
-						<uni-th style="min-width: 30px; " align="center">投入占比</uni-th>
-					</uni-tr>
-					<uni-tr v-for="(item, index) in tableDownRuleData" :key="index+1">
-						<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
-						<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
-						<uni-td style="padding: 0px 4px; text-align: center;">－{{ item.upRatio}} 	|	＋{{item.downRatio}}</uni-td>
-						<uni-td style="padding: 0px 4px; text-align: center;">{{ item.adviseInvestRatio 	}}</uni-td>
-					</uni-tr>
-				  </uni-table>					
-			</uni-group>
-			
-		<!-- </uni-section> -->
+		<uni-group title="做多规则:" >
+			<uni-table border stripe emptyText="暂无更多数据">
+				<uni-tr>
+					<uni-th style="width: 60px; " align="center">编号					</uni-th>
+					<uni-th style="min-width: 60px; " align="center" >预期收益值（%）		</uni-th>
+					<uni-th style="min-width: 80px;" align="center">建议出手收益值（%）	</uni-th>
+					<uni-th style="min-width: 30px;" align="center">投入占比</uni-th>
+				</uni-tr>
+				<uni-tr v-for="(item, index) in tableUpRuleData" :key="index+1">
+					<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
+					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
+					<uni-td style="padding: 0px 4px; text-align: center;">
+						<span :style="fontColor.up">＋{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >－{{item.downRatio}}</span>
+					</uni-td>
+					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.adviseInvestRatio 	}}</uni-td>
+				</uni-tr>
+			</uni-table>					
+		</uni-group>
+		<uni-group title="做空规则:" >
+			<uni-table border stripe emptyText="暂无更多数据">
+				<uni-tr>
+					<uni-th style="width: 60px;" align="center">编号					</uni-th>
+					<uni-th style="min-width: 60px; " align="center">预期收益值（%）		</uni-th>
+					<uni-th style="min-width: 80px; " align="center">建议出手收益值（%）	</uni-th>
+					<uni-th style="min-width: 30px; " align="center">投入占比</uni-th>
+				</uni-tr>
+				<uni-tr v-for="(item, index) in tableDownRuleData" :key="index+1">
+					<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
+					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
+					<uni-td style="padding: 0px 4px; text-align: center;">
+						<span :style="fontColor.up">-{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down">+{{item.downRatio}}</span>
+					</uni-td>
+					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.adviseInvestRatio 	}}</uni-td>
+				</uni-tr>
+			</uni-table>					
+		</uni-group>
+		
 	</view>
 
 	<view>
@@ -281,7 +285,11 @@
 					index: -1,
 					expectEnd: 0
 				}
-				
+				,selectedColorValue: '1'
+				,fontColor: {
+					up: 	"color: red; ",
+					down: 	"color: green; "
+				}
 			};
 		}
 		,async created(){
@@ -291,6 +299,9 @@
 			// 表格数据加载 
 			this.loadTableStockList('inStorageUpRuleDataList', 'tableUpRuleData', 1);
 			this.loadTableStockList('inStorageDownRuleDataList', 'tableDownRuleData', 2);
+		}
+		,mounted(){
+			// console.log("读取全局变量："+this.$store.state.fontColor) // 正确访问
 		}
 		,onReady() {},
 		methods: {
@@ -819,7 +830,72 @@
 					}
 				}, 1)
 			}
-		},
+			,radioColorChange(e){
+				this.selectedColorValue = e.detail.value
+				if(this.selectedColorValue == '1'){  // 1-红涨绿跌
+					// this.updateUpColor('color: red;') 		// 调用 action 更新 up
+					// this.updateDownColor('color: green;') 	// 调用 action 更新 down
+					// this.fontColor = {
+					// 	up: 	"color: red; ",
+					// 	down: 	"color: green; "
+					// }
+					
+					uni.setStorage({
+						key: 'fontColor',
+						data: {up:"color: red;",down:"color: green;"}
+					});
+					this.freshFontColor();
+					// this.setFontColor(fontColor)
+					// this.updateFontColor({ up: 'color: red;', down: 'color: green;' });
+				}else if(this.selectedColorValue == '2'){	// 2-红跌绿涨
+					// this.updateUpColor('color: green;') // 调用 action 更新 up
+					// this.updateDownColor('color: red;') // 调用 action 更新 down
+					// this.fontColor = {
+					// 	up: 	"color: green; ",
+					// 	down: 	"color: red; "
+					// }
+					
+					uni.setStorage({
+						key: 'fontColor',
+						data: {up:'color: green;', down:'color: red;'}
+					});
+					this.freshFontColor();
+				}else if(this.selectedColorValue == '0'){	// 0-不区分
+					// this.updateUpColor('color: unset;') // 调用 action 更新 up
+					// this.updateDownColor('color: unset;') // 调用 action 更新 down
+					// this.fontColor = {
+					// 	up: 	"color: unset; ",
+					// 	down: 	"color: unset; "
+					// }
+					
+					uni.setStorage({
+						key: 'fontColor',
+						data: {up:'color: unset;', down:'color: unset;'}
+					});
+					this.freshFontColor();
+				}
+				console.log("选中："+ this.selectedColorValue + "；颜色值："+ JSON.stringify(this.fontColor))
+			}
+			,freshFontColor(){
+				var _this = this
+				uni.getStorage({
+					key: 'fontColor',
+					success: function(resp){
+						console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
+						_this.fontColor = resp.data
+					},
+					fail:function(){
+						console.log("未取得 key:fontColor");
+						_this.fontColor = {
+							up: 	"color: red; ",
+							down: 	"color: green; "
+						}
+					}
+				});
+			}
+			
+			
+		},// methods
 		
 		
 		
@@ -899,6 +975,12 @@
 	  min-width: auto !important; /* 使用auto可能不是最佳选择，因为min-width通常不接受auto值 */
 	  /* 或者设置为0或其他你想要的宽度 */
 	  min-width: 0; 
+	}
+	
+	// 习惯设置-颜色字体
+	#colorRadio .uni-forms-item__label {
+	  align-items: flex-start; /* 替换 align-items: top */
+	  margin-left: 15px;
 	}
 	
 </style>

@@ -9,6 +9,9 @@
 			</uni-card>
 		</view>
 		<uni-section title="试算" type="line" style="background-color: #eee;"> 
+			<uni-card :is-shadow="false" is-full>
+				<text class="uni-h6">做多试算:</text>
+			</uni-card>
 			<view class="button-container">
 				<button @click="removeStorageInputDialogToggle(1)" class="button small" type="warn">清除</button>
 				<button @click="tableToExcel(1)" class="button large" type="warn">导 出</button>
@@ -27,12 +30,12 @@
 					<view class="td">{{ item.tradeCount 			        }}</view>
 					<view class="td">{{ item.tradeRealCount 			    }}</view>
 					<view class="td">{{ item.unitPriceNow 			    	}}</view>
-					<view class="td">{{ item.upOutUnitPrice 				}}</view>
-					<view class="td">{{ item.downOutUnitPrice 				}}</view>
-					<view class="td">{{ item.expectIncomeMoney 				}}</view>
-					<view class="td">{{ item.expectIncomeMoneyReal  		}}</view>
-					<view class="td">{{ item.expectOutcomeMoney 			}}</view>
-					<view class="td">{{ item.expectOutcomeMoneyReal  		}}</view>
+					<view class="td"> <span :style="fontColor.up" 	> {{ item.upOutUnitPrice 				}}</span> </view>
+					<view class="td"> <span :style="fontColor.down" > {{ item.downOutUnitPrice 				}}</span> </view>
+					<view class="td"> <span :style="fontColor.up" 	> {{ item.expectIncomeMoney 			}}</span> </view>
+					<view class="td"> <span :style="fontColor.up" 	> {{ item.expectIncomeMoneyReal  		}}</span> </view>
+					<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoney 			}}</span> </view>
+					<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoneyReal  		}}</span> </view>
 					<view class="td">{{ item.upRatio 			        	}}</view>
 					<view class="td">{{ item.downRatio 			        	}}</view>
 					<view class="td">{{ item.calculAdvsIvsMoney  			}}</view>
@@ -43,44 +46,42 @@
 			    </block>
 			</view>
 			 
-			 
-			<uni-group title="做空试算:">
-				<view class="button-container">
-					<button @click="removeStorageInputDialogToggle(2)" class="button small" type="warn">清除</button>
-					<button @click="tableToExcel(2)" class="button large" type="warn">导 出</button>
-					<button @click="refreshFromStorage" class="button large" type="primary" >刷	新</button>
+			<uni-card :is-shadow="false" is-full>
+				<text class="uni-h6">做空试算:</text>
+			</uni-card>
+			<view class="button-container">
+				<button @click="removeStorageInputDialogToggle(2)" class="button small" type="warn">清除</button>
+				<button @click="tableToExcel(2)" class="button large" type="warn">导 出</button>
+				<button @click="refreshFromStorage" class="button large" type="primary" >刷	新</button>
+			</view>
+			<view class="table">
+				<view class="tr">
+					<view class="th">股票代码</view>
+					<view class="th" v-for="headerObj in tableDownDataHeader">{{headerObj.value}}</view>
 				</view>
-				<view class="table">
-				    <view class="tr">
-						<view class="th">股票代码</view>
-						<view class="th" v-for="headerObj in tableDownDataHeader">{{headerObj.value}}</view>
-				    </view>
-				    <block v-for="(item, index) in tableDownShowData" :key="index">
-				       <view class="tr">
-				        <view class="td">{{item.stockCode}}</view>
-						<view class="td">{{ index+1    							}}</view>
-						<view class="td">{{ item.tradeCount 			        }}</view>
-						<view class="td">{{ item.tradeRealCount 			    }}</view>
-						<view class="td">{{ item.unitPriceNow 			    	}}</view>
-						<view class="td">{{ item.upOutUnitPrice 				}}</view>
-						<view class="td">{{ item.downOutUnitPrice 				}}</view>
-						<view class="td">{{ item.expectIncomeMoney 				}}</view>
-						<view class="td">{{ item.expectIncomeMoneyReal  		}}</view>
-						<view class="td">{{ item.expectOutcomeMoney 			}}</view>
-						<view class="td">{{ item.expectOutcomeMoneyReal  		}}</view>
-						<view class="td">{{ item.upRatio 			        	}}</view>
-						<view class="td">{{ item.downRatio 			        	}}</view>
-						<view class="td">{{ item.calculAdvsIvsMoney  			}}</view>
-						<view class="td">{{ item.calculRealIvsMoney  			}}</view>
-						<view class="td">{{ item.adviseInvestRatio 				}}</view>
-						<view class="td">{{ item.updateTime 					}}</view>
-				       </view>
-				    </block>
-				</view>
-			 
-			</uni-group>
-			
-			
+				<block v-for="(item, index) in tableDownShowData" :key="index">
+				   <view class="tr">
+					<view class="td">{{item.stockCode}}</view>
+					<view class="td">{{ index+1    							}}</view>
+					<view class="td">{{ item.tradeCount 			        }}</view>
+					<view class="td">{{ item.tradeRealCount 			    }}</view>
+					<view class="td">{{ item.unitPriceNow 			    	}}</view>
+					<view class="td"> <span :style="fontColor.up" 	> {{ item.downOutUnitPrice 				}}</span> </view>
+					<view class="td"> <span :style="fontColor.down" > {{ item.upOutUnitPrice 				}}</span> </view>
+					<view class="td"> <span :style="fontColor.up" 	> {{ item.expectIncomeMoney 			}}</span> </view>
+					<view class="td"> <span :style="fontColor.up" 	> {{ item.expectIncomeMoneyReal  		}}</span> </view>
+					<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoney 			}}</span> </view>
+					<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoneyReal  		}}</span> </view>
+					<view class="td">{{ item.upRatio 			        	}}</view>
+					<view class="td">{{ item.downRatio 			        	}}</view>
+					<view class="td">{{ item.calculAdvsIvsMoney  			}}</view>
+					<view class="td">{{ item.calculRealIvsMoney  			}}</view>
+					<view class="td">{{ item.adviseInvestRatio 				}}</view>
+					<view class="td">{{ item.updateTime 					}}</view>
+				   </view>
+				</block>
+			</view>
+				
 		</uni-section>
 		
 		<view>
@@ -102,15 +103,17 @@
 </template>
 
 <script>
-	import tTable from '@/components/t-table/t-table.vue';
-	import tTh from '@/components/t-table/t-th.vue';
-	import tTr from '@/components/t-table/t-tr.vue';
-	import tTd from '@/components/t-table/t-td.vue';
+	// import tTable from '@/components/t-table/t-table.vue';
+	// import tTh from '@/components/t-table/t-th.vue';
+	// import tTr from '@/components/t-table/t-tr.vue';
+	// import tTd from '@/components/t-table/t-td.vue';
 	import { exportExcel } from '@/common/util/excelUtil.js'
 	import { formatNumber,formatDateThis,getUnixTime } from "@/common/util/dateUtil.js"
 	
 	export default {
-		components: { tTable ,tTh ,tTr ,tTd },
+		components: { 
+			// tTable ,tTh ,tTr ,tTd 
+		},
 		data() {
 			return {
 				tableUpDataHeader: [// 做多
@@ -167,6 +170,10 @@
 				,msgType: 'success'
 				,messageText: ''
 				,clickRemoveStorageFlag:0
+				,fontColor: {
+					up: 	"color: red; ",
+					down: 	"color: green; "
+				}
 			};
 		}
 		,async created(){
@@ -259,10 +266,10 @@
 			}
 			// 刷新-读取最新数据
 			,refreshFromStorage(e){
-				var _this = this;
 				// 表格数据加载 
-				this.loadTableStockList("inStorageUpStockList", "tableUpShowData", _this);
-				this.loadTableStockList("inStorageDownStockList", "tableDownShowData", _this);
+				this.loadTableStockList("inStorageUpStockList", "tableUpShowData", this);
+				this.loadTableStockList("inStorageDownStockList", "tableDownShowData", this);
+				this.freshFontColor();
 			}
 			,messageToggle(type, messageText) {
 				this.type = 'center'
@@ -319,6 +326,23 @@
 			,inputStockCodeChange(){
 				
 			}
+			,freshFontColor(){
+				var _this = this
+				uni.getStorage({
+					key: 'fontColor',
+					success: function(resp){
+						console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
+						_this.fontColor = resp.data
+					},
+					fail:function(){
+						console.log("未取得 key:fontColor");
+						_this.fontColor = {
+							up: 	"color: red; ",
+							down: 	"color: green; "
+						}
+					}
+				});
+			}
 			,tableToExcel(up_down_flag) {
 			  var _this = this;
 			  var tableDataHeader = _this.tableUpDataHeader;
@@ -365,6 +389,7 @@
 </script>
 
 <style lang="scss">
+	@import '../../components/table/table.scss';  // 组件私有样式
 	// @mixin flex {
 	// 	/* #ifndef APP-NVUE */
 	// 	display: flex;
@@ -578,92 +603,6 @@
 		background-color: #e1f3d8; 
 		color: #09bb07;
 	} 
-	
-	// -----------------------
-	// 固定首行首列
-	.table-container{
-	  width: 100%;
-	  height: 70vh;
-	  position: absolute;
-	}
-	/* 下面这里必须要有overflow:auto;,结合上面外部的 position: absolute; 才可以实现首行首列固定 */
-	.table{
-	  width: 100%;
-	  max-height: 70vh;
-	  overflow:auto;
-	  position: relative;
-	}
-	.tr {
-	      display: flex;
-		  min-width: max-content; /* 保留内容宽度基准 */
-		  width: 100%;    /* 至少充满容器宽度 */
-	  }
-	.th,.td {
-		flex: 1;  /* 关键：自动分配剩余空间 */
-	    /* 对每个单元格设置宽高, 宽同表格一致 */
-	    min-width: 150rpx;
-		// max-width: 300rpx; /* 添加最大宽度限制 */
-	    height: 60rpx;
-	    /* 每个格背景设置透明, 滑动的时候就好隐藏 */
-	    // background-color: #fff;
-	    display: flex;
-	    justify-content: center;
-	    align-items: center;
-		font-size: 14px;
-		color: #6a6a6a;
-		border-top: 1px solid #e8e8e8; /* 边框 */
-		border-right: 1px solid #e8e8e8; /* 右侧边框 */
-		border-bottom: 1px solid #e8e8e8; /* 底部边框 */
-	}
-	.th{
-	    /* 设置背景色, 滑动的时候就不会重叠字样了. */
-	    background-color: #f4f6ff;
-	    text-align: center;
-		font-weight: bold;
-	}
-	 
-	/* 表头部分 */
-	.tr:first-child {
-	    /* 将第一个格设置 sticky, 往上滑则固定住 */
-	    position: sticky;
-	    top: 0;
-	    /* 提升表格的重叠权重, 显示出来, 同时将内容设置为透明, 就实现了固定表头的效果 */
-	    z-index: 3;
-	    background-color: aqua;
-	}
-	
-	/* 隔行背景色 */
-	.tr:nth-child(even) .td {
-		background-color: #f8f9fa; /* 偶数行 */
-	}
-	.tr:nth-child(odd) .td {
-		background-color: #ffffff; /* 奇数行 */
-	}
-	 
-	/* 首行第一个单元格进行固定 */
-	/* 每行第一个单元格进行固定, 宽度和表格一致对齐 */
-	.th:first-child,
-	.td:first-child{
-	    position: relative;
-	    // width: 200rpx;
-	 //    left: 0;
-		// z-index: 2;
-		flex: 0 0 150rpx; /* 固定宽度不参与flex分配 */
-	    // background-color: aquamarine;
-		// background-color: #f4f6ff !important; /* 覆盖隔行颜色 */
-	}
-	 
-	/* 将滚动条设置隐藏 */
-	::-webkit-scrollbar {
-	    width: 0;
-	    height: 0;
-	}
-	
-	/* 防止列挤压 */
-	.th:not(:first-child),
-	.td:not(:first-child) {
-	  flex-shrink: 0;
-	}
 	
 	
 	

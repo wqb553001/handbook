@@ -10,3 +10,8 @@
 //       }
 //     },
 //   }}
+
+<style lang="scss">
+@import '@/common/css/theme.scss';
+</style>
+
