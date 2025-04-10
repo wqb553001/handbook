@@ -80,28 +80,31 @@
 				 		<view class="th">-●实赔		</view>
 				 		<view class="th">操作		</view>
 				     </view>
-				     <block v-for="(item, index) in tableUpData" :key="index">
-				        <view class="tr">
-				        <view class="td">{{item.stockCode}}</view>
-				 		<view class="td">{{ item.calculAdvsIvsMoney  		}}</view>
-				 		<view class="td">{{ item.calculRealIvsMoney  		}}</view>
-				 		<view class="td">{{ item.tradeCount 			    }}</view>
-				 		<view class="td">{{ item.tradeRealCount 			}}</view>
-				 		<view class="td">{{ item.unitPriceNow 			    }}</view>
-				 		<view class="td"> <span :style="fontColor.up" 	> {{ item.upOutUnitPrice 			}} </span> </view>
-				 		<view class="td"> <span :style="fontColor.down" > {{ item.downOutUnitPrice 			}} </span> </view>
-				 		<view class="td"> <span :style="fontColor.up"   > {{ item.expectIncomeMoney 		}} </span> </view>
-				 		<view class="td"> <span :style="fontColor.up"   > {{ item.expectIncomeMoneyReal 	}} </span> </view>
-				 		<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoney 		}} </span> </view>
-				 		<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoneyReal 	}} </span> </view>
-				 		<view class="td">
-				 			<view class="uni-group">
-				 				<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" style="background-color: #e1f3d8; color: #09bb07;" size="mini" type="primary" v-if="isNewStockCode">新收</button>
-				 				<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" style="background-color: #e1f3d8; color: #e6a23c;" size="mini" type="warn" v-if="isNewStockCode==false">更新</button>
-				 			</view>
-				 		</view>
-				        </view>
-				     </block>
+					 <view v-if="tableUpData.length>0" v-for="(item, index) in tableUpData" :key="index+1">
+						 <block>
+						    <view class="tr">
+								<view class="td">{{item.stockCode}}</view>
+								<view class="td">{{ item.calculAdvsIvsMoney  		}}</view>
+								<view class="td">{{ item.calculRealIvsMoney  		}}</view>
+								<view class="td">{{ item.tradeCount 			    }}</view>
+								<view class="td">{{ item.tradeRealCount 			}}</view>
+								<view class="td">{{ item.unitPriceNow 			    }}</view>
+								<view class="td"> <span :style="fontColor.up" 	> {{ item.upOutUnitPrice 			}} </span> </view>
+								<view class="td"> <span :style="fontColor.down" > {{ item.downOutUnitPrice 			}} </span> </view>
+								<view class="td"> <span :style="fontColor.up"   > {{ item.expectIncomeMoney 		}} </span> </view>
+								<view class="td"> <span :style="fontColor.up"   > {{ item.expectIncomeMoneyReal 	}} </span> </view>
+								<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoney 		}} </span> </view>
+								<view class="td"> <span :style="fontColor.down" > {{ item.expectOutcomeMoneyReal 	}} </span> </view>
+								<view class="td">
+									<view class="uni-group">
+										<button @tap="addOrUpdateOne(item, 'addOne')" class="uni-button" style="background-color: #e1f3d8; color: #09bb07;" size="mini" type="primary" v-if="isNewStockCode">新收</button>
+										<button @tap="addOrUpdateOne(item, 'updateOne')" class="uni-button" style="background-color: #e1f3d8; color: #e6a23c;" size="mini" type="warn" v-if="isNewStockCode==false">更新</button>
+									</view>
+								</view>
+						    </view>
+						 </block>
+					 </view>
+				     
 				 </view>
 				 
 				</uni-group>
@@ -125,7 +128,7 @@
 							<view class="th">-●实赔		</view>
 							<view class="th">操作		</view>
 					    </view>
-					    <block v-for="(item, index) in tableDownData" :key="index">
+					    <block v-if="tableDownData.length>0" v-for="(item, index) in tableDownData" :key="index+1">
 					       <view class="tr">
 					        <view class="td">{{item.stockCode}}</view>
 							<view class="td">{{ item.calculAdvsIvsMoney  		}}</view>
@@ -158,10 +161,10 @@
 				<view class="table">
 					<view class="tr">
 						<view class="th">股票代码</view>
-						<view class="th" v-for="headerObj in tableUpDataHeader">{{headerObj.value}}</view>
+						<view class="th" v-for="headerObj in tableUpDataHeader" :key="headerObj.key">{{headerObj.value}}</view>
 						<view class="th" style="min-width: 200rpx;">操作</view>
 					</view>
-					<block v-for="(item, index) in tableUpShowData" :key="index">
+					<block v-if="tableUpShowData.length>0" v-for="(item, index) in tableUpShowData" :key="index+1">
 					   <view class="tr">
 						<view class="td">{{item.stockCode}}</view>
 						<view class="td">{{ index+1    							}}</view>
@@ -193,10 +196,10 @@
 				<view class="table">
 					<view class="tr">
 						<view class="th">股票代码</view>
-						<view class="th" v-for="headerObj in tableDownDataHeader">{{headerObj.value}}</view>
+						<view class="th" v-for="headerObj in tableDownDataHeader" :key="headerObj.key">{{headerObj.value}}</view>
 						<view class="th" style="min-width: 200rpx;">操作</view>
 					</view>
-					<block v-for="(item, index) in tableDownShowData" :key="index">
+					<block v-if="tableDownShowData.length>0" v-for="(item, index) in tableDownShowData" :key="index+1">
 					   <view class="tr">
 						<view class="td">{{item.stockCode}}</view>
 						<view class="td">{{ index+1    							}}</view>
@@ -236,7 +239,7 @@
 						<uni-th style="min-width: 80px;" align="center">建议出手收益值（%）	</uni-th>
 						<uni-th style="min-width: 30px;" align="center">投入占比				</uni-th>
 					</uni-tr>
-					<uni-tr v-for="(item, index) in tableUpRuleData" :key="index+1">
+					<uni-tr v-for="(item, index) in tableUpRuleData" :key="item.id+index+1">
 						<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
 						<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
 						<uni-td style="padding: 0px 4px; text-align: center;">
@@ -255,7 +258,7 @@
 						<uni-th style="min-width: 80px;" align="center">建议出手收益值（%）	</uni-th>
 						<uni-th style="min-width: 30px;" align="center">投入占比				</uni-th>
 					</uni-tr>
-					<uni-tr v-for="(item, index) in tableDownRuleData" :key="index+1">
+					<uni-tr v-for="(item, index) in tableDownRuleData" :key="item.id+index+1">
 						<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
 						<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
 						<uni-td style="padding: 0px 4px; text-align: center;">
@@ -408,12 +411,12 @@
 				uni.getStorage({
 					key:key,
 					success: function(resp){
-						// console.log("返回值："+ JSON.stringify(resp.data))
+						// // console.log("返回值："+ JSON.stringify(resp.data))
 						// 更新对象 的指定属性，或追加属性
 						_this.$set(_this, table_tag_key, resp.data);
 					},
 					fail:function(){
-						console.log("未取得 key:"+key);
+						// console.log("未取得 key:"+key);
 					}
 				});
 			}
@@ -431,7 +434,7 @@
 						_this.initData(up_down, _this);
 					},
 					fail:function(){
-						console.log("未取得 key:"+strKey);
+						// console.log("未取得 key:"+strKey);
 						_this.initData(up_down, _this);
 					}
 				});
@@ -451,7 +454,7 @@
 				this.freshFontColor()
 			}
 			,change(e) {
-				console.log(e.detail);
+				// console.log(e.detail);
 			}
 			,inputTotalAmountChange(e) {			
 				this.calculateInvestMoney(false);
@@ -487,12 +490,12 @@
 				uni.getStorage({
 					key: _this.judgeUpOrDown() + "-" + _this.stockCode,
 					success: function(resp){
-						console.log("返回值："+ JSON.stringify(resp.data))
+						// console.log("返回值："+ JSON.stringify(resp.data))
 						_this.isNewStockCode = false
 						// _this.$set(_this, table_tag_key, resp.data);
 					},
 					fail:function(){
-						console.log("未取得 key:"+_this.judgeUpOrDown() + "-" + _this.stockCode);
+						// console.log("未取得 key:"+_this.judgeUpOrDown() + "-" + _this.stockCode);
 						_this.isNewStockCode = true
 					}
 				});
@@ -510,7 +513,7 @@
 					stockRatio = this.getStockDownRatioByUnitPrice(unitPriceNow, unitPricePre);	
 					this.initSelectExpectValueRange(this, this.tableDownRuleData)					
 				}
-				console.log("stockRatio："+stockRatio)
+				// console.log("stockRatio："+stockRatio)
 				var item = {}
 				var min_last = 0;
 				var min_id = 0;
@@ -547,7 +550,7 @@
 					this.tableDownData = scheme;
 				}
 				this.tradeRealCount = item.tradeRealCount
-				console.log("计算所得："+JSON.stringify(this.tableUpData));
+				// console.log("计算所得："+JSON.stringify(this.tableUpData));
 			}
 			// 试算内容
 			,calculateItem(isTradeRealCountChange, _this){
@@ -571,7 +574,7 @@
 				if(_this.selectExpectValue>0||_this.selectExpectValue===0){
 					tableList.some((val,index)=>{
 						if(index === _this.selectExpectValue){
-							console.log("选取了："+ JSON.stringify(val))
+							// console.log("选取了："+ JSON.stringify(val))
 							var ratio	= val.upRatio;
 							var downRatio = 0;
 							var isRatioChange = false
@@ -662,7 +665,7 @@
 								downRatio:				downRatio,
 								adviseInvestRatio:		val.adviseInvestRatio,
 							}
-							console.log("计算收录："+JSON.stringify(item))
+							// console.log("计算收录："+JSON.stringify(item))
 							return true;
 						}						
 					});
@@ -710,20 +713,20 @@
 				/** 追加信息 */
 				this.appendInfo(this, item);
 				var itemJson = JSON.stringify(item);
-				console.log("点击"+addOrUpdate+"【内容】:"+ itemJson)
+				// console.log("点击"+addOrUpdate+"【内容】:"+ itemJson)
 				if(addOrUpdate=='addOne'){
-					console.log("点击了添加")
+					// console.log("点击了添加")
 					if(this.isUpBoolean()){
 						// 做多
-						console.log("添加做多")
+						// console.log("添加做多")
 						this.saveData("inStorageUpStockList", "tableUpShowData", item, 1, _this)
 					}else{
 						// 做空
-						console.log("添加做空")
+						// console.log("添加做空")
 						this.saveData("inStorageDownStockList", "tableDownShowData", item, 2, _this)
 					}	
 				}else{
-					console.log("点击了更新")
+					// console.log("点击了更新")
 					if(this.isUpBoolean()){
 						// 做多
 						this.updateStockInfo("inStorageUpStockList", "tableUpShowData", item, _this)
@@ -746,17 +749,17 @@
 					key:keyStr,
 					success: function(resp){
 						var respData = resp.data;
-						console.log("old返回值："+ JSON.stringify(respData))
+						// console.log("old返回值："+ JSON.stringify(respData))
 						var saveData = []
 						if(Array.isArray(respData)){
 							//遍历检查是否存在重复，存在则判断是否替换
-							console.log("遍历检查是否存在重复，存在则判断是否替换")
+							// console.log("遍历检查是否存在重复，存在则判断是否替换")
 							var flag = false;
 							respData.some((val,i)=>{
 								if(item.stockCode == val.stockCode){
 									// 存在重复
 									flag = true;
-									console.log("存在重复……")
+									// console.log("存在重复……")
 									// 此处，异步执行。暂时未找到办法解决，使其同步执行。
 									// 弹窗选取
 									uni.showModal({
@@ -775,10 +778,10 @@
 											if (res.confirm) {
 												// 执行确认后的操作
 												// 替换
-												console.log("替换："+item.stockCode)
-												console.log("替换前："+ JSON.stringify(respData))
+												// console.log("替换："+item.stockCode)
+												// console.log("替换前："+ JSON.stringify(respData))
 												respData.splice(i, 1, item);
-												console.log("替换后："+ JSON.stringify(respData))
+												// console.log("替换后："+ JSON.stringify(respData))
 												// 由于是异步执行，所以，只得补充冗余执行。待后续，解决了 同步执行问题，可省去下部内容
 												saveData = respData
 												uni.setStorage({
@@ -788,7 +791,7 @@
 												_this.$set(_this, table_tag_key, saveData);
 											}else {
 												// 执行取消后的操作
-												console.log("放弃替换，保持原数据："+item.stockCode)
+												// console.log("放弃替换，保持原数据："+item.stockCode)
 											}
 										}
 									});
@@ -799,7 +802,7 @@
 							// 添加新数据
 							if(!flag){
 								// 添加
-								console.log("添加："+item.stockCode)
+								// console.log("添加："+item.stockCode)
 								respData.push(item);
 							}
 							saveData = respData
@@ -815,7 +818,7 @@
 						});
 						_this.$set(_this, table_tag_key, saveData);
 						_this.isNewStockCode = false
-						console.log("new更新值："+ JSON.stringify(saveData))
+						// console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
 						stockSet.push(item);
@@ -824,7 +827,7 @@
 							data:stockSet				
 						});
 						_this.$set(_this, table_tag_key, stockSet);
-						console.log("首次，则新增！数据："+JSON.stringify(stockSet))
+						// console.log("首次，则新增！数据："+JSON.stringify(stockSet))
 					}
 				});
 				// 单独存一份 股票代码
@@ -840,7 +843,7 @@
 					key:keyStr,
 					success: function(resp){
 						var rsd = resp.data;
-						console.log("old返回值："+ JSON.stringify(rsd))
+						// console.log("old返回值："+ JSON.stringify(rsd))
 						var saveData = []
 						if(Array.isArray(rsd)){
 							var flag = true;
@@ -872,7 +875,7 @@
 							saveData = stockSet
 						}
 						_this.$set(_this, table_tag_key, saveData);
-						console.log("new更新值："+ JSON.stringify(saveData))
+						// console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
 						stockSet.push(item);
@@ -881,7 +884,7 @@
 							data:stockSet				
 						});
 						_this.$set(_this, table_tag_key, stockSet);
-						console.log("首次，则新增！数据："+JSON.stringify(stockSet))
+						// console.log("首次，则新增！数据："+JSON.stringify(stockSet))
 					}
 				});
 			}
@@ -925,7 +928,7 @@
 			,delOne(item, up_down_flag) {
 				var _this = this;
 				var dataStr = JSON.stringify(item);
-				console.log("点击删除"+ dataStr)
+				// console.log("点击删除"+ dataStr)
 				var keyStr = "inStorageUpStockList"
 				if(up_down_flag==2){
 					keyStr = "inStorageDownStockList"
@@ -949,10 +952,10 @@
 								key:keyStr,
 								success: function(resp){
 									var respData = resp.data;
-									console.log("old返回值："+ JSON.stringify(respData));
+									// console.log("old返回值："+ JSON.stringify(respData));
 									if(Array.isArray(respData)){
 										//遍历检查是否存在重复，存在则判断是否替换
-										console.log("遍历检查是否存在重复，存在则判断是否替换")
+										// console.log("遍历检查是否存在重复，存在则判断是否替换")
 										var flag = false;
 										respData.some((val,i)=>{
 											if(item.stockCode == val.stockCode){
@@ -975,7 +978,7 @@
 									}
 								},
 								fail:function(){
-									console.log("未取得 key:"+keyStr);						
+									// console.log("未取得 key:"+keyStr);						
 								}
 							});
 						}
@@ -1004,7 +1007,7 @@
 			
 				setTimeout(() => {
 					uni.hideLoading()
-					console.log(val)
+					// console.log(val)
 					this.value = val
 					// 关闭窗口后，恢复默认内容
 					this.$refs.inputDialog.close()
@@ -1048,11 +1051,11 @@
 				uni.getStorage({
 					key: 'fontColor',
 					success: function(resp){
-						console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
+						// console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
 						_this.fontColor = resp.data
 					},
 					fail:function(){
-						console.log("未取得 key:fontColor");
+						// console.log("未取得 key:fontColor");
 						_this.fontColor = {
 							up: 	"color: red; ",
 							down: 	"color: green; "

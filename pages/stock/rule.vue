@@ -319,7 +319,7 @@
 						_this.initData(up_down, _this);
 					},
 					fail:function(){
-						console.log("未取得 key:"+strKey);
+						// console.log("未取得 key:"+strKey);
 						_this.initData(up_down, _this);
 					}
 				});
@@ -354,7 +354,7 @@
 				
 			}
 			,change(e) {
-				console.log(e.detail);
+				// console.log(e.detail);
 			}
 			// 改选
 			,selectUpOrDownChange(e) {
@@ -439,11 +439,11 @@
 				uni.getStorage({
 					key: _this.selectUpOrDownValue + '_' +_this.expectEnd,
 					success: function(resp){
-						console.log("instore Key:"+_this.selectUpOrDownValue + '_' +_this.expectEnd+"；返回值："+ JSON.stringify(resp.data))
+						// console.log("instore Key:"+_this.selectUpOrDownValue + '_' +_this.expectEnd+"；返回值："+ JSON.stringify(resp.data))
 						_this.isNewExpectEnd = false
 					},
 					fail:function(){
-						console.log("未取得 key:"+_this.expectEnd);
+						// console.log("未取得 key:"+_this.expectEnd);
 						_this.isNewExpectEnd = true
 					}
 				});
@@ -491,16 +491,16 @@
 				}
 				/** 追加信息 */
 				var itemJson = JSON.stringify(item);
-				console.log("点击"+addOrUpdate+"【内容】:"+ itemJson)
+				// console.log("点击"+addOrUpdate+"【内容】:"+ itemJson)
 				if(addOrUpdate=='addOne'){
-					console.log("点击了添加")
+					// console.log("点击了添加")
 					if(this.selectUpOrDownValue==1){// 看涨-做多
 						this.saveData('inStorageUpRuleDataList', 'tableUpRuleData', item)
 					}else{// 看跌-做空
 						this.saveData('inStorageDownRuleDataList', 'tableDownRuleData', item)
 					}
 				}else{
-					console.log("点击了更新")
+					// console.log("点击了更新")
 					if(this.selectUpOrDownValue==1){// 看涨-做多
 						this.updateData('【做多规则】', 'inStorageUpRuleDataList', 'tableUpRuleData', this.selectUpOrDownValue, item, this)
 					}else{// 看跌-做空
@@ -525,16 +525,16 @@
 					key:keyStr,
 					success: function(resp){
 						var respData = resp.data;
-						console.log("old返回值："+ JSON.stringify(respData))
+						// console.log("old返回值："+ JSON.stringify(respData))
 						if(Array.isArray(respData)){
 							//遍历检查是否存在重复，存在则判断是否替换
-							console.log("遍历检查是否存在重复，存在则判断是否替换")
+							// console.log("遍历检查是否存在重复，存在则判断是否替换")
 							var flag = false;
 							respData.some((val,i)=>{
 								if(item.expectEnd == val.expectEnd){
 									// 存在重复
 									flag = true;
-									console.log("存在重复……")
+									// console.log("存在重复……")
 									// 此处，异步执行。暂时未找到办法解决，使其同步执行。
 									// 弹窗选取
 									uni.showModal({
@@ -553,17 +553,17 @@
 											if (res.confirm) {
 												// 执行确认后的操作
 												// 替换
-												console.log("替换："+item.expectEnd)
-												console.log("替换前："+ JSON.stringify(respData))
+												// console.log("替换："+item.expectEnd)
+												// console.log("替换前："+ JSON.stringify(respData))
 												respData.splice(i, 1, item);
-												console.log("替换后："+ JSON.stringify(respData))
+												// console.log("替换后："+ JSON.stringify(respData))
 												// 由于是异步执行，所以，只得补充冗余执行。待后续，解决了 同步执行问题，可省去下部内容
 												saveData = respData
 												// 排序 && 拼接【预期收益值】
 												_this.reSortAndSave(keyStr, table_tag_key, saveData, _this);
 											}else {
 												// 执行取消后的操作
-												console.log("放弃替换，保持原数据："+item.expectEnd)
+												// console.log("放弃替换，保持原数据："+item.expectEnd)
 											}
 										}
 									});
@@ -574,7 +574,7 @@
 							// 添加新数据
 							if(!flag){
 								// 添加
-								console.log("添加："+item.expectEnd)
+								// console.log("添加："+item.expectEnd)
 								respData.push(item);
 							}
 							saveData = respData
@@ -584,13 +584,13 @@
 							
 						// 排序 && 拼接【预期收益值】
 						_this.reSortAndSave(keyStr, table_tag_key, saveData, _this);
-						console.log("new更新值："+ JSON.stringify(saveData))
+						// console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
 						saveData.push(item);
 						// 排序 && 拼接【预期收益值】
 						_this.reSortAndSave(keyStr, table_tag_key, saveData, _this);
-						console.log("首次，则新增！数据："+JSON.stringify(saveData))
+						// console.log("首次，则新增！数据："+JSON.stringify(saveData))
 					}
 				});
 				
@@ -609,7 +609,7 @@
 					key:keyStr,
 					success: function(resp){
 						var respData = resp.data;
-						console.log("old返回值："+ JSON.stringify(respData))
+						// console.log("old返回值："+ JSON.stringify(respData))
 						if(Array.isArray(respData)){
 							var isFirst = true;
 							respData.forEach((val, index)=>{
@@ -645,10 +645,10 @@
 												if (res.confirm) {
 													// 执行确认后的操作
 													// 替换
-													console.log("替换："+item.expectEnd)
-													console.log("替换前："+ JSON.stringify(respData))
+													// console.log("替换："+item.expectEnd)
+													// console.log("替换前："+ JSON.stringify(respData))
 													respData.splice(index, 1, item);
-													console.log("替换后："+ JSON.stringify(respData))
+													// console.log("替换后："+ JSON.stringify(respData))
 													// 由于是异步执行，所以，只得补充冗余执行。待后续，解决了 同步执行问题，可省去下部内容
 													// saveData = respData
 													// 排序 && 拼接【预期收益值】
@@ -663,7 +663,7 @@
 													
 												}else {
 													// 执行取消后的操作
-													console.log("放弃替换，保持原数据："+item.expectEnd)
+													// console.log("放弃替换，保持原数据："+item.expectEnd)
 												}
 									
 											},
@@ -683,14 +683,14 @@
 						}
 						// 排序 && 拼接【预期收益值】
 						_this.reSortAndSave(keyStr, table_tag_key, respData, _this);
-						console.log("new更新值："+ JSON.stringify(saveData))
+						// console.log("new更新值："+ JSON.stringify(saveData))
 					},
 					fail:function(){
 						saveData.push(item);
 						
 						// 排序 && 拼接【预期收益值】
 						_this.reSortAndSave(keyStr, table_tag_key, respData, _this);
-						console.log("首次，则新增！数据："+JSON.stringify(saveData))
+						// console.log("首次，则新增！数据："+JSON.stringify(saveData))
 					}
 				});
 				
@@ -703,7 +703,7 @@
 			// 修改
 			,editOne(item, index, upOrDown) {
 				var dataStr = JSON.stringify(item);
-				console.log("点击编辑"+ dataStr)
+				// console.log("点击编辑"+ dataStr)
 				this.expectEnd = item.expectEnd
 				this.upRatio = item.upRatio
 				this.downRatio = item.downRatio
@@ -722,7 +722,7 @@
 			// 删除
 			,delOne(item, keyStr, table_tag_key, upOrDown) {
 				var dataStr = JSON.stringify(item);
-				console.log("点击删除"+ dataStr)
+				// console.log("点击删除"+ dataStr)
 				const _this = this;
 				// 弹窗选取
 				uni.showModal({
@@ -743,10 +743,10 @@
 								key:keyStr,
 								success: function(resp){
 									var respData = resp.data;
-									console.log("old返回值："+ JSON.stringify(respData));
+									// console.log("old返回值："+ JSON.stringify(respData));
 									if(Array.isArray(respData)){
 										//遍历检查是否存在重复，存在则判断是否替换
-										console.log("遍历检查是否存在重复，存在则判断是否替换")
+										// console.log("遍历检查是否存在重复，存在则判断是否替换")
 										var flag = false;
 										respData.some((val,index)=>{
 											if(item.expectEnd == val.expectEnd){
@@ -764,7 +764,7 @@
 									
 								},
 								fail:function(){
-									console.log("未取得 key:"+keyStr);						
+									// console.log("未取得 key:"+keyStr);						
 								}
 							});
 						}
@@ -821,7 +821,7 @@
 			
 				setTimeout(() => {
 					uni.hideLoading()
-					console.log(val)
+					// console.log(val)
 					this.value = val
 					// 关闭窗口后，恢复默认内容
 					this.$refs.inputDialog.close()
@@ -874,18 +874,18 @@
 					});
 					this.freshFontColor();
 				}
-				console.log("选中："+ this.selectedColorValue + "；颜色值："+ JSON.stringify(this.fontColor))
+				// console.log("选中："+ this.selectedColorValue + "；颜色值："+ JSON.stringify(this.fontColor))
 			}
 			,freshFontColor(){
 				var _this = this
 				uni.getStorage({
 					key: 'fontColor',
 					success: function(resp){
-						console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
+						// console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
 						_this.fontColor = resp.data
 					},
 					fail:function(){
-						console.log("未取得 key:fontColor");
+						// console.log("未取得 key:fontColor");
 						_this.fontColor = {
 							up: 	"color: red; ",
 							down: 	"color: green; "

@@ -68,8 +68,64 @@
                 "enablePullDownRefresh": false
             }
             
+        },
+		{
+            "path" : "pages/ID/add",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        },
+        {
+        	"path" : "pages/job/user_add/user_add",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/user_list/user_list",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/map/map",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/head_img/head_img",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/head_img/head_img_edit",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
         }
+        // {
+        // 	"path" : "pages/job/map/liupishui-pickerpolygons",
+        // 	"style" : 
+        // 	{
+        // 		"navigationBarTitleText" : ""
+        // 	}
+        // }
+		
     ],
+	
+	
+	// 
+	
 	"tabBar": {
 		"list": [
 			{
@@ -87,7 +143,20 @@
 			,{
 				"pagePath": "pages/stock/rule",
 				"text": "%schema.tb.rule%"
+			},
+			// {
+			// 	"pagePath": "pages/ID/add",
+			// 	"text": "添加"
+			// },
+			{
+				"pagePath" : "pages/job/user_add/user_add",
+				"text" : "找工" 
+			},
+			{
+				"pagePath" : "pages/job/user_list/user_list",
+				"text" : "列工" 
 			}
+			
 			// ,{
 			// 	"pagePath": "pages/list/list",
 			// 	"text": "%schema.tb.list%"
@@ -105,5 +174,8 @@
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},
-	"uniIdRouter": {}
+	"uniIdRouter": {},
+	"usingComponents": {
+	    "uni-icons": "@dcloudio/uni-ui/lib/uni-icons/uni-icons"
+	  }
 }

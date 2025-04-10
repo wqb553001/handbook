@@ -3,6 +3,15 @@ import App from './App'
 // #ifndef VUE3
 import Vue from 'vue'
 
+
+
+// 根据环境变量加载配置
+const env = process.env.NODE_ENV || 'development';
+const config = require(`./config/config.${env}.js`);
+
+// 挂载到全局 Vue 原型
+Vue.prototype.$config = config;
+
 Vue.config.productionTip = false
 App.mpType = 'app'
 const app = new Vue({
@@ -23,6 +32,8 @@ app.$mount()
 
 import messages from './locale/index'
 import uviewPlus, {setConfig}  from '@/uni_modules/uview-plus'
+import '@/uni.scss';
+
 
 // VUE3
 // #ifdef VUE3

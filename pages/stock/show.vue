@@ -21,7 +21,7 @@
 			<view class="table">
 			    <view class="tr">
 					<view class="th">股票代码</view>
-					<view class="th" v-for="headerObj in tableUpDataHeader">{{headerObj.value}}</view>
+					<view class="th" v-for="headerObj in tableUpDataHeader" :key="headerObj.key">{{headerObj.value}}</view>
 			    </view>
 			    <block v-for="(item, index) in tableUpShowData" :key="index">
 			       <view class="tr">
@@ -57,7 +57,7 @@
 			<view class="table">
 				<view class="tr">
 					<view class="th">股票代码</view>
-					<view class="th" v-for="headerObj in tableDownDataHeader">{{headerObj.value}}</view>
+					<view class="th" v-for="headerObj in tableDownDataHeader" :key="headerObj.key">{{headerObj.value}}</view>
 				</view>
 				<block v-for="(item, index) in tableDownShowData" :key="index">
 				   <view class="tr">
@@ -190,17 +190,17 @@
 				uni.getStorage({
 					key:key,
 					success: function(resp){
-						console.log("返回值："+ JSON.stringify(resp.data))
+						// console.log("返回值："+ JSON.stringify(resp.data))
 						// 更新数据
 						_this.$set(_this, table_tag_key, resp.data);
 					},
 					fail:function(){
-						console.log("未取得 key:"+key);
+						// console.log("未取得 key:"+key);
 					}
 				});
 			}
 			,change(e) {
-				console.log(e.detail);
+				// console.log(e.detail);
 			}
 			,inputTotalAmountChange(e) {			
 				this.calculateInvestMoney();
@@ -216,11 +216,11 @@
 			}
 			//删除
 			,delOne(item) {
-				console.log("点击删除"+ JSON.stringify(item));
+				// console.log("点击删除"+ JSON.stringify(item));
 			}
 			//更新
 			,updateOne(item) {
-				console.log("点击更新"+ JSON.stringify(item))
+				// console.log("点击更新"+ JSON.stringify(item))
 			}
 			//清空股票信息 inStorageUpStockList
 			,removeStockFromStorage(up_down_flag) {
@@ -257,7 +257,7 @@
 							that.$set(that, up_down_data_name, []);
 						}else {
 							// 执行取消后的操作
-							console.log("放弃清空股票，保持原数据。")
+							// console.log("放弃清空股票，保持原数据。")
 						}
 						// 清空缓存数据 标识值：0-默认；1-up-做多；2-down-做空
 						this.clickRemoveStorageFlag = 0;		
@@ -304,7 +304,7 @@
 
 				setTimeout(() => {
 					uni.hideLoading()
-					console.log("_this.clickRemoveStorageFlag:"+this.clickRemoveStorageFlag)
+					// console.log("_this.clickRemoveStorageFlag:"+this.clickRemoveStorageFlag)
 					// 关闭窗口后，恢复默认内容
 					this.$refs.inputDialog.close()
 					if(val.toUpperCase() == "ADMIN"){
@@ -321,7 +321,7 @@
 				});
 			}
 			,confirm(e) {
-				console.log(e);
+				// console.log(e);
 			}
 			,inputStockCodeChange(){
 				
@@ -331,11 +331,11 @@
 				uni.getStorage({
 					key: 'fontColor',
 					success: function(resp){
-						console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
+						// console.log("key: fontColor; 返回值："+ JSON.stringify(resp))
 						_this.fontColor = resp.data
 					},
 					fail:function(){
-						console.log("未取得 key:fontColor");
+						// console.log("未取得 key:fontColor");
 						_this.fontColor = {
 							up: 	"color: red; ",
 							down: 	"color: green; "
