@@ -10,6 +10,11 @@
 //       }
 //     },
 //   }}
+console.log('Base URL:', process.env.UNI_BASE_URL)
+module.exports = {
+	baseUrl: process.env.UNI_BASE_URL,
+	qiniupUrl: process.env.QINIUP_URL,
+}
 
 <style lang="scss">
 @import '@/common/css/theme.scss';

@@ -587,8 +587,8 @@
 					
 					// 2. 获取后端颁发的上传凭证
 					const tokenRes = await uni.request({
-						// url: this.$config.baseUrl + '/api/uploadBefore',
-						url: 'http://localhost:18281/api/uploadBefore',
+						url: process.env.UNI_BASE_URL + '/api/uploadBefore',
+						// url: 'http://localhost:18281/api/uploadBefore',
 						// url: 'http://xny.world:18281/api/uploadBefore',
 						method: 'GET',
 						data: {
@@ -606,7 +606,7 @@
 					
 					// 4. 执行上传
 					const uploadRes = await uni.uploadFile({
-					  url: 'http://up-z2.qiniup.com', // 根据存储区域选择上传域名
+					  url: process.env.UNI_QINIUP_URL, // 'http://up-z2.qiniup.com', // 根据存储区域选择上传域名
 					  filePath: this.imageViewSrc,
 					  name: 'file',
 					  formData: {
@@ -619,7 +619,7 @@
 					// 5. 处理响应结果
 					if (uploadRes.statusCode === 200) {
 					  const resData = JSON.parse(uploadRes.data);
-					  this.imageViewSrc = `http://cdn.xny.world/${resData.key}`;
+					  this.imageViewSrc = process.env.UNI_CDN + `${resData.key}`;
 					  uni.showToast({ title: '上传成功' });
 					}
 					

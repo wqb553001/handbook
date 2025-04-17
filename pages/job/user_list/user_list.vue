@@ -1,7 +1,7 @@
 <template>
 	<view class="container">
 		<l-navbar title="首页" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
-			:showRight="false" :leftText="truncateString(location.text)" centerMargin="200px" leftWidth="300px"
+			:showRight="false" :leftText="truncateString(location.text)" centerMargin="200px" leftWidth="300px" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" :border="false"
 			@leftClick="leftClick" :debounce-delay="500" @change="handleSearchChange" placeholderText="请输入关键词"
 			>
@@ -176,11 +176,10 @@
 		},
 		methods: {
 			handleSearchChange(searchValue){
-				this.searchValue=searchValue
+				this.searchValue = searchValue
 				console.log("搜索框输入："+ searchValue)
 				this.initData();
 				this.getList();
-				// this.getList("%"+searchValue+"%")
 			},
 			initData(){
 				this.listData = [];
@@ -230,8 +229,11 @@
 					data.limit = 10;
 				}
 				uni.request({
-					url: 'http://localhost:18281/api/job/userStream',  // 数据源的数据是 有序的
+					// url: 'http://localhost:18281/api/job/userStream',  // 数据源的数据是 有序的
 					// url: 'http://xny.world:18281/api/job/userStream',  // 数据源的数据是 有序的
+					// url: process.env.ENV_PATH.baseUrl+'/api/job/userStream',  // 数据源的数据是 有序的
+					// url: process.env.VUE_APP_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
+					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {

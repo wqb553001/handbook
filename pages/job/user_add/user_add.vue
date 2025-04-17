@@ -280,7 +280,8 @@
 					}
 					// 调用后端API发送验证码
 					const res = await uni.request({
-						url: 'http://localhost:18281/api/sys/sms/sendCodeMessage',
+						url: process.env.UNI_BASE_URL+'/api/sys/sms/sendCodeMessage',
+						// url: 'http://localhost:18281/api/sys/sms/sendCodeMessage',
 						// url: 'http://xny.world:18281/api/sys/sms/sendCodeMessage',
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -324,7 +325,8 @@
 					}
 					// 调用后端API发送验证码
 					const res = await uni.request({
-						url: 'http://localhost:18281/api/sys/sms/checkCode',
+						url: process.env.UNI_BASE_URL+'/api/sys/sms/checkCode',
+						// url: 'http://localhost:18281/api/sys/sms/checkCode',
 						// url: 'http://xny.world:18281/api/sys/sms/checkCode',
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -396,8 +398,8 @@
 			async saveToStore(saveData){
 				try {
 					const result = await uni.request({
-						// url: this.$config.baseUrl + '/api/job/saveUser',
-						url: 'http://localhost:18281/api/job/saveUser',
+						url: process.env.UNI_BASE_URL+ '/api/job/saveUser',
+						// url: 'http://localhost:18281/api/job/saveUser',
 						// url: 'http://xny.world:18281/api/job/saveUser',
 						header: { 'Content-Type': 'application/json' },
 						method: 'POST',

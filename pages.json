@@ -212,5 +212,5 @@
 	"uniIdRouter": {},
 	"usingComponents": {
 	    "uni-icons": "@dcloudio/uni-ui/lib/uni-icons/uni-icons"
-	  }
+	}
 }
