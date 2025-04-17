@@ -228,6 +228,7 @@
 					data.time = new Date().getTime() + '';	// 添加请求时间戳，作用：防止 重复取数
 					data.limit = 10;
 				}
+				console.log('Base URL:', process.env.UNI_BASE_URL)
 				uni.request({
 					// url: 'http://localhost:18281/api/job/userStream',  // 数据源的数据是 有序的
 					// url: 'http://xny.world:18281/api/job/userStream',  // 数据源的数据是 有序的

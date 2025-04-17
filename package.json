@@ -45,7 +45,7 @@
 	      	"PROD-H5": true
 	      }
 	  },
-  	  "dev:mp-weixin": {
+  	  "prewx": {
   		"title": "微信小程序—— Dev 开发版",
   		"env": {
   		  "ENV_TYPE": "dev",
@@ -58,7 +58,7 @@
 			"MP-DINGTALK": true
 		}
   	  },
-  	  "build:mp-weixin": {
+  	  "prodwx": {
   		"title": "微信小程序—— Prod 正式版",
   		"env": {
   		  "ENV_TYPE": "prod",
