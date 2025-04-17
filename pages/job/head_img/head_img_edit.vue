@@ -589,6 +589,7 @@
 					const tokenRes = await uni.request({
 						// url: this.$config.baseUrl + '/api/uploadBefore',
 						url: 'http://localhost:18281/api/uploadBefore',
+						// url: 'http://xny.world:18281/api/uploadBefore',
 						method: 'GET',
 						data: {
 							sysId: 2025040301,

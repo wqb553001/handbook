@@ -1,8 +1,9 @@
 <template>
 	<view class="container">
-		<uni-card :is-shadow="false" is-full style="text-align: center; display: block;">
+		<uni-card :is-shadow="false" is-full style="text-align: center; display: block; ">
 			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
 		</uni-card>
+		
 		<!-- <uni-section title="基础信息" type="line"> -->
 			<view class="example">
 				<!-- 基础用法，不包含校验规则 -->
@@ -63,13 +64,13 @@
 						<uni-data-checkbox v-model="baseFormData.sex" :localdata="sexs" />
 					</uni-forms-item>
 					<uni-forms-item label="技能" required>
-						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" :class="{'force-highlight-other': true}"  />
+						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" />
 						<input style="display: none;" v-model="baseFormData.skills" />
-						<uni-easyinput v-if="judgeIncludeOtherSkill(baseFormData.skills)" :value="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
+						<uni-easyinput v-if="hasOtherSkill" :value="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="出生年月">
-						<picker mode="date" fields="month" :value="baseFormData.birthYearMonth" @change="dateChange">
-							<view class="selectDate">{{baseFormData.birthYearMonth}}</view>
+						<picker mode="date" fields="month"  start="1900-01-01" :value="baseFormData.birth" @change="dateChange">
+							<view class="selectDate">{{baseFormData.birth}}</view>
 						</picker>
 					</uni-forms-item>
 					<uni-forms-item label="接单区域">
@@ -84,8 +85,8 @@
 					</uni-forms-item>
 					
 					<uni-forms-item label="是否自带工具\设备">
-						<uni-data-checkbox v-model="baseFormData.hasTools" :localdata="toolsOptions" />
-						<uni-easyinput v-if="baseFormData.hasTools == 10" v-model="baseFormData.tools" 
+						<uni-data-checkbox v-model="tool" @change="hasTool" :localdata="toolsOptions" />
+						<uni-easyinput v-if="hasTools" v-model="baseFormData.tools" 
 						placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="自我介绍">
@@ -121,7 +122,7 @@
 					mobile: '',
 					introduction: '',
 					sex: 2,
-					birthYearMonth: '1965-05',
+					birth: '1970-01',
 					address: '',				// 位置：地址
 					latitude: '1',				// 位置：纬度-坐标
 					longitude: '1',				// 位置：经度-坐标
@@ -130,7 +131,6 @@
 					district:'',				// 区
 					skills: '',					// 技能
 					otherSkills:'',				// 其他技能
-					hasTools: 20,				// 10-带工具/设备;20-不带
 					tools: '',					// 工具/设备 名称
 				},
 				// 技能
@@ -154,6 +154,7 @@
 					{value: 20, text: "不自带"	},
 					{value: 10, text: "自带"	},
 				],
+				tool: 20,
 				toolStyle: 'display: none;',
 				// 性别
 				sexs: [
@@ -169,12 +170,15 @@
 						radius: '50%'
 					}
 				},
+				hasOtherSkill: false,		// 其他技能
+				hasTools: false,			// 是否带工具
 				
 				countdown: 0,
 				isCounting: false,
 				codeValid: 0,
 				smsCodeDisabled: false,
 				canGetCode : false,
+				
 			}
 		},
 		computed: {
@@ -190,13 +194,14 @@
 				  }
 				},
 				set(newVal) {
-					// console.log('新选中值：', newVal);
+					console.log('新选中值：', newVal);
 				  const selected = newVal.map(value => {
 					const option = this.skillsOptions.find(o => o.value === value);
 					return {[Number(option.value)]: option.text  };
 				  });
 				  this.baseFormData.skills = JSON.stringify(selected);
-				  // console.log('设置值：', this.baseFormData.skills);
+				  console.log('设置值：', this.baseFormData.skills);
+				  this.hasOtherSkill = this.judgeIncludeOtherSkill(this.baseFormData.skills)
 				}
 			}
 		},
@@ -240,9 +245,20 @@
 					});
 				}
 				const userId = await this.saveToStore(this.baseFormData);
-				console.log("保存成功，userId:", userId)
-				const url = `/pages/job/head_img/head_img?userId=${userId}`;
-				uni.navigateTo({ url });
+				if(userId){
+					console.log("保存成功，userId:", userId)
+					const url = `/pages/job/head_img/head_img?userId=${userId}`;
+					uni.navigateTo({ url });	
+				}else{
+					uni.showToast({ title: '注册失败', icon: 'none' });
+				}
+
+			},
+			
+			hasTool(e){
+				this.hasTools = false;
+				console.log("工具选择："+ e.detail.value)
+				if(e.detail.value === 10) this.hasTools = true;
 			},
 
 			// 验证手机号格式
@@ -265,11 +281,12 @@
 					// 调用后端API发送验证码
 					const res = await uni.request({
 						url: 'http://localhost:18281/api/sys/sms/sendCodeMessage',
+						// url: 'http://xny.world:18281/api/sys/sms/sendCodeMessage',
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						data: param
 					});
-					// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
+					console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
 					if(res.data.code == 0) {
 						uni.showToast({ title: '验证码已发送' });
 						this.startCountdown();
@@ -296,6 +313,8 @@
 			
 			// 短信验证
 			async validateCode(){
+				this.codeValid = 1;
+				return
 				try {
 					const param = {
 							phone: this.baseFormData.mobile,
@@ -306,6 +325,7 @@
 					// 调用后端API发送验证码
 					const res = await uni.request({
 						url: 'http://localhost:18281/api/sys/sms/checkCode',
+						// url: 'http://xny.world:18281/api/sys/sms/checkCode',
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						data: param
@@ -325,23 +345,13 @@
 			},
 			
 			dateChange(e) {
-				this.baseFormData.birthYearMonth = e.detail.value;
-				console.log("选中日期："+this.baseFormData.birthYearMonth)
+				this.baseFormData.birth = e.detail.value;
+				console.log("选中日期："+this.baseFormData.birth)
 				// 可以在这里处理选择后的逻辑，例如获取选择月份的第一天和最后一天
 			},
 			judgeIncludeOtherSkill(jsonStr){
-				// return JSON.parse(jsonStr).some(item => item.value == '-1');
-				// try {
-				//   // const skillsObj = JSON.parse(this.baseFormData.skills || "{}");
-				//   const skillsObj = JSON.parse(jsonStr || "{}");
-				//   return Object.values(skillsObj).some(item => item.value === '-1');
-				// } catch (e) {
-				//   return false; // 解析失败时不显示输入框
-				// }
 				try {
-				  // const skills = JSON.parse(this.baseFormData.skills || "[]");
-				  const skills = JSON.parse(jsonStr || "[]");
-				  return skills.some(item => item.value === -1);
+				  return JSON.parse(jsonStr || "[]").some(item => "-1" in item);
 				} catch {
 				  return false;
 				}
@@ -388,6 +398,7 @@
 					const result = await uni.request({
 						// url: this.$config.baseUrl + '/api/job/saveUser',
 						url: 'http://localhost:18281/api/job/saveUser',
+						// url: 'http://xny.world:18281/api/job/saveUser',
 						header: { 'Content-Type': 'application/json' },
 						method: 'POST',
 						data: JSON.stringify(saveData)
@@ -407,8 +418,6 @@
 					return result.data.data;
 				} catch (err) {
 				    console.error('捕获异常:', err);
-				    // throw err; // 将错误继续向上抛出，或返回特定错误标识（如 return -1）
-					uni.showToast({ title: '注册失败', icon: 'none' });
 				}
 				// var _this = this
 				// uni.getStorage({
@@ -488,6 +497,7 @@
 	.example {
 		padding: 15px;
 		background-color: #fff;
+		// background:linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 100%);
 	}
 
 	.segmented-control {
@@ -539,34 +549,34 @@
 	  z-index: 2;
 	}
 	
-	  .force-highlight-other {
-	    // 未选中时高亮
-	     ::v-deep .uni-data-checklist .checklist-item[data-value='-1']:not(.checked) {
-	       .checklist-box {
-	         border: 2rpx solid #FF4D4F !important;  // 红色边框
-	         background-color: #FFF1F0 !important;    // 浅红背景
-			 &::after { /* 处理组件可能的内置伪元素 */
-			   border-color: #FF4D4F !important;
-			 }
-	       }
-	       .checklist-content .checklist-text {
-	         color: #FF4D4F !important;               // 红色文字
-	         font-weight: bold !important;            // 加粗
-	       }
-	     }
+	  // .force-highlight-other {
+	  //   // 未选中时高亮
+	  //    ::v-deep .uni-data-checklist .checklist-item[data-value='-1']:not(.checked) {
+	  //      .checklist-box {
+	  //        border: 2rpx solid #FF4D4F !important;  // 红色边框
+	  //        background-color: #FFF1F0 !important;    // 浅红背景
+			//  &::after { /* 处理组件可能的内置伪元素 */
+			//    border-color: #FF4D4F !important;
+			//  }
+	  //      }
+	  //      .checklist-content .checklist-text {
+	  //        color: #FF4D4F !important;               // 红色文字
+	  //        font-weight: bold !important;            // 加粗
+	  //      }
+	  //    }
 		 
-	     // 选中时恢复默认
-	     ::v-deep .checklist-item[data-value="-1"].checked {
-	       .checklist-box {
-	         border-color: #007AFF !important;
-	         background-color: #fff !important;
-	       }
-	       .checklist-text {
-	         color: #333 !important;
-	         font-weight: normal !important;
-	       }
-	     }
-	   }
+	  //    // 选中时恢复默认
+	  //    ::v-deep .checklist-item[data-value="-1"].checked {
+	  //      .checklist-box {
+	  //        border-color: #007AFF !important;
+	  //        background-color: #fff !important;
+	  //      }
+	  //      .checklist-text {
+	  //        color: #333 !important;
+	  //        font-weight: normal !important;
+	  //      }
+	  //    }
+	  //  }
 	
 	// .force-highlight-other {
 	//   // 未选中状态
@@ -578,6 +588,10 @@
 	//       color: #f00 !important; // 文字红色
 	//     }
 	//   }
+	// }
+	
+	// .uni-h6{
+	// 	height:91px;background:linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 100%);padding-top:47px;width:100%
 	// }
 	
 	/* 新增样式 */

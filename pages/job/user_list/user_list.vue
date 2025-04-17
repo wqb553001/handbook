@@ -1,88 +1,107 @@
 <template>
 	<view class="container">
+		<l-navbar title="首页" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
+			:showRight="false" :leftText="truncateString(location.text)" centerMargin="200px" leftWidth="300px"
+			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" :border="false"
+			@leftClick="leftClick" :debounce-delay="500" @change="handleSearchChange" placeholderText="请输入关键词"
+			>
+		</l-navbar>
 		<view class="banner" @click="goDetail(banner)">
 			<image class="banner-img" :src="banner.cover"></image>
 			<view class="banner-title">{{ banner.title }}</view>
 		</view>
 		<view class="uni-list">
-			<block v-for="(worker, index) in listData" :key="index">
+			<!-- <block v-for="(worker, index) in listData" :key="index">
 				<view class="uni-list-cell" hover-class="uni-list-cell-hover" @click="goDetail(worker)">
 					<view class="uni-media-list">
-						<!-- <image class="uni-media-list-logo" src="https://img.36krcdn.com/20200410/v2_9c3331af67e64994aa97a27fffb1a380_img_png?x-oss-process=image/resize,m_mfit,w_520,h_300/crop,w_520,h_300,g_center"></image> -->
-						<!-- <image class="uni-media-list-logo" :src="banner.cover"></image> -->
-						<!-- <image class="uni-media-list-logo" src="#"></image> -->
 						<view class="uni-media-list-body">
-							<view class="uni-media-list-text-top">{{ worker.skillSelecteds.map(skill => skill.text).join(",") + worker.otherSkills }}</view>
+							<image :src="worker.headImgPath" class="headImg" />
+							<view class="uni-media-list-text-top">{{ worker.allSkills }}</view>
 							<view class="uni-media-list-text-top">{{ worker.introduction }}</view>
 							<view class="uni-media-list-text-bottom">
-								<text>姓名：{{ worker.name }}</text>
-								<text>电话：{{ worker.phoneno }}</text>
-								<text>年龄：{{ calculateAge(worker.birthYearMonth) }}</text>
+								<text>姓名：{{ worker.username }}</text>
+								<text>电话：{{ worker.mobile }}</text>
+								<text>年龄：{{ worker.age }}</text>
 							</view>
 						</view>
 					</view>
 				</view>
 				
-				<uni-card :title="worker.skillSelecteds.map(skill => skill.text).join(',') + worker.otherSkills" :sub-title="worker.name" :extra="worker.phoneno" @click="onClick">
+				<uni-card :title="worker.allSkills" :sub-title="worker.username" :extra="worker.mobile" @click="onClick">
 					<text class="uni-body">{{ worker.introduction }}</text>
 				</uni-card>
-				
-				<!-- #ifdef APP-PLUS -->
-				<view class="ad-view" v-if="(index > 0 && (index+1) % 10 == 0)">
-					<ad :adpid="adpid" @error="aderror"></ad>
-				</view>
-				<!-- #endif -->
-			</block>
-			<!-- <li v-for="(worker, index) in listData" :key="index"> -->
-				<!-- <uni-card class="uni-card-item" style="margin: 5px 10px 5px 10px;" v-for="(worker, index) in listData" :key="index" :title="worker.skillSelecteds.map(skill => skill.text).join(',') + worker.otherSkills" :sub-title="worker.name" :extra="worker.phoneno" @click="onClick">
-					<text class="uni-body">{{ worker.introduction }}</text>
-				</uni-card> -->
-			<!-- </li> -->
+			</block> -->
+
 			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
-				<uni-card :title="worker.skillSelecteds.map(skill => skill.text).join(',') + worker.otherSkills" :sub-title="worker.name" :extra="worker.phoneno" @click="onClick">
-					<text class="uni-body">{{ worker.introduction }}</text>
-				</uni-card>
-			</view>
-			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
-				<uni-card :title="worker.skillSelecteds.map(skill => skill.text).join(',') + worker.otherSkills" :sub-title="worker.name" :extra="worker.phoneno" @click="onClick">
-					<text class="uni-body">{{ worker.introduction }}</text>
-				</uni-card>
-			</view>
-			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
-				<uni-card :title="worker.skillSelecteds.map(skill => skill.text).join(',') + worker.otherSkills" :sub-title="worker.name" :extra="worker.phoneno">
-					<text class="uni-body">{{ worker.introduction }}</text>
-					<!-- <view slot="actions" class="card-actions no-border">
-						<view class="card-actions-item" @click="actionsClick('分享', worker)">
-							<uni-icons type="redo" size="18" color="#999"></uni-icons>
-							<text class="card-actions-item-text">分享</text>
-						</view>
-						<view class="card-actions-item" @click="actionsClick('点赞', worker)">
-							<uni-icons type="heart" size="18" color="#999"></uni-icons>
-							<text class="card-actions-item-text">点赞</text>
-						</view>
-						<view class="card-actions-item" @click="actionsClick('评论', worker)">
-							<uni-icons type="chatbubble" size="18" color="#999"></uni-icons>
-							<text class="card-actions-item-text">评论</text>
-						</view>
-					</view> -->
-				</uni-card>
-			</view>
-			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
-				<uni-card >
-					<view class="uni-media-list-body">
-						<view class="uni-media-list-text-top">{{ worker.skillSelecteds.map(skill => skill.text).join(",") + worker.otherSkills }}</view>
-						<view class="uni-media-list-text-top">{{ worker.introduction }}</view>
-						<view class="uni-media-list-text-top">{{ worker.sex==0?'男':worker.sex==0?'女':'' }}</view>
-						<view class="uni-media-list-text-bottom">
-							<text>{{ worker.name +(worker.sex==0?'先生':worker.sex==0?'女士':'') }}</text>
-							<!-- <text>{{ worker.sex==0?'男':worker.sex==0?'女':'' }}</text> -->
-							<text>{{ worker.phoneno }}</text>
-							<text>年龄：{{ calculateAge(worker.birthYearMonth) }}</text>
+				<uni-card style="padding:0px">
+					<view class="uni-flex uni-row">
+						<view class="uni-row" style="width:100%" >
+							<view class="text" style="text-align: left; padding-top: 10rpx; ">
+								{{ worker.allSkills }}
+							</view>
+							<view class="text" style="display: flex; padding-top: 10rpx;">
+								<view class="text uni-flex" style="width: 200rpx; height: 200rpx;">
+									<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
+								</view>
+								<view class="uni-row" style="flex: 1; padding-top: 10rpx; padding-left: 10rpx; ">
+									<view class="uni-flex uni-column" style="min-height: 80rpx;" >
+										{{ worker.introduction }}
+									</view>
+									
+									<view class="uni-flex uni-row" style="justify-content: space-between; padding-top: 10rpx;">
+										<view class="text" style="min-width: 160rpx;">
+											{{ worker.tools || ' ' }}
+										</view>
+										
+										<view class="text" style="color: #2E8B57; font-weight: bold;">
+											{{ worker.address || ' ' }}
+										</view>
+									</view>
+								</view>
+							</view>
+							
+								
+							<view class="uni-flex uni-row" style="-webkit-justify-content: space-between;justify-content: space-between;">
+								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
+								<view class="text" style="display: flex;" @click="makePhoneCall(worker.mobile)">电话联系
+									<u-icon
+										name="phone" 
+										color="#D3D3D3" 
+										size="36rpx" 
+									/>
+								</view>
+								
+							</view>
 						</view>
 					</view>
 				</uni-card>
 			</view>
+			
 		</view>
+			
+			<!-- <view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
+				<uni-card >
+					<view class="uni-media-list-body">
+						<image :src="worker.headImgPath" class="headImg" />
+						<view class="uni-media-list-text-top">{{ worker.allSkills }}</view>
+						<view class="uni-media-list-text-top">{{ worker.introduction }}</view>
+						<view class="uni-media-list-text-top">{{ worker.sex==0?'男':worker.sex==0?'女':'' }}</view>
+						<view class="uni-media-list-text-bottom">
+							<text>{{ worker.username +(worker.sex==0?'先生':worker.sex==0?'女士':'') }}</text>
+							<text>{{ worker.mobile }}</text>
+							<text>年龄：{{ worker.age }}</text>
+						</view>
+					</view>
+				</uni-card>
+			</view> -->
+		
+		
+		<!-- #ifdef APP-PLUS -->
+		<view class="ad-view" v-if="(index > 0 && (index+1) % 10 == 0)">
+			<ad :adpid="adpid" @error="aderror"></ad>
+		</view>
+		<!-- #endif -->
+		
 		<uni-load-more :status="status" :icon-size="16" :content-text="contentText" />
 	</view>
 </template>
@@ -97,37 +116,85 @@
 			return {
 				banner: {},
 				listData: [],
-				last_id: '',
-				reload: false,
-				status: 'more',
+				last_id: '',	// 分页指针；上一页的最后一项的id
+				reload: false,	// 上拉加载更多-false; 下拉刷新-true
+				status: 'more', // 加载状态  more：上拉加载更多；loading：加载中；nomore：没有更多
 				adpid: '',
 				contentText: {
 					contentdown: '上拉加载更多',
 					contentrefresh: '加载中',
 					contentnomore: '没有更多'
-				}
+				},
+				location:{
+					text: "四方河宜家尚城",
+					address: "四方河宜家尚城",
+					latitude: "",
+					longitude: "",
+					province: "",
+					city: "贵阳市",
+					district: "南明区"
+				},
+				searchValue:"",
 			};
 		},
 		onLoad() {
 			this.adpid = this.$adpid;
 			this.getBanner();	// 获取，标题展示数据
-			// this.getList();		// 获取，内容列表数据
-			this.getList1();		// 获取，内容列表数据
+			this.getList();		// 获取，内容列表数据
+			var _this = this
+			// 监听全局事件（获取选择的地址）
+			uni.$on('acceptAddress', (data) => {
+				var str = data.title;
+				if (typeof str == 'string') {
+					str = str.length > 10 ? '…' + str.slice(-9) : str
+				}
+				console.log("返回地区1："+JSON.stringify(data)+"; 截取结果：" + str);
+				this.location = {
+					text		: str,
+					address 	: data.title,
+					latitude 	: data.location.lat,	// 纬度
+					longitude 	: data.location.lng,	// 经度
+					province 	: data.province,
+					city 		: data.city,
+					district 	: data.district
+				}
+			});
+		},
+		onUnload() {
+			// 避免泄露，结束卸载监听
+			uni.$off('acceptAddress');
 		},
 		onPullDownRefresh() {
 			this.reload = true;
 			this.last_id = '';
 			this.getBanner();	// 获取，标题展示数据
-			// this.getList();		// 获取，内容列表数据
-			this.getList1();		// 获取，内容列表数据
+			this.getList();		// 获取，内容列表数据
 		},
 		onReachBottom() {
 			this.status = 'more';
-			// this.getList();		// 获取，内容列表数据
-			
-			this.getList1();		// 获取，内容列表数据
+			this.getList();		// 获取，内容列表数据
 		},
 		methods: {
+			handleSearchChange(searchValue){
+				this.searchValue=searchValue
+				console.log("搜索框输入："+ searchValue)
+				this.initData();
+				this.getList();
+				// this.getList("%"+searchValue+"%")
+			},
+			initData(){
+				this.listData = [];
+				this.last_id = '';
+			},
+			leftClick(){
+				console.log("点击了 导航栏 L 左侧……")
+				uni.navigateTo({
+				  url: "/pages/job/map/map"
+				});
+			},
+			rightClick(){
+				console.log("点击了 导航栏 R 右侧……")
+			},
 			// 获取，标题展示数据
 			getBanner() {
 				let data = {
@@ -151,46 +218,40 @@
 			// 获取，内容列表数据
 			getList() {
 				var data = {
-					column: 'id,post_id,title,author_name,cover,published_at' //需要的字段名
+					// sort: 'user_id',
+					// order: 'ASC',
+					likeAllSkills: "%"+this.searchValue+"%"
 				};
 				if (this.last_id) {
 					// 说明已有数据，目前处于上拉加载
 					this.status = 'loading';
 					data.minId = this.last_id;				// 有序取数，下一批数据的指针
 					data.time = new Date().getTime() + '';	// 添加请求时间戳，作用：防止 重复取数
-					data.pageSize = 10;
+					data.limit = 10;
 				}
 				uni.request({
-					url: 'https://unidemo.dcloud.net.cn/api/news',  // 数据源的数据是 有序的
-					data: data,
-					success: data => {
-						if (data.statusCode == 200) {
-							let list = this.setTime(data.data);
+					url: 'http://localhost:18281/api/job/userStream',  // 数据源的数据是 有序的
+					// url: 'http://xny.world:18281/api/job/userStream',  // 数据源的数据是 有序的
+					data: JSON.stringify(data),
+					method: 'POST',
+					success: result => {
+						console.log('userStream 返回值' + JSON.stringify(result));
+						if (result.statusCode == 200) {
+							const respData = result.data.data.rows;
+							if(respData.length==0) {
+								this.reload = false;
+								this.status = 'nomore';	// 没有更多
+								return;
+							};
+							let list = this.dataHandle(respData);
 							this.listData = this.reload ? list : this.listData.concat(list);
-							this.last_id = list[list.length - 1].id;
+							this.last_id = list[list.length - 1].userId;
 							this.reload = false;
+							this.status = 'more';		// 上拉加载更多
 						}
 					},
-					fail: (data, code) => {
-						console.log('fail' + JSON.stringify(data));
-					}
-				});
-			},
-			getList1() {
-				this.getStoreByKey();
-			},
-			getStoreByKey(){
-				var _this = this
-				uni.getStorage({
-					key: keyStr,
-					success: function(resp){
-						console.log("key:", keyStr, "返回值：", JSON.stringify(resp.data))
-						// 更新对象 的指定属性，或追加属性
-						// _this.$set(_this, table_tag_key, resp.data);
-						_this.listData = resp.data;
-					},
-					fail:function(){
-						console.log("未取得 key:", keyStr);
+					fail: (result, code) => {
+						console.log('fail' + JSON.stringify(result));
 					}
 				});
 			},
@@ -207,6 +268,40 @@
 				// 	url: '../list2detail-detail/list2detail-detail?detailDate=' + encodeURIComponent(JSON.stringify(detail))
 				// });
 			},
+			dataHandle: function(items) {
+				var newItems = [];
+				var _this = this
+				items.forEach(e => {
+					newItems.push({
+						userId: 		e.userId,
+						username:		e.username,
+						mobile:			e.mobile,
+						sex: 			e.sex,
+						headImgPath:	e.headImgPath,
+						allSkills: 		_this.truncateString(JSON.parse(e.skills).map(obj => {var val = Object.values(obj); return "其他"==val?"":val}).join(",") + e.otherSkills, 20), // 去除 “其他” 字样
+						age: 			_this.calculateAge(e.birth),
+						// address: 		e.province+e.city+e.district+e.address,
+						address: 		e.district+e.address,
+						tools:			_this.truncateString(e.tools, 20),
+						introduction: 	_this.truncateString(e.introduction, 45)
+					});
+				});
+				return newItems;
+			},
+			
+			truncateString(str, length = 45, defaultValue = ' ') {
+				if (!str || str.length === 0) {
+					return defaultValue;
+				}
+				
+				str = String(str).trim();
+				if (str.length > length) {
+					return str.slice(0, length) + '…';
+				}
+				return str;
+			  
+			},
+			
 			setTime: function(items) {
 				var newItems = [];
 				items.forEach(e => {
@@ -225,9 +320,9 @@
 				console.log("aderror: " + JSON.stringify(e.detail));
 			},
 			
-			calculateAge(yearMonth){
+			calculateAge(birth){
 			  // 将出生日期字符串转换为Date对象
-			  const birthDateObj = new Date(yearMonth+'-01');
+			  const birthDateObj = new Date(birth);
 			  
 			  // 获取当前日期
 			  const today = new Date();
@@ -243,6 +338,15 @@
 			  }
 			  
 			  return age;
+			},
+			// 打电话
+			makePhoneCall: function (phone) {
+				uni.makePhoneCall({
+					phoneNumber: phone,
+					success: () => {
+						console.log("成功拨打电话:"+phone)
+					}
+				})
 			},
 		
 			onClick(phoneno) {
@@ -263,13 +367,34 @@
 			}
 		},
 		computed:{
-			
+		},
+		/**
+		 * 当 searchInput 配置 disabled 为 true 时触发
+		 */
+		onNavigationBarSearchInputClicked(e) {
+			console.log('输入变更：'+ e)
+			uni.navigateTo({
+				url: '/pages/job/user_list/history_record'
+			});
+		},
+		/**
+		 *  点击导航栏 buttons 时触发
+		 */
+		onNavigationBarButtonTap() {
+			uni.showModal({
+				title: '提示',
+				content: '用户点击了功能按钮，这里仅做展示。',
+				success: res => {
+					if (res.confirm) {
+						console.log('用户点击了确定');
+					}
+				}
+			});
 		}
 	};
 </script>
 
-<style>
-	/* @import '../../../common/css/uni.css'; */
+<style lang="scss">
 	@import url('@/common/css/uni.css');
 	
 	.banner {
@@ -357,4 +482,39 @@
 		white-space: normal !important;
 	}
 	
+	.headImg{
+		width: 50px;
+		height: 50px;
+	}
+	
+	/* uni-card {
+		padding: 0px;
+		::v-deep .uni-card__content{
+			padding: 0px;
+		}
+	} */
+	
+	::v-deep .uni-card__content{
+		padding: 0px !important;
+	}
+	
+	
+	// /* 搜索栏 */
+	// .custom-navbar {
+	//   background-color: #007AFF;
+	//   padding: 10rpx 20rpx;
+	// }
+	// .search-box {
+	//   background-color: #fff;
+	//   border-radius: 6px;
+	//   height: 60rpx;
+	//   display: flex;
+	//   align-items: center;
+	//   padding: 0 20rpx;
+	// }
+	// .placeholder {
+	//   color: #999;
+	//   margin-left: 10rpx;
+	// }
+
 </style>
