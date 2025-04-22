@@ -59,11 +59,11 @@ export function exportExcel (fileData, documentName = 'excel') {
  * show toast
  * @param title
  */
-export function showToast (title = '') {
+export function showToast (title = '', icon='none') {
   uni.hideLoading()
   uni.showToast({
 	title,
-	icon: 'none',
+	icon: icon,
 	duration: 1500
   })
 }

@@ -1,6 +1,6 @@
 <template>
-    <view style="height: 80vh;">
-        <mapLocationPickerPolygons @selected="selected" :base_url="base_url" :qqmapsdkKey="qqmapsdkKey" :polygons="polygons"></mapLocationPickerPolygons>
+    <view style="height: 80vh; font-size: 20px; width: 100%;">
+        <mapLocationPickerPolygons @selected="selected" :base_url="base_url" :qqmapsdkKey="qqmapsdkKey" :polygons="polygons" style="width: 100%;" ></mapLocationPickerPolygons>
     </view>
 </template>
 

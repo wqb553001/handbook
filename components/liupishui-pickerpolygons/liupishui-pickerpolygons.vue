@@ -1,8 +1,8 @@
 <template>
 	<view class="box-picker_position">
 		<view class="map_wp">
-			<map id="map_20221212" class="picker-map" scale="12" min-scale="12" @regionchange="handleRegionchange" 
-				:latitude="position.latitude" :longitude="position.longitude" show-location='true' 
+			<map id="map_20221212" class="picker-map" scale="18" min-scale="12" @regionchange="handleRegionchange" 
+				:latitude="position.latitude" :longitude="position.longitude" show-location='true'  style="width: 100%;"
 				:qqmapsdkKey="qqmapsdkKey" :polygons="polygons"></map>
 			<view :class="['picker_map_location', animateLocation?'animated':'']"></view>
 		</view>
@@ -43,7 +43,7 @@
 	// #ifdef H5
 	import '@/common/js/jquery-3.7.1.min.js'
 	// #endif
-	
+	import { exportExcel,showToast,showLoading,hideLoading } from '@/common/util/excelUtil.js'
 	var handleRegionchangeTimer;
 	export default {
 		props:{
@@ -77,6 +77,11 @@
 				position:{
 					latitude:'36.811995',
 					longitude:'118.05539'
+				},
+				allAddr:{
+					province:'',
+					city:'',
+					district:''
 				},
 				searchlist:[],
 				msg:{
@@ -164,7 +169,7 @@
 					  console.log('xhr', xhr)
 					  console.log('errorType', errorType)
 					  console.log('error', error)
-					  reject(xhr)
+					  // reject(xhr)
 				  },
 				  complete: function () { },
 				});
@@ -203,7 +208,7 @@
 				let isSelect = false;
 				if(res.status == 0){
 					_this.$data.searchlist = [...res.data];
-					// console.log("handleLocation() 正常返回："+ JSON.stringify(res.data))
+					console.log("handleLocation() 正常返回："+ JSON.stringify(res.data))
 					// _this.messageShow("handleLocation() 正常返回："+ JSON.stringify(res.data.data))
 					
 					_this.$data.searchlist.useable = false;
@@ -274,14 +279,16 @@
 				// this.position.latitude = detail.centerLocation.latitude;
 				// this.position.longitude = detail.centerLocation.longitude;
 				var location = {latitude : detail.centerLocation.latitude, longitude : detail.centerLocation.longitude}
-				this.requestApi('https://apis.map.qq.com/ws/geocoder/v1/?location=', location, this)
+				this.requestApi('https://apis.map.qq.com/ws/geocoder/v1', location, this)
 			},
 			
 			requestApi(searchApi, location, _this){
+				// console.log("请求地址："+searchApi)
 				// #ifdef H5
+				const params = {key: _this.qqmapsdkKey, get_poi:1, location: `${location.latitude},${location.longitude}`, output:'jsonp' }
 				$.ajax({
-				  type: 'get',
-				  // url: 'https://apis.map.qq.com/ws/geocoder/v1/?location='+location,
+				  type: 'GET',
+				  // url: 'https://apis.map.qq.com/ws/place/v1/suggestion?output=jsonp'
 				  url: searchApi,
 				  async: false,
 				  data: params,
@@ -291,14 +298,14 @@
 					  'Access-Control-Allow-Methods': 'GET,POST',
 				  },
 				  success: function (result) {
-					  // _this.handleLocation(searchApi, result, _this);
+					  // console.log("附近搜索，返回值："+JSON.stringify(result))
 					  _this.handleGeo2address(searchApi, result, _this);
 				  },
 				  error: function (xhr, errorType, error) {
 					  console.log('xhr', xhr)
 					  console.log('errorType', errorType)
 					  console.log('error', error)
-					  reject(xhr)
+					  // reject(xhr)
 				  },
 				  complete: function () { },
 				});
@@ -322,13 +329,13 @@
 						console.log("requestApi() 异常："+ JSON.stringify(resp))
 					},
 					complete: function (res) {
-						console.log("requestApi().complete() 返回："+ JSON.stringify(res))
+						// console.log("requestApi().complete() 返回："+ JSON.stringify(res))
 					}
 				});
 				// #endif
 			},
 			
-			handleGeo2address(searchApi, res, _this){
+			handleGeo2address1(searchApi, res, _this){
 				let isSelect = false;
 				if(res.data.message == "Success"){
 					var point = res.data.result
@@ -367,6 +374,135 @@
 				}else{
 					// _this.canConfirm = false;
 					_this.canConfirm = true;
+				}
+			},
+			
+			handleGeo2address(searchApi, res, _this) {
+			  // 清空旧数据
+			  _this.$data.searchlist = [];
+			
+			  // 错误状态处理
+			  if (res.status === 121) {
+			    console.error("【API调用超限】此key每日调用量已达到上限，请求地址：" + searchApi);
+			    _this.messageShow("服务请求超限，请联系管理员");
+			    _this.canConfirm = false;
+			    return;
+			  }
+			
+			  // 请求失败处理
+			  if (res.status !== 0) {
+			    console.error("地理编码请求失败:", res.message);
+			    _this.messageShow("位置解析失败：" + res.message);
+			    _this.canConfirm = false;
+			    return;
+			  }
+			
+			  // 成功状态处理
+			  try {
+			    const {ad_info, pois, formatted_addresses, address_reference} = res.result;
+				this.allAddr = {
+					province:	ad_info.province,
+					city:		ad_info.city,
+					district:	ad_info.district,
+				}
+			    // 基础地址信息处理
+			    const baseInfo = {
+			      title: 	formatted_addresses.recommend,
+			      address: 	formatted_addresses.standard_address,
+			      location: res.result.location,
+				  province:	ad_info.province,
+				  city:		ad_info.city,
+				  district:	ad_info.district,
+			      useable: 	true,
+			      select: 	false
+			    };
+			
+			    // POI列表处理
+			    const poiList = (pois || []).map(poi => ({
+			      title: 	poi.title || "未知地点",
+			      address: 	poi.address || "地址不详",
+			      location: {
+			        lat: poi.location.lat,
+			        lng: poi.location.lng
+			      },
+				  province:	ad_info.province,
+				  city:		ad_info.city,
+				  district:	ad_info.district,
+			      useable: 	true,
+			      select: 	false,
+			      _distance: poi._distance || 0  // 保留原始数据字段
+			    }));
+			    // 合并基础地址和POI列表
+			    _this.$data.searchlist = [baseInfo, ...poiList];
+				_this.appendList(_this.$data.searchlist, address_reference);
+				console.log("收集数据："+JSON.stringify(_this.$data.searchlist))
+			    // 自动选择第一个有效项
+			    if (_this.$data.searchlist.length > 0) {
+			      _this.$data.searchlist[0].select = true;
+			      _this.position.latitude = _this.$data.searchlist[0].location.lat;
+			      _this.position.longitude = _this.$data.searchlist[0].location.lng;
+			    }
+			
+			    // 更新地图标记状态
+			    setTimeout(() => {
+			      _this.animateLocation = false;
+			    }, 400);
+			
+			    // 启用确认按钮
+			    _this.canConfirm = true;
+			
+			  } catch (e) {
+			    console.error("数据解析异常:", e);
+			    _this.messageShow("位置数据解析异常");
+			    _this.canConfirm = false;
+			  }
+			},
+			
+			explainAddress(searchlist, e){
+				var title = e['title']
+				if(!title||title=="") return;
+				searchlist.push({			      
+					title: 		e['title'],
+					address: 	e['_dir_desc'],
+					location: 	e['location'],
+					province:	this.allAddr.province,
+					city:		this.allAddr.city,
+					district:	this.allAddr.district,
+					useable: 	true,
+					select: 	false
+				});
+			},
+			
+			appendList(searchlist, address_reference){
+				if(address_reference.famous_area){
+					this.explainAddress(searchlist, address_reference.famous_area)
+				}
+				if(address_reference.business_area){
+					this.explainAddress(searchlist, address_reference.business_area)
+				}
+				if(address_reference.town){
+					this.explainAddress(searchlist, address_reference.town)
+				}
+				if(address_reference.landmark_l1){
+					this.explainAddress(searchlist, address_reference.landmark_l1)
+				}
+				if(address_reference.landmark_l2){
+					this.explainAddress(searchlist, address_reference.landmark_l2)
+				}
+				if(address_reference.street){
+					this.explainAddress(searchlist, address_reference.street)
+				}
+				if(address_reference.street_number){
+					this.explainAddress(searchlist, address_reference.street_number)
+				}
+				if(address_reference.crossroad){
+					this.explainAddress(searchlist, address_reference.crossroad)
+				}
+				if(address_reference.water){
+					this.explainAddress(searchlist, address_reference.water)
+				}
+				if(address_reference.ocean){
+					this.explainAddress(searchlist, address_reference.ocean)
 				}
 			},
 			
@@ -546,7 +682,7 @@
 	}
 	.map_wp{
 		position: relative;
-		width: 750rpx;
+		// width: 750rpx;
 		height: 400rpx;
 	}
 	.picker_map_location{

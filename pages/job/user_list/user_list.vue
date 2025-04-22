@@ -1,11 +1,24 @@
 <template>
+	<page-meta :root-font-size="onFontSizeChange"></page-meta>
 	<view class="container">
+<!-- 		<uni-card :is-shadow="false" is-full style="text-align: center; display: block;z-index: 9999; ">
+			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
+		</uni-card> -->
+		
 		<l-navbar title="首页" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
-			:showRight="false" :leftText="truncateString(location.text)" centerMargin="200px" leftWidth="300px" 
+			:showRight="false" :leftText="location.text" centerMargin="200px" leftWidth="300px" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" :border="false"
 			@leftClick="leftClick" :debounce-delay="500" @change="handleSearchChange" placeholderText="请输入关键词"
+			:searchStyle="handleSearchStyle" 
+			:fontSize="scaledFontSize"
 			>
 		</l-navbar>
+		
+		<view class="slider-container" style="z-index: 9999;">
+			<u-slider v-model="fontSizeScale" min="50" max="200" step="10" @change="onFontSizeChange"></u-slider>
+		    <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text>
+		</view>
+		
 		<view class="banner" @click="goDetail(banner)">
 			<image class="banner-img" :src="banner.cover"></image>
 			<view class="banner-title">{{ banner.title }}</view>
@@ -36,7 +49,7 @@
 				<uni-card style="padding:0px">
 					<view class="uni-flex uni-row">
 						<view class="uni-row" style="width:100%" >
-							<view class="text" style="text-align: left; padding-top: 10rpx; ">
+							<view class="text" style="text-align: left; padding-top: 10rpx;  line-height:70rpx;" :style="fontSet" >
 								{{ worker.allSkills }}
 							</view>
 							<view class="text" style="display: flex; padding-top: 10rpx;">
@@ -44,16 +57,16 @@
 									<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
 								</view>
 								<view class="uni-row" style="flex: 1; padding-top: 10rpx; padding-left: 10rpx; ">
-									<view class="uni-flex uni-column" style="min-height: 80rpx;" >
+									<view class="uni-flex uni-column" style="min-height: 80rpx;  line-height:70rpx;" :style="fontSet">
 										{{ worker.introduction }}
 									</view>
 									
 									<view class="uni-flex uni-row" style="justify-content: space-between; padding-top: 10rpx;">
-										<view class="text" style="min-width: 160rpx;">
+										<view class="text" style="min-width: 160rpx;  line-height:70rpx;" :style="fontSet">
 											{{ worker.tools || ' ' }}
 										</view>
 										
-										<view class="text" style="color: #2E8B57; font-weight: bold;">
+										<view class="text" style="color: #2E8B57; font-weight: bold;  line-height:70rpx;" :style="fontSet">
 											{{ worker.address || ' ' }}
 										</view>
 									</view>
@@ -61,7 +74,7 @@
 							</view>
 							
 								
-							<view class="uni-flex uni-row" style="-webkit-justify-content: space-between;justify-content: space-between;">
+							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between;justify-content: space-between;  line-height:70rpx;">
 								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
 								<view class="text" style="display: flex;" @click="makePhoneCall(worker.mobile)">电话联系
 									<u-icon
@@ -109,11 +122,17 @@
 <script>
 	import { dateUtils } from  '../../../common/js/util.js';
 	
-	
+	const JOB_USER_FONT_SET = "jobUserFontSet"
 	const keyStr = "jobInfoMap"
+	const scaleMap = {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9, 110:8, 120:7, 130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
 	export default {
 		data() {
 			return {
+				fontSet: '',
+				fontScale: 1.0,
+				fontSizeScale: 100, // 默认100%比例
+				baseFontSize: 16,   // 基础字体大小（根据设计稿调整）
+				searchStyle: '',
 				banner: {},
 				listData: [],
 				last_id: '',	// 分页指针；上一页的最后一项的id
@@ -126,8 +145,8 @@
 					contentnomore: '没有更多'
 				},
 				location:{
-					text: "四方河宜家尚城",
-					address: "四方河宜家尚城",
+					text: "四方河路宜家尚城",
+					address: "四方河路宜家尚城",
 					latitude: "",
 					longitude: "",
 					province: "",
@@ -144,13 +163,9 @@
 			var _this = this
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
-				var str = data.title;
-				if (typeof str == 'string') {
-					str = str.length > 10 ? '…' + str.slice(-9) : str
-				}
-				console.log("返回地区1："+JSON.stringify(data)+"; 截取结果：" + str);
+				console.log("返回地区1："+JSON.stringify(data) );
 				this.location = {
-					text		: str,
+					text		: data.title,
 					address 	: data.title,
 					latitude 	: data.location.lat,	// 纬度
 					longitude 	: data.location.lng,	// 经度
@@ -174,19 +189,63 @@
 			this.status = 'more';
 			this.getList();		// 获取，内容列表数据
 		},
+		mounted(){
+			this.initGetFontSize();
+			this.onFontSizeChange(this.fontSizeScale); // 初始化设置一次
+		},
 		methods: {
+			// setData(obj) {
+			// 	Object.keys(obj).forEach((key) => {
+			// 		this.$set(this.$data, key, obj[key])
+			// 	})
+			// },
+			async onFontSizeChange(scale) {
+				// this.fontSizeScale = e.detail.value;
+				this.fontSizeScale = scale;
+				const scaleValue = this.fontSizeScale / 100;
+				// console.log("字体大小设置为：" + this.fontSizeScale)
+				this.addressShowLen(scale)
+				// console.log("实时计算比例："+ this.fontScale)
+				
+				/* #ifdef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
+				// console.log("WEIXIN 实时计算样式："+ this.fontSet)
+				/* #endif */
+				
+				/* #ifndef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
+				// console.log("APP/H5 实时计算样式："+ this.fontSet)
+				/* #endif */
+				var _this = this
+				// 字体大小存入缓存记忆
+				uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
+			},
 			handleSearchChange(searchValue){
 				this.searchValue = searchValue
-				console.log("搜索框输入："+ searchValue)
+				// console.log("搜索框输入："+ searchValue)
 				this.initData();
 				this.getList();
+			},
+			addressShowLen(scale){
+				// console.log("初始倍数："+ scale)
+				// if(scale>140) scale = 150 + Math.trunc((scale - 150)/20)*10
+				// console.log("换算后倍数："+ scale)
+				// var addressLen = 10 + (10 - scale/100 * 10)
+				// console.log("地址显示字数"+ addressLen)
+				var addressLen = scaleMap[scale]
+				// console.log("地址显示字数"+ addressLen)
+				var str = this.location.address;
+				if (typeof str == 'string') {
+					str = str.length > addressLen ? '…' + str.slice(-addressLen-1) : str
+				}
+				this.location.text = str;
 			},
 			initData(){
 				this.listData = [];
 				this.last_id = '';
 			},
 			leftClick(){
-				console.log("点击了 导航栏 L 左侧……")
+				// console.log("点击了 导航栏 L 左侧……")
 				uni.navigateTo({
 				  url: "/pages/job/map/map"
 				});
@@ -238,7 +297,7 @@
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							const respData = result.data.data.rows;
 							if(respData.length==0) {
@@ -367,9 +426,32 @@
 					title: text+ JSON.stringify(worker),
 					icon: 'none'
 				})
+			},
+			initGetFontSize(){
+				// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)
+				var _this = this
+				uni.getStorage({
+					key: JOB_USER_FONT_SET,
+					success: function(resp){
+						// console.log("key:", JOB_USER_FONT_SET, "返回内存原值：", JSON.stringify(resp))
+						_this.fontSizeScale = resp.data
+						_this.onFontSizeChange(_this.fontSizeScale); // 初始化设置一次
+						// console.log("初始从缓存中取值，设置字体比例：" + _this.fontSizeScale)
+					},
+					fail:function(){
+						// console.log("首次存储，未取得 key:"+JOB_USER_FONT_SET);
+					}
+				});
 			}
 		},
 		computed:{
+			scaledFontSize() {
+				return this.baseFontSize * (this.fontSizeScale / 100);
+			},
+			handleSearchStyle() {
+				var fontSize = this.baseFontSize * (this.fontSizeScale / 100);
+				return 'color: #000000; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
+			}
 		},
 		/**
 		 * 当 searchInput 配置 disabled 为 true 时触发
@@ -499,25 +581,8 @@
 	
 	::v-deep .uni-card__content{
 		padding: 0px !important;
-	}
+	} 
 	
-	
-	// /* 搜索栏 */
-	// .custom-navbar {
-	//   background-color: #007AFF;
-	//   padding: 10rpx 20rpx;
-	// }
-	// .search-box {
-	//   background-color: #fff;
-	//   border-radius: 6px;
-	//   height: 60rpx;
-	//   display: flex;
-	//   align-items: center;
-	//   padding: 0 20rpx;
-	// }
-	// .placeholder {
-	//   color: #999;
-	//   margin-left: 10rpx;
-	// }
 
+	
 </style>

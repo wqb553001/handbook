@@ -421,20 +421,7 @@
 				} catch (err) {
 				    console.error('捕获异常:', err);
 				}
-				// var _this = this
-				// uni.getStorage({
-				// 	key:keyStr,
-				// 	success: function(resp){
-				// 		console.log("key:", keyStr, "返回内存原值：", JSON.stringify(resp))
-				// 		var rspMap = new Map(Object.entries(resp.data))
-				// 		console.log("key:", keyStr, "返回内存原值resp.data：", JSON.stringify(rspMap))
-				// 		_this.setStore(rspMap, saveData)
-				// 	},
-				// 	fail:function(){
-				// 		console.log("首次存储，未取得 key:"+keyStr);
-				// 		_this.setStore(new Map(), saveData)
-				// 	}
-				// });
+				
 				
 				// console.log("已保存 keyStr:", keyStr, "数据：", JSON.stringify(saveData));
 				// return 10;

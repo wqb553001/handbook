@@ -37,7 +37,7 @@
 	      "BROWSER": "chrome",
 	      "env": {
 	      	"UNI_PLATFORM": "h5",
-	      	"UNI_BASE_URL": "http://xny.world:18281",
+	      	"UNI_BASE_URL": "https://xny.world:18280",
 			"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 		    "UNI_CDN": "http://cdn.xny.world/"
 	      },
@@ -63,7 +63,7 @@
   		"env": {
   		  "ENV_TYPE": "prod",
   		  "UNI_PLATFORM": "mp-weixin",
-  		  "UNI_BASE_URL": "http://xny.world:18281",
+  		  "UNI_BASE_URL": "https://xny.world:18280",
 		  "UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 		  "UNI_CDN": "http://cdn.xny.world/"
   		},
