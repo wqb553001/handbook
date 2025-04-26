@@ -45,9 +45,10 @@
 	// #endif
 	import { exportExcel,showToast,showLoading,hideLoading } from '@/common/util/excelUtil.js'
 	var handleRegionchangeTimer;
+	const MAP_PICKER_POSITION = "map_Picker_Position"
 	export default {
 		props:{
-			polygons:{
+			polygons:{  // 划定区域范围
 				type:Array,
 				default:[]
 			},
@@ -98,20 +99,18 @@
 				return;
 			}
 			this.mapContext = uni.createMapContext("map_20221212", this);
-			let _this = this;
-			let needRegetLocation = true;
-			
-			if(uni.getStorageSync('mapPickerPosition')){
-				let data = JSON.parse(uni.getStorageSync('mapPickerPosition'));
-				if(new Date().getTime() < data.expireTime){
-					needRegetLocation = false;
-					_this.position.latitude = data.position.latitude;
-					_this.position.longitude = data.position.longitude;
-				}
-			}
-			if(needRegetLocation){
-				this.getLocation();
-			}
+			this.getFromStore();
+			// let needRegetLocation = true;
+			// const map_Picker_Position = uni.getStorageSync(MAP_PICKER_POSITION);
+			// if(map_Picker_Position){
+			// 	// needRegetLocation = false;
+			// 	this.position.latitude	= map_Picker_Position.position.latitude;
+			// 	this.position.longitude= map_Picker_Position.position.longitude;
+			// 	this.searchlist = map_Picker_Position.searchlist;
+			// }
+			// if(needRegetLocation){
+			// 	this.getLocation();
+			// }
 		},
 		methods:{
 			init(){
@@ -141,12 +140,11 @@
 				}
 				// console.log("点击了 【搜索】按钮")
 				// this.messageShow("点击了 【搜索】按钮")
-				let _this = this;
-				_this.searchFromApi(_this.searchKey, 'https://apis.map.qq.com/ws/place/v1/suggestion', null, _this);
+				this.searchFromApi(this.searchKey, 'https://apis.map.qq.com/ws/place/v1/suggestion', null, this);
 			},
 			
 			searchFromApi(keywordSearch, searchApi, rst, _this){
-				console.log("searchFromApi 接口：keywordSearch: "+keywordSearch+"；searchApi: "+ searchApi)
+				// console.log("searchFromApi 接口：keywordSearch: "+keywordSearch+"；searchApi: "+ searchApi)
 				// _this.messageShow("searchFromApi 接口：keywordSearch: "+keywordSearch+"；searchApi: "+ searchApi)
 				
 				// #ifdef H5
@@ -450,7 +448,8 @@
 			
 			    // 启用确认按钮
 			    _this.canConfirm = true;
-			
+				
+				_this.saveToStore();
 			  } catch (e) {
 			    console.error("数据解析异常:", e);
 			    _this.messageShow("位置数据解析异常");
@@ -554,38 +553,38 @@
 			},
 			
 			confirmSelect(){
-				console.log("点击了‘确认选点’")
+				// console.log("点击了‘确认选点’")
 				if(this.canConfirm){
-					this.searchlist.forEach(val=>{
+					this.searchlist.forEach((val, eIndex)=>{
 						if(val.select){
-							val.polygonIndex = [];
-							this.polygons.forEach((polygon,index)=>{
-								if(this.isPointInPolygon(val.location.lat, val.location.lng, polygon.points)){
-									val.polygonIndex.push(index);
-								}
-							})
+							// val.polygonIndex = [];
+							// this.polygons.forEach((polygon,index)=>{
+							// 	if(this.isPointInPolygon(val.location.lat, val.location.lng, polygon.points)){
+							// 		val.polygonIndex.push(index);
+							// 	}
+							// })
 							// let selectedLocal = JSON.stringify(val);
 							// console.log("selected 点："+ selectedLocal)
 							// uni.setStorageSync('polygonLocationPicker', selectedLocal);
 							this.$emit('selected', val);
 						}
-					})
+					});
+					
+					this.saveToStore();
 				}
 			},
 			
 			getLocation(){
-				// lng: 106.688244,
-				// lat: 26.530928
-				let _this = this
 				this.position.latitude = 26.530928;
 				this.position.longitude = 106.688244;
-				uni.setStorageSync('mapPickerPosition', JSON.stringify({
-					expireTime: new Date().getTime() - 0 + 60*1000,
-					position:{// 贵阳市南明区四方河路
-						latitude: 26.530928,
-						longitude: 106.688244
-					}
-				}))
+				// uni.setStorageSync('mapPickerPosition', JSON.stringify({
+				// 	expireTime: new Date().getTime() - 0 + 60*1000,
+				// 	position:{// 贵阳市南明区四方河路
+				// 		latitude: 26.530928,
+				// 		longitude: 106.688244
+				// 	}
+				// }))
+				
 				// this.init();
 				
 				// uni.getLocation({
@@ -610,6 +609,27 @@
 				// 		console.log(e);
 				// 	}
 				// });
+			},
+			// 节点数据，放入缓存
+			saveToStore(){
+				const poi = {
+					position: this.position,
+					searchlist: this.searchlist,
+					selectIndex: this.selectIndex
+				}
+				uni.setStorage({
+					key: 	MAP_PICKER_POSITION,
+					data:	poi
+				});
+			},
+			// 取出缓存，初始化
+			getFromStore(){
+				const map_Picker_Position = uni.getStorageSync(MAP_PICKER_POSITION);
+				if(map_Picker_Position){
+					this.position.latitude	= map_Picker_Position.position.latitude;
+					this.position.longitude= map_Picker_Position.position.longitude;
+					this.searchlist = map_Picker_Position.searchlist;
+				}
 			},
 			
 			showInfo(content){

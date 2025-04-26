@@ -64,6 +64,7 @@
 						<uni-data-checkbox v-model="baseFormData.sex" :localdata="sexs" />
 					</uni-forms-item>
 					<uni-forms-item label="技能" required>
+						<!-- <uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" /> -->
 						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" />
 						<input style="display: none;" v-model="baseFormData.skills" />
 						<uni-easyinput v-if="hasOtherSkill" :value="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
@@ -75,8 +76,8 @@
 					</uni-forms-item>
 					<uni-forms-item label="接单区域">
 						<view class="address-selector">
-						  <view class="selector" @click="location">
-						    <uni-easyinput class="address-input" v-model="fullAddress" placeholder="请选择接单区域"></uni-easyinput>
+						  <view class="selector" @click="goLocationMap">
+						    <uni-easyinput class="address-input" @longpress="longPressCopyText(baseFormData.address)" :value="baseFormData.address" placeholder="请选择接单区域"></uni-easyinput>
 						    <uni-icons type="arrowright" size="18" class="arrow-icon"></uni-icons>
 							<input style="display: none;" v-model="baseFormData.latitude"   placeholder="纬度-接单区域坐标" />
 							<input style="display: none;" v-model="baseFormData.longitude"  placeholder="经度-接单区域坐标" />
@@ -102,6 +103,7 @@
 
 <script>
 	import graceChecker from "@/common/js/graceChecker.js"
+	const JOB_USER_SKILLS = "jobUserSkills"
 	const keyStr = "jobInfoMap";
 	const baseRules = [
 	    // { name: "username",	checkType: "notnull",	errorMsg: "姓名不能为空" },
@@ -135,20 +137,16 @@
 				},
 				// 技能
 				skillsOptions: [
-					{value: 10, text: "泥水工"	},
-					{value: 20, text: "修水电"	},
-					{value: 30, text: "修电器"	},
-					{value: 40, text: "修车"	},
-					{value: 50, text: "外语"	},
-					{value: 60, text: "编程"	},
-					{value: 70, text: "司机"	},
-					{value: 80, text: "游泳"	},
-					{value: 90, text: "画画"	},
-					{value: 100, text: "书法"	},
-					{value: 110, text: "钢琴"	},
-					{value: 120, text: "演唱"	},
-					{value: 130, text: "乐器"	},
-					{value: -1,  text: "其他"	},
+				// 	[10,"泥水工",["泥水工","砌砖"]],
+				// 	[20,"维修工",["维修","水电","电器","家电"]],
+				// 	[30,"汽修",["汽修"]],
+				// 	[40,"外语",["外语","英语","法语","德语","俄语","韩语","日语","西班牙语"]],
+				// 	[50,"剪辑",["剪辑","图片","图像"]],
+				// 	[60,"编辑",["编辑","文本","文员","world","wps","文档"]],
+				// 	[70,"驾驶",["驾驶","司机","代驾"]],
+				// 	[80,"才艺",["才艺","艺术","艺术","美术","素描","临摹","水彩","画画","钢琴","乐器","电子琴","",""]],
+				// 	[90,"教练",["教练","健身","游泳","拳击","跆拳道","截拳道"]],
+				// 	[-1,"其他",[]]
 				],
 				toolsOptions: [
 					{value: 20, text: "不自带"	},
@@ -183,6 +181,7 @@
 		},
 		computed: {
 			fullAddress(){
+				if(this.baseFormData.address && this.baseFormData.address.includes(this.baseFormData.district)) return this.baseFormData.address;
 				return this.baseFormData.district + this.baseFormData.address;
 			},
 			parsedSkills: {
@@ -194,7 +193,7 @@
 				  }
 				},
 				set(newVal) {
-					console.log('新选中值：', newVal);
+				  console.log('新选中值：', newVal);
 				  const selected = newVal.map(value => {
 					const option = this.skillsOptions.find(o => o.value === value);
 					return {[Number(option.value)]: option.text  };
@@ -210,17 +209,17 @@
 			uni.$on('acceptAddress', (data) => {
 				
 			    // console.log("接收地址：" + JSON.stringify(data))
-				// uni.showToast({title: "接收地址：" +JSON.stringify(data)})
-				// this.baseFormData.address = `${data.title}`;
-				
-				this.baseFormData.address = data.title;
+				// this.baseFormData.address = data.title;
 				this.baseFormData.latitude 	= data.location.lat;	// 纬度
 				this.baseFormData.longitude = data.location.lng;	// 经度
 				this.baseFormData.province 	= data.province;
 				this.baseFormData.city 		= data.city;
 				this.baseFormData.district 	= data.district;
+				
+				this.baseFormData.address = (data.title && data.title.includes(data.district))? data.title : data.district+data.title;
 				// console.log("转化地址：" + this.baseFormData.address)
 			});
+			this.initGetKills();
 		},
 		onUnload() {
 			// 避免泄露，结束卸载监听
@@ -229,7 +228,8 @@
 		onReady() {},
 		methods: {
 			async submit(ref) {
-				console.log(this.baseFormData);
+				console.log(JSON.stringify(this.baseFormData));
+				
 				if(this.baseFormData.hasTools == 10){
 					baseRules.push({ name: "tools", checkType: "notnull", errorMsg: "工具/设备 不能为空" });
 				}
@@ -244,7 +244,7 @@
 						title: `校验通过`
 					});
 				}
-				const userId = await this.saveToStore(this.baseFormData);
+				const userId = await this.saveUser(this.baseFormData);
 				if(userId){
 					console.log("保存成功，userId:", userId)
 					const url = `/pages/job/head_img/head_img?userId=${userId}`;
@@ -252,12 +252,43 @@
 				}else{
 					uni.showToast({ title: '注册失败', icon: 'none' });
 				}
-
+				
+				// 清除缓存 
+				uni.removeStorage({key: JOB_USER_SKILLS});
+			},
+			getSkills(){
+				uni.request({
+					url: process.env.UNI_BASE_URL+'/api/job/getToolSource', // 获取技能选项
+					data: {sysId: 2025040301},
+					method: 'POST',
+					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+					success: result => {
+						// console.log('userStream 返回值' + JSON.stringify(result));
+						if (result.statusCode == 200) {
+							const respData = result.data.data;
+							// console.log("getToolSource返回值："+JSON.stringify(respData))
+							this.skillsHandle(respData);
+						}
+					},
+					fail: (result, code) => {
+						console.log('fail' + JSON.stringify(result));
+					}
+				});
+			},
+			skillsHandle(tools){
+				var toolsObj = JSON.parse(tools);
+				// 转换为适合组件的数据格式
+				this.skillsOptions = toolsObj.map(item => ({
+				  value: item[0],
+				  text: item[1],
+				  dataContent: item[2] // 转义双引号 JSON.stringify(item[2]).replace(/"/g, '\\"')
+				}));
+				// console.log("选项："+JSON.stringify(this.skillsOptions))
 			},
 			
 			hasTool(e){
 				this.hasTools = false;
-				console.log("工具选择："+ e.detail.value)
+				// console.log("工具选择："+ e.detail.value)
 				if(e.detail.value === 10) this.hasTools = true;
 			},
 
@@ -271,7 +302,6 @@
 			// 获取验证码
 			async getSMSCode() {
 				if (!this.canGetCode) return;
-				
 				try {
 					const param = {
 							phone: this.baseFormData.mobile,
@@ -281,8 +311,6 @@
 					// 调用后端API发送验证码
 					const res = await uni.request({
 						url: process.env.UNI_BASE_URL+'/api/sys/sms/sendCodeMessage',
-						// url: 'http://localhost:18281/api/sys/sms/sendCodeMessage',
-						// url: 'http://xny.world:18281/api/sys/sms/sendCodeMessage',
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						data: param
@@ -326,8 +354,6 @@
 					// 调用后端API发送验证码
 					const res = await uni.request({
 						url: process.env.UNI_BASE_URL+'/api/sys/sms/checkCode',
-						// url: 'http://localhost:18281/api/sys/sms/checkCode',
-						// url: 'http://xny.world:18281/api/sys/sms/checkCode',
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						data: param
@@ -357,8 +383,7 @@
 				} catch {
 				  return false;
 				}
-			}
-			,
+			},
 			skillsChange(e) {
 				if(e.detail.value == -1) return;
 				const selectOptions = e.detail.value.map(value => {
@@ -374,33 +399,33 @@
 				
 				this.baseFormData.skills = JSON.stringify(selectOptions);
 			},
-			
-			location(){
+			// 去到地图的地址选取页
+			goLocationMap(){
 				uni.navigateTo({
 				  url: "/pages/job/map/map"
 				});
 			},
 			
-			getStoreByKey(){
+			initGetKills(){
+				// console.log("从内存读取，字体设置数据："+ JOB_USER_SKILLS)
+				var _this = this
 				uni.getStorage({
-					key: keyStr,
+					key: JOB_USER_SKILLS,
 					success: function(resp){
-						console.log("key:", keyStr, "返回值：", JSON.stringify(resp.data))
-						// 更新对象 的指定属性，或追加属性
-						// _this.$set(_this, table_tag_key, resp.data);
+						// console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
+						_this.skillsOptions = resp.data
+						// console.log("初始从缓存中取值，设置字体比例：" + _this.skillsOptions)
 					},
 					fail:function(){
-						console.log("未取得 key:", keyStr);
+						_this.getSkills();
 					}
 				});
 			},
 			
-			async saveToStore(saveData){
+			async saveUser(saveData){
 				try {
 					const result = await uni.request({
 						url: process.env.UNI_BASE_URL+ '/api/job/saveUser',
-						// url: 'http://localhost:18281/api/job/saveUser',
-						// url: 'http://xny.world:18281/api/job/saveUser',
 						header: { 'Content-Type': 'application/json' },
 						method: 'POST',
 						data: JSON.stringify(saveData)
@@ -476,6 +501,23 @@
 				});
 			},
 			
+			// 长按复制
+			longPressCopyText(val){
+				if(val==''){
+					console.log("无内容，直接退出！")
+					return;
+				}
+				uni.setClipboardData({
+					data: val,
+					success() {
+						uni.showToast({
+							title:'已复制到剪贴板',
+							icon:'none',
+							position:'top'
+						});
+					}
+				});
+			},
 			
 			
 		}
@@ -537,51 +579,6 @@
 	  transform: translateY(-50%);
 	  z-index: 2;
 	}
-	
-	  // .force-highlight-other {
-	  //   // 未选中时高亮
-	  //    ::v-deep .uni-data-checklist .checklist-item[data-value='-1']:not(.checked) {
-	  //      .checklist-box {
-	  //        border: 2rpx solid #FF4D4F !important;  // 红色边框
-	  //        background-color: #FFF1F0 !important;    // 浅红背景
-			//  &::after { /* 处理组件可能的内置伪元素 */
-			//    border-color: #FF4D4F !important;
-			//  }
-	  //      }
-	  //      .checklist-content .checklist-text {
-	  //        color: #FF4D4F !important;               // 红色文字
-	  //        font-weight: bold !important;            // 加粗
-	  //      }
-	  //    }
-		 
-	  //    // 选中时恢复默认
-	  //    ::v-deep .checklist-item[data-value="-1"].checked {
-	  //      .checklist-box {
-	  //        border-color: #007AFF !important;
-	  //        background-color: #fff !important;
-	  //      }
-	  //      .checklist-text {
-	  //        color: #333 !important;
-	  //        font-weight: normal !important;
-	  //      }
-	  //    }
-	  //  }
-	
-	// .force-highlight-other {
-	//   // 未选中状态
-	//   ::v-deep .uni-data-checklist .checklist-group .checklist-item[data-value="-1"] {
-	//     .checklist-box {
-	//       border-color: #f00 !important; // 边框红色
-	//     }
-	//     .checklist-content .checklist-text {
-	//       color: #f00 !important; // 文字红色
-	//     }
-	//   }
-	// }
-	
-	// .uni-h6{
-	// 	height:91px;background:linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 100%);padding-top:47px;width:100%
-	// }
 	
 	/* 新增样式 */
 	uni-button{

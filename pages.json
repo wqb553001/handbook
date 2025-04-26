@@ -73,11 +73,18 @@
         	"path" : "pages/job/user_add/user_add",
         	"style" : 
         	{
+        		"navigationBarTitleText" : "注册/登录"
+        	}
+        }
+        ,{
+        	"path" : "pages/job/user_list/user_list",
+        	"style" : 
+        	{
         		"navigationBarTitleText" : ""
         	}
         }
         , {
-        	"path" : "pages/job/user_list/user_list",
+        	"path" : "pages/job/user_list/user_detail",
         	"style" : 
         	{
         		"navigationBarTitleText" : ""

@@ -112,9 +112,7 @@ export default {
 	    var saveData = {userId: this.userId, headImgPath: selectedAvatar}
 		
 	  	const result = await uni.request({
-	  		url: process.env.UNI_BASE_URL + '/api/job/saveUser',
-	  		// url: 'http://localhost:18281/api/job/updateUser',
-	  		// url: 'http://xny.world:18281/api/job/updateUser',
+	  		url: process.env.UNI_BASE_URL + '/api/job/updateUser',
 	  		header: { 'Content-Type': 'application/json' },
 	  		method: 'POST',
 	  		data: JSON.stringify(saveData)

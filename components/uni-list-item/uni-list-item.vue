@@ -32,7 +32,7 @@
 						:class="{ 'flex--justify': direction === 'column' }">
 						<text v-if="rightText" class="uni-list-item__extra-text">{{ rightText }}</text>
 						<uni-badge v-if="showBadge" :type="badgeType" :text="badgeText" :custom-style="badgeStyle" />
-						<switch v-if="showSwitch" :disabled="disabled" :checked="switchChecked"
+						<switch v-if="showSwitch" :color="innerColor" :disabled="disabled" :checked="switchChecked" :switchId="switchId"
 							@change="onSwitchChange" />
 					</view>
 				</slot>
@@ -50,7 +50,7 @@
 	 * @description 列表子组件
 	 * @tutorial https://ext.dcloud.net.cn/plugin?id=24
 	 * @property {String} 	title 							标题
-	 * @property {String} 	titleStyle 						标题样式
+	 * @property {String}	titleStyle						标题样式 （默认 color: #00000）
 	 * @property {String} 	note 							描述
 	 * @property {String} 	thumb 							左侧缩略图，若thumb有值，则不会显示扩展图标
 	 * @property {String}  	thumbSize = [lg|base|sm]		略缩图大小
@@ -71,6 +71,7 @@
 	 * @property {String | PageURIString} 	to  			跳转目标页面
 	 * @property {Boolean} 	showBadge = [true|false] 		是否显示数字角标
 	 * @property {Boolean} 	showSwitch = [true|false] 		是否显示Switch
+	 * @property {Number | String} 	switchId  				Switch的Id
 	 * @property {Boolean} 	switchChecked = [true|false] 	Switch是否被选中
 	 * @property {Boolean} 	showExtraIcon = [true|false] 	左侧是否显示扩展图标
 	 * @property {Object} 	extraIcon 						扩展图标参数，格式为 {color: '#4cd964',size: '22',type: 'spinner'}
@@ -79,6 +80,7 @@
 	 * @value column 		垂直排列
 	 * @event {Function} 	click 							点击 uniListItem 触发事件
 	 * @event {Function} 	switchChange 					点击切换 Switch 时触发
+	 * @property {String}	innerColor						内部颜色 （默认 color: #4cd964）
 	 */
 	export default {
 		name: 'UniListItem',
@@ -94,7 +96,7 @@
 			},
 			titleStyle: {
 				type: String,
-				default: ''
+				default: 'color: #000000'
 			},
 			note: {
 				type: String,
@@ -131,6 +133,10 @@
 			showSwitch: {
 				type: [Boolean, String],
 				default: false
+			},
+			switchId: {
+				type: [Number, String],
+				default: 0
 			},
 			switchChecked: {
 				type: [Boolean, String],
@@ -193,6 +199,10 @@
 			keepScrollPosition: {
 				type: Boolean,
 				default: false
+			},
+			innerColor: {
+				type: String,
+				default: '#4cd964'
 			}
 		},
 		watch: {
@@ -279,7 +289,8 @@
 				}
 			},
 			onSwitchChange(e) {
-				this.$emit('switchChange', e.detail);
+				console.log("switch 变更："+this.switchId)
+				this.$emit('switchChange', {data: e.detail.value, switchId: this.switchId});
 			},
 			openPage() {
 				if (['navigateTo', 'redirectTo', 'reLaunch', 'switchTab'].indexOf(this.link) !== -1) {
@@ -357,7 +368,7 @@
 	}
 
 	.uni-list-item--hover {
-		background-color: $uni-bg-color-hover !important;
+		background-color: $uni-bg-color-hover;
 	}
 
 	.uni-list-item__container {
