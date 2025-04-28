@@ -91,7 +91,8 @@
 <script>
 	import {requestSync} from "@/common/js/util.js"
   
-  // 获取手机信息
+	const SYS_ID = 2025040301
+	// 获取手机信息
 	let sysInfo = uni.getSystemInfoSync()
 	let SCREEN_WIDTH = sysInfo.screenWidth
 	let PAGE_X, // 手按下的x位置
@@ -592,18 +593,18 @@
 						// url: 'http://xny.world:18281/api/uploadBefore',
 						method: 'GET',
 						data: {
-							sysId: 2025040301,
+							sysId: SYS_ID,
 							key: 'jobUserId='+this.userId
 						}
 					}).catch(err=>{
 						uni.showToast({ title: '未能取得 上传凭证，请联系管理员！', icon: 'none' });
 						throw err; // 可选择抛出错误或返回默认值
 					});
-					// console.log("getToken 返回值："+ JSON.stringify(tokenRes))
+					console.log("getToken 返回值："+ JSON.stringify(tokenRes))
 					
 					// 3. 生成唯一文件名（按需）
 					const fileName = `job/${this.userId}_${Date.now()}_${Math.random().toString(36).substr(2)}.jpg`;
-					
+					console.log("图片上传-URL: " + process.env.UNI_QINIUP_URL)
 					// 4. 执行上传
 					const uploadRes = await uni.uploadFile({
 					  url: process.env.UNI_QINIUP_URL, // 'http://up-z2.qiniup.com', // 根据存储区域选择上传域名
@@ -614,7 +615,7 @@
 						key: fileName // 非必须，不传时七牛云自动生成文件名
 					  }
 					});
-					// console.log("上传成功，返回值："+ JSON.stringify(uploadRes))
+					console.log("上传成功，返回值："+ JSON.stringify(uploadRes))
 					
 					// 5. 处理响应结果
 					if (uploadRes.statusCode === 200) {
@@ -625,7 +626,7 @@
 					
 					// 6. 返回 最新图片地址 到上一页
 					uni.$emit('headImgCut', { avatar: this.imageViewSrc })
-					// console.log("保存图片："+this.imageViewSrc)
+					console.log("保存图片："+this.imageViewSrc)
 					
 					// 7. 返回上一页
 					uni.navigateBack(); // 返回上一页

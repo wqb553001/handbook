@@ -4,7 +4,7 @@
 			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
 		</uni-card> -->
 		
-		<l-navbar title="首页" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
+		<l-navbar title="找用工" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
 			:showRight="false" :debounce-delay="500" centerMargin="200px" leftWidth="300px" :border="false" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" placeholderText="请输入关键词"
 			@leftClick="leftClick" @change="handleSearchChange" 
@@ -29,14 +29,14 @@
 				<uni-card style="padding:0px" >
 					<template v-slot:title>
 						<uni-list>
-							<uniListItem :titleStyle="handleTitleStyle(20)" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
+							<uniListItem :titleStyle="handleTitleStyle(18)" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
 							@switchChange="handleSwitchChange" :switchId="worker.userId" :switchChecked="worker.isStore" />
 						</uni-list>
 					</template>
 					<view class="uni-flex uni-row">
 						<view class="uni-row" style="width:100%" >
 							<view class="text" style="display: flex; padding-top: 10rpx;">
-								<view class="text uni-flex" style="width: 200rpx; height: 200rpx;">
+								<view class="text uni-flex" style="width: 200rpx; height: 200rpx; padding-top: 10px;">
 									<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
 								</view>
 								<view class="uni-row" style="flex: 1; padding-top: 10rpx; ">
@@ -88,15 +88,18 @@
 	import { dateUtils } from  '../../../common/js/util.js';
     import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
 
-	const SYS_ID = 2025040301
-	const JOB_USER_FONT_SET = "jobUserFontSet"
-	const keyStr = "jobInfoMap"
+	const SYS_ID = 2025040301;
+	const JOB_TOKEN = 'JOB_TOKEN';
+	const JOB_USER_FONT_SET = "jobUserFontSet";
+	const keyStr = "jobInfoMap";
 	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
 	const scaleTitleMap 	= {50:25, 60:23, 70:20, 80:17, 90:15, 100: 12, 110:11, 120:10, 130:9, 140:8, 150:8, 160:8, 170:7, 180:7, 190:6, 200:6}
 	export default {
         components: { uniListItem },
 		data() {
 			return {
+				userId:0,
+				userToken:{},
 				// 字体缩放
 				fontSet: '',
 				fontScale: 1.0,
@@ -167,12 +170,26 @@
 			};
 		},
 		onLoad() {
-			this.getStoreList();
+			const _this = this
+			uni.getStorage({
+				key: JOB_TOKEN,
+				success: function(resp){
+					_this.userToken = resp.data
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					_this.getStoreList();
+				},
+				fail:function(){
+				}
+			});
+			
+			// this.selfId = options.selfId
+			// this.selfId = userToken.userId
+			// this.token = userToken.token
+			
 			this.adpid = this.$adpid;
 			this.getBanner();	// 获取，标题展示数据
 			
 			this.getList();		// 获取，内容列表数据
-			var _this = this
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
 				// console.log("返回地区1："+JSON.stringify(data));
@@ -299,11 +316,10 @@
 			
 			// 获取，内容列表数据
 			getList() {
-				var data = {
-					// sort: 'user_id',
-					// order: 'ASC',
-					likeAllSkills: "%"+this.searchValue+"%"
-				};
+				let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token}
+				if(this.searchValue){
+					data.likeAllSkills =  "%"+this.searchValue+"%"
+				}
 				if (this.last_id) {
 					// 说明已有数据，目前处于上拉加载
 					this.status = 'loading';
@@ -312,6 +328,7 @@
 					data.limit = 10;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
+				// console.log('请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
@@ -354,7 +371,8 @@
 				var newItems = [];
 				var _this = this
 				items.forEach(e => {
-					let allSkills = JSON.parse(e.skills)
+					let allSkills = '';
+					if(e.skills) allSkills = JSON.parse(e.skills)
 					 .filter(obj =>!(Object.keys(obj).includes('-1')))
 					 .map(obj => Object.values(obj))
 					 .join(',');
@@ -403,21 +421,17 @@
 			
 			calculateAge(birth){
 			  // 将出生日期字符串转换为Date对象
-			  const birthDateObj = new Date(birth);
-			  
+			  const birthDateObj = new Date(birth);			  
 			  // 获取当前日期
-			  const today = new Date();
-			  
+			  const today = new Date();			  
 			  // 计算年龄
-			  let age = today.getFullYear() - birthDateObj.getFullYear();
-			  
+			  let age = today.getFullYear() - birthDateObj.getFullYear();			  
 			  // 判断是否已过当年生日
 			  const monthDiff = today.getMonth() - birthDateObj.getMonth();
 			  const dayDiff = today.getDate() - birthDateObj.getDate();
 			  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
 			    age--;
-			  }
-			  
+			  }			  
 			  return age;
 			},
 			// 打电话
@@ -431,9 +445,7 @@
 			},
 			
 			toDetail(userId){
-				// uni.navigateTo({
-				// 	url: 'pages/job/user_list/user_detail?detailDate=' + encodeURIComponent(JSON.stringify(detail))
-				// });
+				console.log("跳转："+userId)
 				uni.navigateTo({
 					url: '/pages/job/user_list/user_detail?detailId='+ userId
 				});
@@ -450,7 +462,7 @@
 			},
 			
 			handleSwitchChange(e){
-				console.log("用户ID:", e.switchId, "改变值:", e.data);
+				// console.log("用户ID:", e.switchId, "改变值:", e.data);
 				this.storeOpt(e.switchId, e.data);
 			},
 			
@@ -461,14 +473,14 @@
 					enabled = 1;
 					opt = '取消收藏';
 				}
-				var store = {sysId: SYS_ID, selfId: 19, userId: userId, enabled: enabled}
+				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: userId, enabled: enabled}
 				const result = await uni.request({
 					url: process.env.UNI_BASE_URL + '/api/job/storeOpt',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					method: 'POST',
 					data: store
 				});
-				console.log("result", JSON.stringify(result))
+				// console.log("result", JSON.stringify(result))
 				if(result.data.code == 0){
 					uni.showToast({ title: opt+'成功', icon: 'success' });
 					// uni.navigateBack(); // 返回上一页
@@ -478,7 +490,8 @@
 			},
 			
 			async getStoreList(){
-				var store = {sysId: SYS_ID, selfId: 19, enabled: 0}
+				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
+				// console.log("取值："+JSON.stringify(store))
 				const result = await uni.request({
 					url: process.env.UNI_BASE_URL + '/api/job/storeUserIdList',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -556,7 +569,7 @@
 				    cancelText: '取消',
 				    success: function (res) {
 				        if (res.confirm) {
-				            console.log('用户输入的内容：', res.content);
+				            // console.log('用户输入的内容：', res.content);
 							_this.sendMessage(res.content)
 							uni.showToast({
 								title:'非常感谢！祝好！(*￣︶￣*)',
@@ -576,6 +589,7 @@
 			sendMessage(content){
 				var params = {
 					sysId: SYS_ID, 
+					callPhone: this.userToken.userId,
 					subject: 'job 反馈',
 					suggestType: 3,		// 类型(1-咨询;2-投诉;3-建议(默认);4-举报;5-求助;6-意见;7-表扬)
 					email: 'wangqingbo0829@163.com',
@@ -588,7 +602,7 @@
 					method: 'POST',
 					// header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('suggest 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							
 						}
@@ -600,7 +614,7 @@
 				
 			},
 			trigger(){
-				console.log("点击了 trigger()")
+				// console.log("点击了 trigger()")
 			},
 			handleTitleStyle(baseFontSize=16) {
 				var fontSize = baseFontSize * (this.fontSizeScale / 100);

@@ -16,40 +16,36 @@
 			
 			<view class="uni-flex uni-row" style="display: flex;">
 				<view class="uni-flex uni-column" style="-webkit-flex: 1; flex: 1; -webkit-justify-content: space-between; justify-content: space-between;">
-					<view class="uni-flex" style="display: flex; height: 60rpx; white-space: nowrap;">
+					<view class="uni-flex" style="display: flex; height: 1.37; white-space: nowrap;">
 						<view class="text" :style="fontScaleChange(1)" >{{jobUser.username}}</view>
 						<view class="text" :style="fontScaleChange(0.85)" >{{jobUser.sex==0?'男':jobUser.sex==1?'女':''}}</view>
 						<view class="text" :style="fontScaleChange(0.85)" style="padding: 0; " >{{calculateAge(jobUser.birth)}} 岁</view>
 					</view>
 					<view class="uni-flex uni-row" >
-						<view class="text" :style="fontScaleChange(0.85)" style="text-align: left; -webkit-flex: 1; flex: 1; text-indent: 2em;  line-height:60rpx; margin: 20px 0px 5px 5px; ">
+						<view class="text" :style="fontScaleChange(0.85)" style="text-align: left; -webkit-flex: 1; flex: 1; text-indent: 2em;  line-height:1.37; margin: 20px 0px 5px 5px; ">
 							{{ jobUser.tools }}
 						</view>
 					</view>
 				</view>
-				<view class="text uni-flex" style="width: 200rpx; height: 200rpx; ">
+				<view class="text uni-flex" style="width: 200rpx; height: 200rpx; " @longpress="longPressEditHeadImage">
 					<image :src="jobUser.headImgPath" style="width: 200rpx; height: 200rpx;"></image>
 				</view>
 			</view>
 		</view>
 		
-		<view class="uni-row" style="width:100%" >
-			<view class="text" style="text-align: left; padding-top: 50rpx;  line-height:60rpx;" :style="fontScaleChange(0.85)" >
+		<view style="width:100%" >
+			<view class="text" style="text-align: left; padding-top: 50rpx;  line-height:1.37;" :style="fontScaleChange(0.85)" >
 				{{ jobUser.allSkills }} 
 			</view>
 			
 			<view class="text" style="padding-top: 10rpx;">
 				<view class="uni-row" style="padding-top: 10rpx;">
-					<view class="uni-flex uni-column" style="min-height: 80rpx; line-height:60rpx;" :style="fontScaleChange(0.85)" >
+					<view class="uni-flex uni-column" style="min-height: 80rpx; line-height:1.37;" :style="fontScaleChange(0.85)" >
 						{{ jobUser.introduction }}
 					</view>
 					
-					<view class="uni-flex uni-row" style="justify-content: space-between; padding-top: 10rpx;">
-						<!-- <view class="text" style="min-width: 160rpx;  line-height:70rpx;" :style="fontSet">
-							{{ jobUser.tools || ' ' }}
-						</view> -->
-						
-						<view class="text" style="text-align: left; color: #2E8B57; font-weight: bold;  line-height: 70rpx; padding-left: 0; margin-left: -10px;" :style="fontScaleChange(1)"
+					<view class="uni-flex uni-row" style="justify-content: space-between; margin-top: 30rpx;">						
+						<view class="text" style="text-align: left; color: #2E8B57; font-weight: bold;  line-height: 1.37; padding-left: 0; margin-left: -10px;" :style="fontScaleChange(1)"
 						 @longpress="longPressCopyText(jobUser.address)">
 							<uni-icons type="location" color="#D3D3D3" size="30" />
 							{{ jobUser.address || ' ' }}
@@ -59,7 +55,7 @@
 			</view>
 		</view>
 		
-		<view style="margin-top: 120px;padding: 15px; background-color: #fff;">
+		<view v-if="!isMyself" style="margin-top: 80px;padding: 15px; background-color: #fff;">
 			<text style="font: inherit; color: #777;" :style="fontScaleChange(1.2)">评分:</text>
 			<view class="text" style="text-align: left; -webkit-flex: 1;flex: 1; margin-top: 10px;margin-bottom: 10px;">
 				<uni-rate :max="10" v-model="talk.score" />
@@ -76,10 +72,13 @@
 
 <script>
 	const SYS_ID = 2025040301
+	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_FONT_SET = "jobUserDetailFontSet"
 	export default {
 		data() {
 			return {
+				detailId: 0,
+				userToken: {},
 				fontScale: 1.0,
 				fontSizeScale: 100,
 				jobUser: {
@@ -97,14 +96,46 @@
 					score: 8,
 					talk: ''
 				},
-				
+				isMyself: false,
 			}
 		},
 		computed: {
 		},
 		onLoad(e) {
-			console.log("参数："+ e.detailId)
+			const _this = this
+			uni.getStorage({
+				key: JOB_TOKEN,
+				success: function(resp){
+					_this.userToken = resp.data
+					if(_this.userToken.userId == e.detailId){
+						_this.isMyself = true
+					}
+					
+					console.log("缓存取值："+ JSON.stringify(_this.userToken))
+				},
+				fail:function(){
+				}
+			});
+			// console.log("参数："+ e.detailId)
+			this.detailId = e.detailId
+			// 加载用户信息
 			this.getJobUserByUserId(e.detailId);
+			
+			// 监听全局事件（获取选择的地址）
+			uni.$on('acceptAddress', (data) => {
+			    // console.log("接收地址：" + JSON.stringify(data))
+				// this.baseFormData.address = data.title;
+				const form = {
+					latitude 	: data.location.lat,	// 纬度
+					longitude 	: data.location.lng,	// 经度
+					province 	: data.province,
+					city 		: data.city,
+					district 	: data.district,
+					address : (data.title && data.title.includes(data.district))? data.title : data.district+data.title
+				}
+				this.jobUser.address = form.address
+				this.updateUser(form)
+			});
 		},
 		onReady() {
 			// 设置自定义表单校验规则，必须在节点渲染完毕后执行
@@ -117,7 +148,7 @@
 				const _this = this;
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
-					data: {userId: detailId},
+					data: {sysId: SYS_ID, userId: detailId, selfId: this.userToken.userId, token: this.userToken.token},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
@@ -200,8 +231,8 @@
 						if (result.statusCode == 200) {
 							uni.showToast({title:'感谢评价！'});
 							setTimeout(() => {
-							  uni.navigateBack(); // 3秒后，返回上一页
-							}, 3000); // 3000毫秒等于3秒
+							  uni.navigateBack(); // 1.5秒后，返回上一页
+							}, 1000); // 3000毫秒等于3秒
 							
 						}
 					},
@@ -210,7 +241,44 @@
 					}
 				});
 			},
+			updateUser(form){
+				form.sysId 	= SYS_ID;
+				form.token 	= this.userToken.token;
+				form.selfId = this.userToken.userId;
+				form.userId = this.userToken.userId;
+				// console.log("提交表单内容："+JSON.stringify(form))
+				
+				uni.request({
+					url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
+					header: { 'Content-Type': 'application/json' },
+					method: 'POST',
+					data: JSON.stringify(form),
+					success: result => {
+						// console.log('userStream 返回值' + JSON.stringify(result));
+						const respData = result.data;
+						if (result.statusCode == 200) {
+							if(respData.code == 0){
+								uni.showToast({ title: '地址更新成功！' });
+								return;
+							}
+							
+						}
+						uni.showToast({ title: '地址更新失败！请稍后重试！' , icon: 'error' });
+						// console.log("更新地址异常："+ respData.message)
+					},
+					fail: (result, code) => {
+						console.log('fail' + JSON.stringify(result));
+					}
+				});
+				
+			},
 			longPressCopyText(val){
+				if(this.isMyself){
+					uni.navigateTo({
+					  url: "/pages/job/map/map"
+					});
+					return;
+				}
 				uni.setClipboardData({
 					data: val,
 					success() {
@@ -221,6 +289,13 @@
 						});
 					}
 				});
+			},
+			longPressEditHeadImage(){
+				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
+				if(this.isMyself){
+					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user_list/user_detail?detailId=${this.detailId}`;
+					uni.navigateTo({ url });
+				}
 			},
 		}
 	}
@@ -275,9 +350,13 @@
 		margin: 15rpx 10rpx;
 		padding: 0 20rpx;
 		// background-color: #ebebeb;
-		height: 70rpx;
-		line-height: 70rpx;
+		// height: 70rpx;
+		min-height: 70rpx; // 改为最小高度
+		line-height: 1.6;  // 使用无单位值，随字体缩放
+		// line-height: 70rpx;
 		text-align: center;
+		white-space: pre-wrap; // 允许换行
+		word-break: break-all; // 防止溢出
 		color: #777;
 		font-size: 26rpx;
 	}

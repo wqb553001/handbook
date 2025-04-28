@@ -42,10 +42,15 @@
 </template>
 
 <script>
+	
+const SYS_ID = 2025040301;
+const JOB_TOKEN = 'JOB_TOKEN';
+
 export default {
   data() {
     return {
 	  userId: 0,
+	  afterUrl: '', 
       avatars: [
         { url: '/static/avatars/default1.png' },
         { url: '/static/avatars/default2.png' }
@@ -64,7 +69,19 @@ export default {
 	uni.$off('headImgCut'); // 移除监听
   },
   onLoad(options) {
+	const _this = this
+	uni.getStorage({
+		key: JOB_TOKEN,
+		success: function(resp){
+			_this.userToken = resp.data
+			// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+		},
+		fail:function(){
+		}
+	});
 	this.userId = options.userId;
+	this.afterUrl = options.afterUrl;
+	console.log("获取参数："+ JSON.stringify(options))
 	// 监听全局事件（获取选择的地址）
 	uni.$on('headImgCut', (data) => {
 		console.log("收到全局事件", data); // 添加调试日志
@@ -109,7 +126,7 @@ export default {
         ? this.avatars[this.selectedIndex].url
         : this.customAvatar;
       // TODO: 保存选中头像逻辑
-	    var saveData = {userId: this.userId, headImgPath: selectedAvatar}
+	    var saveData = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: this.userId, headImgPath: selectedAvatar}
 		
 	  	const result = await uni.request({
 	  		url: process.env.UNI_BASE_URL + '/api/job/updateUser',
@@ -117,10 +134,17 @@ export default {
 	  		method: 'POST',
 	  		data: JSON.stringify(saveData)
 	  	});
-	  	console.log("result", JSON.stringify(result))
+	  	// console.log("result", JSON.stringify(result))
 		if(result.data.code == 0){
 			uni.showToast({ title: '头像设置成功' });
-			uni.navigateBack(); // 返回上一页
+			setTimeout(() => {
+			  if(!this.afterUrl) uni.navigateBack(); // 返回上一页(默认返回 调用页)
+			  // console.log("跳转地址："+this.afterUrl)
+			  uni.navigateTo({
+			    url: `${this.afterUrl}`
+			  });
+			}, 1000); // 3000毫秒等于3秒
+			
 		}else{
 			uni.showToast({ title: '未成功设置头像，请后续重试！' });
 		}

@@ -433,7 +433,7 @@
 			    // 合并基础地址和POI列表
 			    _this.$data.searchlist = [baseInfo, ...poiList];
 				_this.appendList(_this.$data.searchlist, address_reference);
-				console.log("收集数据："+JSON.stringify(_this.$data.searchlist))
+				// console.log("收集数据："+JSON.stringify(_this.$data.searchlist))
 			    // 自动选择第一个有效项
 			    if (_this.$data.searchlist.length > 0) {
 			      _this.$data.searchlist[0].select = true;
@@ -627,7 +627,7 @@
 				const map_Picker_Position = uni.getStorageSync(MAP_PICKER_POSITION);
 				if(map_Picker_Position){
 					this.position.latitude	= map_Picker_Position.position.latitude;
-					this.position.longitude= map_Picker_Position.position.longitude;
+					this.position.longitude	= map_Picker_Position.position.longitude;
 					this.searchlist = map_Picker_Position.searchlist;
 				}
 			},

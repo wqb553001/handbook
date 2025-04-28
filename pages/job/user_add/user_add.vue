@@ -7,24 +7,44 @@
 		<!-- <uni-section title="基础信息" type="line"> -->
 			<view class="example">
 				<!-- 基础用法，不包含校验规则 -->
-				<uni-forms ref="baseForm" :model="baseFormData" labelWidth="80px">
+				<uni-forms ref="baseForm" :model="baseFormData" label-width="4.5rem">
 					<input style="display: none;" v-model="baseFormData.userId" />
-					<uni-forms-item label="称谓" required>
-						<uni-easyinput v-model="baseFormData.username" placeholder="您喜欢的陌生人对您的称呼或姓名" />
-					</uni-forms-item>
 					
-					<view class="code-container">
-						<uni-forms-item label="手机号" required >
-							<uni-easyinput v-model="baseFormData.mobile" placeholder="请输入手机号" @change="validateMobile" class="code-input" />
-						</uni-forms-item>
-						<!-- 获取验证码按钮 -->
-						<button 
-						    class="sms-btn"
-						    :disabled="!canGetCode || isCounting"
-						    @click="getSMSCode"
-						>
-						    {{ countdown > 0 ? `${countdown}s后重发` : '获取验证码' }}
-						</button>
+					<!-- <view class="code-container " style="display: flex; gap: 20rpx;">
+						<view style="flex: 1;">
+							<uni-forms-item label="称谓" required>
+								<uni-easyinput v-model="baseFormData.username" placeholder="您喜欢的陌生人对您的称呼或姓名" />
+							</uni-forms-item>
+						</view>
+						<view style="flex: 1;">
+							<uni-forms-item label="密码" required>
+								<uni-easyinput v-model="baseFormData.password" placeholder="您喜欢的陌生人对您的称呼或姓名" />
+							</uni-forms-item>
+						</view>
+						
+					</view>
+					
+					<view class="code-container" style="display: flex; gap: 20rpx;">
+						<view style="flex: 1; position: relative;">
+							<uni-forms-item label="手机号" required >
+								<uni-easyinput v-model="baseFormData.mobile" placeholder="请输入手机号" @change="validateMobile" class="code-input" />
+							</uni-forms-item>
+						</view>
+						
+						  <view style="flex: 1; display: flex; align-items: flex-end;">
+							<uni-forms-item label="验证码" required style="flex: 1;">
+							  <uni-easyinput v-model="baseFormData.smsCode" placeholder="请输入验证码" @change="validateCode" />
+							</uni-forms-item>
+							<view style="margin-left: 20rpx; margin-bottom: 22px;">
+							  <button 
+								class="sms-btn"
+								:disabled="!canGetCode || isCounting"
+								@click="getSMSCode"
+							  >
+								{{ countdown > 0 ? `${countdown}s后重发` : '获取验证码' }}
+							  </button>
+							</view>
+						  </view>
 					</view>
 					
 					<view class="code-container">
@@ -56,10 +76,14 @@
 							size="36rpx" 
 							class="invalid-icon"
 						/>
-					</view>
+					</view> -->
 <!-- 					<uni-forms-item label="身份证号" required>
 						<uni-easyinput v-model="baseFormData.ID" placeholder="请输入身份证号" />
 					</uni-forms-item> -->
+					<uni-forms-item label="角色">
+						<uni-data-checkbox v-model="baseFormData.rule" :localdata="rules" />
+					</uni-forms-item>
+					
 					<uni-forms-item label="性别">
 						<uni-data-checkbox v-model="baseFormData.sex" :localdata="sexs" />
 					</uni-forms-item>
@@ -67,7 +91,7 @@
 						<!-- <uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" /> -->
 						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" />
 						<input style="display: none;" v-model="baseFormData.skills" />
-						<uni-easyinput v-if="hasOtherSkill" :value="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
+						<uni-easyinput v-if="hasOtherSkill" v-model="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="出生年月">
 						<picker mode="date" fields="month"  start="1900-01-01" :value="baseFormData.birth" @change="dateChange">
@@ -77,7 +101,7 @@
 					<uni-forms-item label="接单区域">
 						<view class="address-selector">
 						  <view class="selector" @click="goLocationMap">
-						    <uni-easyinput class="address-input" @longpress="longPressCopyText(baseFormData.address)" :value="baseFormData.address" placeholder="请选择接单区域"></uni-easyinput>
+						    <uni-easyinput class="address-input" @longpress="longPressCopyText(baseFormData.address)" v-model="baseFormData.address" placeholder="请选择接单区域"></uni-easyinput>
 						    <uni-icons type="arrowright" size="18" class="arrow-icon"></uni-icons>
 							<input style="display: none;" v-model="baseFormData.latitude"   placeholder="纬度-接单区域坐标" />
 							<input style="display: none;" v-model="baseFormData.longitude"  placeholder="经度-接单区域坐标" />
@@ -93,7 +117,7 @@
 					<uni-forms-item label="自我介绍">
 						<uni-easyinput type="textarea" v-model="baseFormData.introduction" placeholder="请输入自我介绍" />
 					</uni-forms-item>
-					<button type="primary" @click="submit('baseForm')">提交</button>
+					<button type="primary" @click="submit">提交</button>
 				</uni-forms>
 			</view>
 		<!-- </uni-section> -->
@@ -103,11 +127,13 @@
 
 <script>
 	import graceChecker from "@/common/js/graceChecker.js"
+	const SYS_ID = 2025040301
+	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_SKILLS = "jobUserSkills"
 	const keyStr = "jobInfoMap";
 	const baseRules = [
 	    // { name: "username",	checkType: "notnull",	errorMsg: "姓名不能为空" },
-	    { name: "mobile", 	checkType: "mobile", 	errorMsg: "手机号格式不正确" },
+	    // { name: "mobile", 	checkType: "mobile", 	errorMsg: "手机号格式不正确" },
 	 //    { name: "sex", 		checkType: "in", 		errorMsg: "请选择性别",		checkRule: "0,1,2"},
 		// { name: "skills", 	checkType: "notnull", 	errorMsg: "请至少选择一个" },
 	 //    { name: "latitude", checkType: "notnull", 	errorMsg: "位置必选" },
@@ -116,9 +142,10 @@
 	export default {
 		data() {
 			return {
+				userToken:{},
 				// 基础表单数据
 				baseFormData: {
-					sysId: 2025040301,
+					sysId: SYS_ID,
 					userId: 0,
 					username: '',
 					mobile: '',
@@ -155,6 +182,10 @@
 				tool: 20,
 				toolStyle: 'display: none;',
 				// 性别
+				rules: [
+					{ text: '找工', 	value: 0 }, 
+					{ text: '用工', 	value: 1 }, 
+				],
 				sexs: [
 					{ text: '男', 	value: 0 }, 
 					{ text: '女', 	value: 1 }, 
@@ -193,18 +224,31 @@
 				  }
 				},
 				set(newVal) {
-				  console.log('新选中值：', newVal);
+				  // console.log('新选中值：', newVal);
 				  const selected = newVal.map(value => {
 					const option = this.skillsOptions.find(o => o.value === value);
 					return {[Number(option.value)]: option.text  };
 				  });
 				  this.baseFormData.skills = JSON.stringify(selected);
-				  console.log('设置值：', this.baseFormData.skills);
+				  // console.log('设置值：', this.baseFormData.skills);
 				  this.hasOtherSkill = this.judgeIncludeOtherSkill(this.baseFormData.skills)
 				}
 			}
 		},
-		onLoad() {
+		onLoad(options) {
+			const _this = this
+			uni.getStorage({
+				key: JOB_TOKEN,
+				success: function(resp){
+					_this.userToken = resp.data
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					_this.baseFormData.userId = _this.userToken.userId;
+				},
+				fail:function(){
+				}
+			});
+			// console.log("传递参数：" + JSON.stringify(options))
+			this.baseFormData.username = options.username;
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
 				
@@ -217,7 +261,11 @@
 				this.baseFormData.district 	= data.district;
 				
 				this.baseFormData.address = (data.title && data.title.includes(data.district))? data.title : data.district+data.title;
-				// console.log("转化地址：" + this.baseFormData.address)
+				
+				const url = '/pages/job/user_list/user_list'
+				// console.log("转化数据：" + JSON.stringify(data))
+				// console.log("跳转地址："+ url)
+				uni.navigateTo({ url });
 			});
 			this.initGetKills();
 		},
@@ -227,30 +275,44 @@
 		},
 		onReady() {},
 		methods: {
-			async submit(ref) {
-				console.log(JSON.stringify(this.baseFormData));
+			async submit() {
+				// console.log(JSON.stringify(this.baseFormData));
 				
 				if(this.baseFormData.hasTools == 10){
 					baseRules.push({ name: "tools", checkType: "notnull", errorMsg: "工具/设备 不能为空" });
 				}
 				if(this.judgeIncludeOtherSkill()){
-					baseRules.push({ name: "otherSkills", checkType: "notnull", errorMsg: "技能 不能为空" });
+					baseRules.push({ name: "otherSkills", checkType: "notnull", errorMsg: "选中【其他】后面输入框，不能为空" });
 				}
 				if (!graceChecker.check(this.baseFormData, baseRules)) {
 					uni.showToast({ title: graceChecker.error, icon: 'none' });
 					return;
 				}else{
-					uni.showToast({
-						title: `校验通过`
-					});
+					uni.showToast({ title: `校验通过` });
 				}
-				const userId = await this.saveUser(this.baseFormData);
+				const submitForm = {
+					sysId: 			SYS_ID,
+					userId: 		this.baseFormData.userId,
+					introduction: 	this.baseFormData.introduction,
+					sex: 			this.baseFormData.sex,
+					birth: 			this.baseFormData.birth,
+					address:		this.baseFormData.address,				// 位置：地址
+					latitude:		this.baseFormData.latitude,				// 位置：纬度-坐标
+					longitude:		this.baseFormData.longitude,				// 位置：经度-坐标
+					province:		this.baseFormData.province,				// 省份
+					city:			this.baseFormData.city,					// 市
+					district:		this.baseFormData.district,				// 区
+					skills:			this.baseFormData.skills,					// 技能
+					otherSkills:	this.baseFormData.otherSkills,				// 其他技能
+					tools:			this.baseFormData.tools					// 工具/设备 名称
+				}
+				const userId = await this.updateUser(submitForm);
 				if(userId){
-					console.log("保存成功，userId:", userId)
-					const url = `/pages/job/head_img/head_img?userId=${userId}`;
-					uni.navigateTo({ url });	
+					// console.log("保存成功，userId:", userId)
+					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.userId}&afterUrl=/pages/job/user_list/user_list`;
+					uni.navigateTo({ url });
 				}else{
-					uni.showToast({ title: '注册失败', icon: 'none' });
+					uni.showToast({ title: '提交失败', icon: 'none' });
 				}
 				
 				// 清除缓存 
@@ -259,7 +321,7 @@
 			getSkills(){
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getToolSource', // 获取技能选项
-					data: {sysId: 2025040301},
+					data: {sysId: SYS_ID},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
@@ -306,7 +368,7 @@
 					const param = {
 							phone: this.baseFormData.mobile,
 							opt: 'add jobUser',
-							sysId: this.baseFormData.sysId
+							sysId: SYS_ID
 					}
 					// 调用后端API发送验证码
 					const res = await uni.request({
@@ -315,10 +377,10 @@
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						data: param
 					});
-					console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
+					// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
 					if(res.data.code == 0) {
 						uni.showToast({ title: '验证码已发送' });
-						this.startCountdown();
+						this.countdown();
 					}
 					
 				} catch (error) {
@@ -327,7 +389,7 @@
 			},
 			
 			// 倒计时逻辑
-			startCountdown() {
+			countdown() {
 				this.isCounting = true;
 				this.countdown = 60;
 				const timer = setInterval(() => {
@@ -340,41 +402,9 @@
 				}, 1000);
 			},
 			
-			// 短信验证
-			async validateCode(){
-				this.codeValid = 1;
-				return
-				try {
-					const param = {
-							phone: this.baseFormData.mobile,
-							code: this.baseFormData.smsCode,
-							opt: 'add jobUser',
-							sysId: this.baseFormData.sysId
-					}
-					// 调用后端API发送验证码
-					const res = await uni.request({
-						url: process.env.UNI_BASE_URL+'/api/sys/sms/checkCode',
-						method: 'POST',
-						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-						data: param
-					});
-					// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
-					if(res.data.code == 0) {
-						uni.showToast({ title: '验证通过', icon: 'success'});
-						// 短信验证通过
-						this.codeValid = 1;
-					}else{
-						this.codeValid = -1;
-					}
-					
-				} catch (error) {
-					uni.showToast({ title: '发送失败', icon: 'error' });
-				}
-			},
-			
 			dateChange(e) {
 				this.baseFormData.birth = e.detail.value;
-				console.log("选中日期："+this.baseFormData.birth)
+				// console.log("选中日期："+this.baseFormData.birth)
 				// 可以在这里处理选择后的逻辑，例如获取选择月份的第一天和最后一天
 			},
 			judgeIncludeOtherSkill(jsonStr){
@@ -422,22 +452,26 @@
 				});
 			},
 			
-			async saveUser(saveData){
+			async updateUser(form){
+				form.token 	= this.userToken.token;
+				form.selfId = this.userToken.userId;
+				form.userId = this.userToken.userId;
+				// console.log("提交表单内容："+JSON.stringify(form))
 				try {
 					const result = await uni.request({
-						url: process.env.UNI_BASE_URL+ '/api/job/saveUser',
+						url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
 						header: { 'Content-Type': 'application/json' },
 						method: 'POST',
-						data: JSON.stringify(saveData)
+						data: JSON.stringify(form)
 					});
-					console.log("result", JSON.stringify(result))
+					// console.log("result", JSON.stringify(result))
 					
 					if (result.statusCode !== 200) {
-					  console.error('请求失败:', error || result.data);
+					  // console.error('请求失败:', error || result.data);
 					  throw new Error('保存失败，请检查网络');
 					}
 					if (result.data.code != 0) {
-					  console.error('保存失败:', result.data.msg);
+					  // console.error('保存失败:', result.data.msg);
 					  throw new Error(result.data.msg || '保存失败');
 					}
 
@@ -459,7 +493,7 @@
 					key: 	keyStr,
 					data:	mapObj
 				});
-				console.log("保存最新数据：", JSON.stringify(mapObj))
+				// console.log("保存最新数据：", JSON.stringify(mapObj))
 			},
 			
 			// 选择或者拍照
@@ -493,7 +527,7 @@
 				    filePath: tempFilePaths, // 选择的第一张图片路径
 				    name: 'file',
 				    success: (res) => {
-				        console.log('上传成功：', res);
+				        // console.log('上传成功：', res);
 				    },
 				    fail: (err) => {
 				        console.log('上传失败：', err);
@@ -504,7 +538,7 @@
 			// 长按复制
 			longPressCopyText(val){
 				if(val==''){
-					console.log("无内容，直接退出！")
+					// console.log("无内容，直接退出！")
 					return;
 				}
 				uni.setClipboardData({
@@ -529,6 +563,11 @@
 		padding: 15px;
 		background-color: #fff;
 		// background:linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 100%);
+		
+	}
+	
+	.uni-data-checklist{
+		padding-top: 6px;
 	}
 
 	.segmented-control {

@@ -73,7 +73,14 @@
         	"path" : "pages/job/user_add/user_add",
         	"style" : 
         	{
-        		"navigationBarTitleText" : "注册/登录"
+        		"navigationBarTitleText" : "完善信息"
+        	}
+        }
+        ,{
+        	"path" : "pages/job/index",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
         	}
         }
         ,{
@@ -186,18 +193,20 @@
 				"pagePath": "pages/stock/rule",
 				"text": "%schema.tb.rule%"
 			},
-			// {
-			// 	"pagePath": "pages/ID/add",
-			// 	"text": "添加"
-			// },
 			{
-				"pagePath" : "pages/job/user_add/user_add",
-				"text" : "找工" 
-			},
-			{
-				"pagePath" : "pages/job/user_list/user_list",
-				"text" : "列工" 
+				
+				"pagePath" : "pages/job/index",
+				"text" : "登录"
 			}
+			// ,{
+			// 	"pagePath" : "pages/job/user_add/user_add",
+			// 	"text" : "找工" 
+			// }
+			
+			// ,{
+			// 	"pagePath" : "pages/job/user_list/user_list",
+			// 	"text" : "列工" 
+			// }
 			
 			// ,{
 			// 	"pagePath": "pages/list/list",
