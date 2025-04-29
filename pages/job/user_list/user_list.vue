@@ -175,21 +175,17 @@
 				key: JOB_TOKEN,
 				success: function(resp){
 					_this.userToken = resp.data
-					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					_this.getStoreList();
+					_this.getList();		// 获取，内容列表数据
 				},
 				fail:function(){
 				}
 			});
 			
-			// this.selfId = options.selfId
-			// this.selfId = userToken.userId
-			// this.token = userToken.token
-			
 			this.adpid = this.$adpid;
 			this.getBanner();	// 获取，标题展示数据
 			
-			this.getList();		// 获取，内容列表数据
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
 				// console.log("返回地区1："+JSON.stringify(data));
@@ -328,13 +324,13 @@
 					data.limit = 10;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
-				// console.log('请求参数：' + JSON.stringify(data))
+				console.log('请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						// console.log('userStream 返回值' + JSON.stringify(result));
+						console.log('userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							const respData = result.data.data.rows;
 							if(respData.length==0) {
@@ -351,6 +347,9 @@
 					},
 					fail: (result, code) => {
 						console.log('fail' + JSON.stringify(result));
+					},
+					complete: (result) =>{
+						console.log('result' + JSON.stringify(result));
 					}
 				});
 			},
@@ -371,11 +370,11 @@
 				var newItems = [];
 				var _this = this
 				items.forEach(e => {
-					let allSkills = '';
-					if(e.skills) allSkills = JSON.parse(e.skills)
-					 .filter(obj =>!(Object.keys(obj).includes('-1')))
-					 .map(obj => Object.values(obj))
-					 .join(',');
+					let allSkills = e.skillsName;
+					// if(e.skills) allSkills = JSON.parse(e.skills)
+					//  .filter(obj =>!(Object.keys(obj).includes('-1')))
+					//  .map(obj => Object.values(obj))
+					//  .join(',');
 					// console.log("allSkills:"+allSkills+";e.otherSkills:"+e.otherSkills)
 					allSkills = (!allSkills)?e.otherSkills:(e.otherSkills!="")?(allSkills +'；'+ e.otherSkills):allSkills;
 					e.allSkills 	= _this.truncateString(allSkills, 20);
@@ -492,21 +491,25 @@
 			async getStoreList(){
 				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
 				// console.log("取值："+JSON.stringify(store))
-				const result = await uni.request({
-					url: process.env.UNI_BASE_URL + '/api/job/storeUserIdList',
-					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-					method: 'POST',
-					data: store
-				});
-				// console.log("result", JSON.stringify(result))
-				let _this = this
-				if(result.data.code == 0){
-					const storeIds = result.data.data;
-					if(storeIds != null && storeIds.length > 0){
-						storeIds.forEach((value, index) => {
-						  _this.storeUserIdMap.set(value, true); // 或 map.set(value, index) 反向映射
-						});
+				try{
+					const result = await uni.request({
+						url: process.env.UNI_BASE_URL + '/api/job/storeUserIdList',
+						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+						method: 'POST',
+						data: store
+					});
+					// console.log("result", JSON.stringify(result))
+					let _this = this
+					if(result.statusCode == 200 && result.data.code == 0){
+						const storeIds = result.data.data;
+						if(storeIds != null && storeIds.length > 0){
+							storeIds.forEach((value, index) => {
+							  _this.storeUserIdMap.set(value, true); // 或 map.set(value, index) 反向映射
+							});
+						}
 					}
+				}catch(error){
+					
 				}
 			},
 			

@@ -111,7 +111,7 @@
 						_this.isMyself = true
 					}
 					
-					console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 				},
 				fail:function(){
 				}
@@ -158,12 +158,14 @@
 							// console.log("getUser返回值："+JSON.stringify(respData))
 							if(respData) {
 								// console.log("转化前："+respData.skills)
-								respData.allSkills = JSON.parse(respData.skills)
-								  .filter(item => Object.keys(item) != -1)
-								  .map(item => Object.values(item))
-								  .join(',');
+								respData.allSkills = respData.skillsName
+								// respData.allSkills = JSON.parse(respData.skills)
+								//   .filter(item => Object.keys(item) != -1)
+								//   .map(item => Object.values(item))
+								//   .join(',');
+								
 								if(respData.otherSkills){
-									respData.allSkills = respData.allSkills==''?respData.otherSkills:respData.allSkills +","+ respData.otherSkills
+									respData.allSkills = respData.allSkills==''||!respData.allSkills?respData.otherSkills:respData.allSkills +","+ respData.otherSkills
 								}
 								// console.log("转化后："+respData.allSkills)
 							};

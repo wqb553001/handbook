@@ -25,7 +25,7 @@
             <!-- 表单卡片 -->
             <view class="form-card" :class="{ 'form-register': !isMobileLogin }">
                 <!-- 动态标题 -->
-                <view class="form-header">
+                <view class="form-header" @click="goList">
                     <!-- <text class="emoji">{{ isMobileLogin ? '👋' : '✨' }}</text> -->
                     <text class="header-text">{{ !isRegister ? '欢迎归来' : '开始探索' }}</text>
                 </view>
@@ -41,7 +41,7 @@
 									<text class="iconfont icon-phone"></text>
 									<input 
 										type="number" 
-										v-model="form.phone" 
+										v-model="form.mobile" 
 										maxlength="11" 
 										placeholder="请输入手机号" 
 										placeholder-class="placeholder"
@@ -252,6 +252,7 @@ const JOB_TOKEN = 'JOB_TOKEN'
 export default {
     data() {
         return {
+			userToken:{},
             isMobileLogin: true,
             isRegister: false,
             form: {
@@ -275,17 +276,31 @@ export default {
             this.timer = null
         }
     },
+	onLoad(){
+		const _this = this
+		uni.getStorage({
+			key: JOB_TOKEN,
+			success: function(resp){
+				_this.userToken = resp.data
+				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+				uni.navigateTo({ url: `/pages/job/user_list/user_list` });
+			},
+			fail:function(){
+			}
+		});
+	},
     methods: {
         toggleMode() {
             this.isMobileLogin = !this.isMobileLogin
-            this.form = {
-				sysId: SYS_ID,
-                username: '',
-                mobile: '',
-                verifyCode: '',
-                password: '',
-                confirmPassword: ''
-            }
+			// 清空（不清空）
+    //         this.form = {
+				// sysId: SYS_ID,
+    //             username: '',
+    //             mobile: '',
+    //             verifyCode: '',
+    //             password: '',
+    //             confirmPassword: ''
+    //         }
             this.agreePrivacy = false
             if (this.timer) {
                 clearInterval(this.timer)
@@ -445,7 +460,7 @@ export default {
 								uni.navigateTo({ url });
 								// console.log('注册信息：', JSON.stringify(this.form))
 								uni.showToast({
-								    title: this.isMobileLogin ? '登录成功' : '注册成功',
+								    title: this.isRegister ? '注册成功' : '登录成功',
 								    icon: 'success'
 								})
 								return;
@@ -453,7 +468,7 @@ export default {
 						}
 						
 						uni.showToast({
-						    title: this.isMobileLogin ? '登录失败，请稍后重试！' : '注册失败，请稍后重试！',
+						    title: this.isRegister ? '注册失败，请稍后重试！' : '登录失败，请稍后重试！',
 						    icon: 'error'
 						})
 					},
@@ -467,7 +482,9 @@ export default {
 			}
 		},
 		
-        
+        goList(){			
+		},
+		
 		switchLoginType(isRegister){
 			this.isRegister = !isRegister;
 		},

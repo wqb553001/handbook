@@ -88,9 +88,8 @@
 						<uni-data-checkbox v-model="baseFormData.sex" :localdata="sexs" />
 					</uni-forms-item>
 					<uni-forms-item label="技能" required>
-						<!-- <uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" /> -->
-						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" />
-						<input style="display: none;" v-model="baseFormData.skills" />
+						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" :map="{ value: 'value', text: 'text' }" />
+						<input style="display: none;" v-model="baseFormData.skillsName" />
 						<uni-easyinput v-if="hasOtherSkill" v-model="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="出生年月">
@@ -159,11 +158,14 @@
 					city:'',					// 市
 					district:'',				// 区
 					skills: '',					// 技能
+					skillsName: '',					// 技能
 					otherSkills:'',				// 其他技能
 					tools: '',					// 工具/设备 名称
 				},
 				// 技能
 				skillsOptions: [
+					// {"value":30,"text":"汽修","keyword":["汽修"]},{"value":40,"text":"外语","keyword":["外语","英语","法语","德语","俄语","韩语","日语","西班牙语"]},{"value":50,"text":"剪辑","keyword":["剪辑","图片","图像"]},{"value":60,"text":"编辑","keyword":["编辑","文本","文员","world","wps","文档"]},{"value":70,"text":"驾驶","keyword":["驾驶","司机","代驾"]},{"value":80,"text":"才艺","keyword":["才艺","艺术","艺术","美术","素描","临摹","水彩","画画","钢琴","乐器","电子琴"]},{"value":90,"text":"教练","keyword":["教练","健身","游泳","拳击","跆拳道","截拳道"]},{"value":10,"text":"砌砖","keyword":["泥水工","砌砖"]},{"value":20,"text":"维修","keyword":["维修","水电","电器","家电"]},{"value":-1,"text":"其他","keyword":[]}
+
 				// 	[10,"泥水工",["泥水工","砌砖"]],
 				// 	[20,"维修工",["维修","水电","电器","家电"]],
 				// 	[30,"汽修",["汽修"]],
@@ -214,24 +216,30 @@
 			fullAddress(){
 				if(this.baseFormData.address && this.baseFormData.address.includes(this.baseFormData.district)) return this.baseFormData.address;
 				return this.baseFormData.district + this.baseFormData.address;
-			},
+			}
+			,
 			parsedSkills: {
 				get() {
 				  try {
-					return Object.values(JSON.parse(this.baseFormData.skills).map(item=>parseInt(Object.keys(item)[0])));
+					return JSON.parse(this.baseFormData.skills||[]) ;
 				  } catch {
 					return [];
 				  }
 				},
 				set(newVal) {
 				  // console.log('新选中值：', newVal);
-				  const selected = newVal.map(value => {
-					const option = this.skillsOptions.find(o => o.value === value);
-					return {[Number(option.value)]: option.text  };
-				  });
-				  this.baseFormData.skills = JSON.stringify(selected);
+				  this.baseFormData.skills = JSON.stringify(newVal)
+				  this.$set(this.baseFormData, 'skills', JSON.stringify(newVal))
+				  const validSkills = newVal.filter(v => v !== -1);
+				        this.baseFormData.skillsName = validSkills
+				          .map(v => this.skillsOptions.find(o => o.value === v)?.text || '')
+				          .filter(Boolean)
+				          .join(',');
 				  // console.log('设置值：', this.baseFormData.skills);
-				  this.hasOtherSkill = this.judgeIncludeOtherSkill(this.baseFormData.skills)
+				  this.hasOtherSkill = newVal.includes(-1)
+				  if (!this.hasOtherSkill) {
+				    this.$set(this.baseFormData, 'otherSkills', '')
+				  }
 				}
 			}
 		},
@@ -262,16 +270,24 @@
 				
 				this.baseFormData.address = (data.title && data.title.includes(data.district))? data.title : data.district+data.title;
 				
-				const url = '/pages/job/user_list/user_list'
 				// console.log("转化数据：" + JSON.stringify(data))
 				// console.log("跳转地址："+ url)
-				uni.navigateTo({ url });
+				uni.navigateTo({ url: `/pages/job/user_list/user_list` });
 			});
 			this.initGetKills();
 		},
 		onUnload() {
 			// 避免泄露，结束卸载监听
 			uni.$off('acceptAddress');
+		},
+		mounted(){
+		  if (typeof this.baseFormData.skills === 'string') {
+			try {
+			  this.baseFormData.skills = JSON.parse(this.baseFormData.skills)
+			} catch {
+			  this.baseFormData.skills = []
+			}
+		  }
 		},
 		onReady() {},
 		methods: {
@@ -281,7 +297,7 @@
 				if(this.baseFormData.hasTools == 10){
 					baseRules.push({ name: "tools", checkType: "notnull", errorMsg: "工具/设备 不能为空" });
 				}
-				if(this.judgeIncludeOtherSkill()){
+				if(this.hasOtherSkill){
 					baseRules.push({ name: "otherSkills", checkType: "notnull", errorMsg: "选中【其他】后面输入框，不能为空" });
 				}
 				if (!graceChecker.check(this.baseFormData, baseRules)) {
@@ -298,12 +314,13 @@
 					birth: 			this.baseFormData.birth,
 					address:		this.baseFormData.address,				// 位置：地址
 					latitude:		this.baseFormData.latitude,				// 位置：纬度-坐标
-					longitude:		this.baseFormData.longitude,				// 位置：经度-坐标
+					longitude:		this.baseFormData.longitude,			// 位置：经度-坐标
 					province:		this.baseFormData.province,				// 省份
 					city:			this.baseFormData.city,					// 市
 					district:		this.baseFormData.district,				// 区
-					skills:			this.baseFormData.skills,					// 技能
-					otherSkills:	this.baseFormData.otherSkills,				// 其他技能
+					skills:			this.baseFormData.skills,				// 技能 
+					skillsName:		this.baseFormData.skillsName,			// 技能名称
+					otherSkills:	this.baseFormData.otherSkills,			// 其他技能
 					tools:			this.baseFormData.tools					// 工具/设备 名称
 				}
 				const userId = await this.updateUser(submitForm);
@@ -319,6 +336,7 @@
 				uni.removeStorage({key: JOB_USER_SKILLS});
 			},
 			getSkills(){
+				const _this = this;
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getToolSource', // 获取技能选项
 					data: {sysId: SYS_ID},
@@ -329,23 +347,14 @@
 						if (result.statusCode == 200) {
 							const respData = result.data.data;
 							// console.log("getToolSource返回值："+JSON.stringify(respData))
-							this.skillsHandle(respData);
+							// _this.skillsHandle(respData);
+							this.skillsOptions = JSON.parse(respData);
 						}
 					},
 					fail: (result, code) => {
 						console.log('fail' + JSON.stringify(result));
 					}
 				});
-			},
-			skillsHandle(tools){
-				var toolsObj = JSON.parse(tools);
-				// 转换为适合组件的数据格式
-				this.skillsOptions = toolsObj.map(item => ({
-				  value: item[0],
-				  text: item[1],
-				  dataContent: item[2] // 转义双引号 JSON.stringify(item[2]).replace(/"/g, '\\"')
-				}));
-				// console.log("选项："+JSON.stringify(this.skillsOptions))
 			},
 			
 			hasTool(e){
@@ -378,7 +387,7 @@
 						data: param
 					});
 					// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
-					if(res.data.code == 0) {
+					if(res.statusCode == 200 && res.data.code == 0) {
 						uni.showToast({ title: '验证码已发送' });
 						this.countdown();
 					}
@@ -407,13 +416,6 @@
 				// console.log("选中日期："+this.baseFormData.birth)
 				// 可以在这里处理选择后的逻辑，例如获取选择月份的第一天和最后一天
 			},
-			judgeIncludeOtherSkill(jsonStr){
-				try {
-				  return JSON.parse(jsonStr || "[]").some(item => "-1" in item);
-				} catch {
-				  return false;
-				}
-			},
 			skillsChange(e) {
 				if(e.detail.value == -1) return;
 				const selectOptions = e.detail.value.map(value => {
@@ -439,10 +441,11 @@
 			initGetKills(){
 				// console.log("从内存读取，字体设置数据："+ JOB_USER_SKILLS)
 				var _this = this
+				
 				uni.getStorage({
 					key: JOB_USER_SKILLS,
 					success: function(resp){
-						// console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
+						console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
 						_this.skillsOptions = resp.data
 						// console.log("初始从缓存中取值，设置字体比例：" + _this.skillsOptions)
 					},
@@ -458,6 +461,7 @@
 				form.userId = this.userToken.userId;
 				// console.log("提交表单内容："+JSON.stringify(form))
 				try {
+					// const result = {}
 					const result = await uni.request({
 						url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
 						header: { 'Content-Type': 'application/json' },

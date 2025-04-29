@@ -55,12 +55,12 @@ export default {
         { url: '/static/avatars/default1.png' },
         { url: '/static/avatars/default2.png' }
       ],
-      selectedIndex: 0,		// 默认选中第一个
-      showUploadSheet: false,
+      selectedIndex: 0,			// 默认选中第一张图片
+      showUploadSheet: false,  	// 弹出 选项
 	  isCustomSelected: false,
       uploadActions: [
-        { name: '从相册选择' },
-        { name: '拍照' }
+        { index: 0, name: '从相册选择' },
+        { index: 1, name: '拍照' }
       ],
       customAvatar: '',
     }
@@ -104,11 +104,12 @@ export default {
 		uni.showToast({ title: '编辑图片' })
 	},
     openUploadOptions() {
-      this.showUploadSheet = true
+      this.showUploadSheet = true;  // 弹出 选项
     },
-    async handleUploadSelect(index) {
+    async handleUploadSelect(e) {
       try {
-        const sourceType = index === 0 ? ['album'] : ['camera']
+		// album：从相册选；camera：拍照
+        const sourceType = e.index === 0 ? ['album'] : ['camera']
         const res = await uni.chooseImage({
           count: 1,
           sizeType: ['compressed'],

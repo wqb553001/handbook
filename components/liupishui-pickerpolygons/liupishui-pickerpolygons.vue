@@ -332,49 +332,6 @@
 				});
 				// #endif
 			},
-			
-			handleGeo2address1(searchApi, res, _this){
-				let isSelect = false;
-				if(res.data.message == "Success"){
-					var point = res.data.result
-					_this.$data.searchlist = [...point.pois];
-					// console.log("handleGeo2address() 正常返回："+ JSON.stringify(_this.$data.searchlist))
-					for(let i = 0;i<_this.$data.searchlist.length;i++){
-						_this.$data.searchlist.useable = false;
-						_this.$data.searchlist.select = false;
-						
-						// 单独取出
-						_this.$data.searchlist[i].useable = true;
-						_this.$data.searchlist[i].select = false;
-						
-						// for(let j = 0;j < _this.polygons.length;j++){
-						// 	if(_this.isPointInPolygon(_this.$data.searchlist[i].location.lat, _this.$data.searchlist[i].location.lng, _this.polygons[j].points)){
-						// 		_this.$data.searchlist[i].useable = true;
-						// 		if(!isSelect){
-						// 			_this.$data.searchlist[i].select = true;
-						// 			isSelect = true;
-						// 		}
-						// 	}
-						// }
-						
-					}
-					setTimeout(()=>{
-						_this.animateLocation = false;
-					}, 400)
-				}
-				if(res.data.status == 121){
-					console.log("【特此打印】此key每日调用量已达到上限，请求地址："+searchApi);
-					_this.messageShow("【特此打印】此key每日调用量已达到上限，请求地址："+searchApi)
-					_this.canConfirm = false;
-				}
-				if(isSelect){
-					_this.canConfirm = true;
-				}else{
-					// _this.canConfirm = false;
-					_this.canConfirm = true;
-				}
-			},
-			
 			handleGeo2address(searchApi, res, _this) {
 			  // 清空旧数据
 			  _this.$data.searchlist = [];
@@ -553,6 +510,7 @@
 			},
 			
 			confirmSelect(){
+				const _this = this
 				// console.log("点击了‘确认选点’")
 				if(this.canConfirm){
 					this.searchlist.forEach((val, eIndex)=>{
@@ -566,11 +524,10 @@
 							// let selectedLocal = JSON.stringify(val);
 							// console.log("selected 点："+ selectedLocal)
 							// uni.setStorageSync('polygonLocationPicker', selectedLocal);
-							this.$emit('selected', val);
+							_this.$emit('selected', val);
+							_this.saveToStore();
 						}
 					});
-					
-					this.saveToStore();
 				}
 			},
 			
