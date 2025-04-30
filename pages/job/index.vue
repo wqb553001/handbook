@@ -25,7 +25,7 @@
             <!-- 表单卡片 -->
             <view class="form-card" :class="{ 'form-register': !isMobileLogin }">
                 <!-- 动态标题 -->
-                <view class="form-header" @click="goList">
+                <view class="form-header" @click="goList" @longpress="goFull">
                     <!-- <text class="emoji">{{ isMobileLogin ? '👋' : '✨' }}</text> -->
                     <text class="header-text">{{ !isRegister ? '欢迎归来' : '开始探索' }}</text>
                 </view>
@@ -234,10 +234,15 @@
                 <!-- 在底部提示前添加隐私协议 -->
                 <view class="privacy-policy">
                     <checkbox-group @change="handlePrivacyChange">
-                        <label class="checkbox">
+						<view class="protocol">
+							<!-- <text class="policy-link" @tap.stop="showPrivacyPolicy">《用户协议》《隐私政策》《内容服务》</text> -->
+							<text class="policy-link" @tap.stop="showUserProtocol">《用户协议》</text>
+							<text class="policy-link" @tap.stop="showPrivacyPolicy">《隐私政策》</text>
+							<text class="policy-link" @tap.stop="showContentServer">《内容服务》</text>
+						</view>
+                        <label class="checkbox" style="justify-content: center; margin: 10px 0 10px 0;">
                             <checkbox :checked="agreePrivacy" color="#7c3aed" />
-                            <text class="policy-text">我已阅读并同意</text>
-                            <text class="policy-link" @tap.stop="showPrivacyPolicy">《用户协议和隐私政策》</text>
+                            <text class="policy-text">以上三项，我均已阅读并同意</text>
                         </label>
                     </checkbox-group>
                 </view>
@@ -263,11 +268,11 @@ export default {
                 password: '',
                 confirmPassword: ''
             },
-            isCounting: false,
-            countdown: 60,
-            agreePrivacy: false,
+            isCounting: false,		// 短信已发送，倒计时 正在进行
+            countdown: 60,			// 短信验证码 剩余有效时长，倒计时
+            agreePrivacy: false,	// 同意隐私授权
             timer: null,
-			codeValid: 0,	// 短信验证  1：通过；-1：未通过
+			codeValid: 0,			// 短信验证  1：通过；-1：未通过
         }
     },
     beforeDestroy() {
@@ -290,11 +295,12 @@ export default {
 		});
 	},
     methods: {
+		// 切换 手机号登录、密码登录
         toggleMode() {
             this.isMobileLogin = !this.isMobileLogin
 			// 清空（不清空）
     //         this.form = {
-				// sysId: SYS_ID,
+	//             sysId: SYS_ID,
     //             username: '',
     //             mobile: '',
     //             verifyCode: '',
@@ -342,14 +348,15 @@ export default {
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					data: param
 				});
-				// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
+				console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
 				if(res.data.code == 0) {
 					uni.showToast({ title: '验证码已发送' });
 					this.startCountdown();
+					return;
 				}
-				
+				uni.showToast({ title: '发送失败，请稍后重试！', icon: 'none' });
 			} catch (error) {
-				uni.showToast({ title: '发送失败', icon: 'none' });
+				uni.showToast({ title: '发送失败，请稍后重试！', icon: 'none' });
 			}
 			
         },
@@ -411,7 +418,7 @@ export default {
 								uni.navigateTo({ url });
 								return;
 							}
-							uni.showToast({title: retData.msg, icon: 'error'});
+							uni.showToast({title: retData.msg, icon: 'error', duration: 3000});
 						}
 					},
 					fail: (result, code) => {
@@ -482,9 +489,15 @@ export default {
 			}
 		},
 		
-        goList(){			
+        goList(){
+			const url = `/pages/job/user_list/user_list`;
+			uni.navigateTo({ url });
 		},
 		
+		goFull(){
+			const url = `/pages/job/user_add/user_add`;
+			uni.navigateTo({ url });
+		},
 		switchLoginType(isRegister){
 			this.isRegister = !isRegister;
 		},
@@ -492,16 +505,32 @@ export default {
         handlePrivacyChange(e) {
             this.agreePrivacy = e.detail.value.length > 0
         },
+		
+		showUserProtocol(){
+			uni.navigateTo({
+				url: './agreement/user'
+			});
+		},
         
         showPrivacyPolicy() {
-            uni.showModal({
-                title: '用户协议和隐私政策',
-                content: '感谢您使用我们的服务。我们非常重视您的个人信息和隐私保护。使用我们的服务即表示您同意我们按照本协议收集和使用您的相关信息。',
-                showCancel: false,
-                confirmText: '我知道了'
-            })
+            // uni.showModal({
+            //     title: '用户协议和隐私政策',
+            //     content: '感谢您使用我们的服务。我们非常重视您的个人信息和隐私保护。使用我们的服务即表示您同意我们按照本协议收集和使用您的相关信息。',
+            //     showCancel: false,
+            //     confirmText: '我知道了'
+            // });
+			
+			uni.navigateTo({
+				url: './agreement/privacy'
+			});
         },
-        
+		
+        showContentServer(){
+			uni.navigateTo({
+				url: './agreement/service'
+			});
+		},
+		
         goToForgetPassword() {
             uni.navigateTo({
                 url: './forget-password'
@@ -931,6 +960,13 @@ export default {
 
 .privacy-policy {
     margin-top: 20rpx;
+	.protocol{
+		text-align: center;
+	}
+	.policy-link {
+		font-size: 24rpx;
+		color: #a18cd1 !important;
+	}
     
     .checkbox {
         display: flex;

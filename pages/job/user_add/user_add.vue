@@ -5,82 +5,11 @@
 		</uni-card>
 		
 		<!-- <uni-section title="基础信息" type="line"> -->
-			<view class="example">
+			<view class="example" >
 				<!-- 基础用法，不包含校验规则 -->
-				<uni-forms ref="baseForm" :model="baseFormData" label-width="4.5rem">
+				<uni-forms ref="baseForm" :model="baseFormData" label-width="6.5rem">
 					<input style="display: none;" v-model="baseFormData.userId" />
-					
-					<!-- <view class="code-container " style="display: flex; gap: 20rpx;">
-						<view style="flex: 1;">
-							<uni-forms-item label="称谓" required>
-								<uni-easyinput v-model="baseFormData.username" placeholder="您喜欢的陌生人对您的称呼或姓名" />
-							</uni-forms-item>
-						</view>
-						<view style="flex: 1;">
-							<uni-forms-item label="密码" required>
-								<uni-easyinput v-model="baseFormData.password" placeholder="您喜欢的陌生人对您的称呼或姓名" />
-							</uni-forms-item>
-						</view>
-						
-					</view>
-					
-					<view class="code-container" style="display: flex; gap: 20rpx;">
-						<view style="flex: 1; position: relative;">
-							<uni-forms-item label="手机号" required >
-								<uni-easyinput v-model="baseFormData.mobile" placeholder="请输入手机号" @change="validateMobile" class="code-input" />
-							</uni-forms-item>
-						</view>
-						
-						  <view style="flex: 1; display: flex; align-items: flex-end;">
-							<uni-forms-item label="验证码" required style="flex: 1;">
-							  <uni-easyinput v-model="baseFormData.smsCode" placeholder="请输入验证码" @change="validateCode" />
-							</uni-forms-item>
-							<view style="margin-left: 20rpx; margin-bottom: 22px;">
-							  <button 
-								class="sms-btn"
-								:disabled="!canGetCode || isCounting"
-								@click="getSMSCode"
-							  >
-								{{ countdown > 0 ? `${countdown}s后重发` : '获取验证码' }}
-							  </button>
-							</view>
-						  </view>
-					</view>
-					
-					<view class="code-container">
-						<uni-forms-item label="验证码" required>
-							<uni-easyinput class="code-input"
-								v-model="baseFormData.smsCode" 
-								placeholder="请输入验证码" 
-								@change="validateCode"
-							/>
-						</uni-forms-item>
-						<u-icon 
-						    v-if="codeValid==1" 
-						    name="checkmark-circle-fill" 
-						    color="#06A88B" 
-						    size="40rpx" 
-						    class="valid-icon"
-						/>
-						<u-icon 
-							v-if="codeValid==0"
-							name="question-circle" 
-							color="#D3D3D3" 
-							size="36rpx" 
-							class="question-icon"
-						/>
-						<u-icon 
-							v-if="codeValid==-1"
-							name="close-circle-fill" 
-							color="#FF4D4F" 
-							size="36rpx" 
-							class="invalid-icon"
-						/>
-					</view> -->
-<!-- 					<uni-forms-item label="身份证号" required>
-						<uni-easyinput v-model="baseFormData.ID" placeholder="请输入身份证号" />
-					</uni-forms-item> -->
-					<uni-forms-item label="角色">
+					<uni-forms-item label="角色" required>
 						<uni-data-checkbox v-model="baseFormData.rule" :localdata="rules" />
 					</uni-forms-item>
 					
@@ -97,7 +26,7 @@
 							<view class="selectDate">{{baseFormData.birth}}</view>
 						</picker>
 					</uni-forms-item>
-					<uni-forms-item label="接单区域">
+					<uni-forms-item label="接单区域" required>
 						<view class="address-selector">
 						  <view class="selector" @click="goLocationMap">
 						    <uni-easyinput class="address-input" @longpress="longPressCopyText(baseFormData.address)" v-model="baseFormData.address" placeholder="请选择接单区域"></uni-easyinput>
@@ -569,6 +498,32 @@
 		// background:linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 100%);
 		
 	}
+	// ::v-deep .uni-input-placeholder, .uni-textarea-placeholder, .uni-textarea-wrapper ,
+	::v-deep 
+	.selectDate, 
+	.checklist-text, 
+	.uni-forms-item__label, 
+	.uni-easyinput__placeholder-class, 
+	.uni-textarea-wrapper,
+	.uni-easyinput__content-input,
+	.uni-easyinput__content-textarea {
+		font-size: 20px !important;
+	}
+	
+	uni-text{
+		/* #ifdef MP-WEIXIN */
+		font-size: 45rpx !important;
+		/* #endif */
+		/* #ifndef MP-WEIXIN */
+		font-size: 1.2rem !important;
+		/* #endif */
+	}
+	
+	::v-deep .checkbox__inner, .radio__inner{
+		width: 24px !important;
+		height: 24px !important;
+		transform: scale(1.2); /* 调整选项框大小 */
+	}	
 	
 	.uni-data-checklist{
 		padding-top: 6px;
@@ -603,7 +558,7 @@
 	    border-radius: 4px;
 	    background-color: #EAF4FF;
 	    color: #3399FF;
-	    font-size: 30rpx;
+	    // font-size: 30rpx;
 	    font-family: PingFangSC;
 	    font-weight: Regular;
 	    max-width: 600rpx;

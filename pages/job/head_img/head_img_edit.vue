@@ -367,7 +367,7 @@
 			getImageInfo(isCut=false) {
 			  try {
 				// 将图片写入画布
-				let ctx = uni.createCanvasContext('imageCanvas', this);
+				const ctx = uni.createCanvasContext('imageCanvas', this);
 				// 清除内容
 				ctx.clearRect(0, 0, this.rpxToPx(750), this.rpxToPx(750));
 				

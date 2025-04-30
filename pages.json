@@ -117,6 +117,27 @@
         	{
         		"navigationBarTitleText" : ""
         	}
+        },
+        {
+        	"path" : "pages/job/agreement/user",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/agreement/privacy",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/agreement/service",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : ""
+        	}
         }
   //       ,{
 		// 	"path": "pages/job/user_list/user_list",

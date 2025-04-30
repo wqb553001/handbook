@@ -175,7 +175,7 @@
 				key: JOB_TOKEN,
 				success: function(resp){
 					_this.userToken = resp.data
-					console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					_this.getStoreList();
 					_this.getList();		// 获取，内容列表数据
 				},
@@ -324,13 +324,13 @@
 					data.limit = 10;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
-				console.log('请求参数：' + JSON.stringify(data))
+				// console.log('请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							const respData = result.data.data.rows;
 							if(respData.length==0) {
@@ -349,7 +349,7 @@
 						console.log('fail' + JSON.stringify(result));
 					},
 					complete: (result) =>{
-						console.log('result' + JSON.stringify(result));
+						// console.log('result' + JSON.stringify(result));
 					}
 				});
 			},
@@ -377,6 +377,8 @@
 					//  .join(',');
 					// console.log("allSkills:"+allSkills+";e.otherSkills:"+e.otherSkills)
 					allSkills = (!allSkills)?e.otherSkills:(e.otherSkills!="")?(allSkills +'；'+ e.otherSkills):allSkills;
+					
+					// console.log("allSkills:"+allSkills)
 					e.allSkills 	= _this.truncateString(allSkills, 20);
 					e.age 			= _this.calculateAge(e.birth);
 					e.tools 		= _this.truncateString(e.tools, 20);
