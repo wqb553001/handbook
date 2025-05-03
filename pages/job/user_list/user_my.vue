@@ -61,8 +61,7 @@
 				<uni-rate :max="10" v-model="talk.score" />
 			</view>
 			<text style="font: inherit; color: #777;" :style="fontScaleChange(1.2)">评价(赞赏/建议):</text>
-			<uni-easyinput style="margin-top: 10px; " type="textarea" v-model="talk.talk" placeholder="请输入评价内容"
-			:placeholderStyle="fontScaleChange(1.2)" :style="fontScaleChange(1.2)" />
+			<uni-easyinput style="margin-top: 10px; " type="textarea" v-model="talk.talk" placeholder="请输入评价内容" />
 			
 			<button type="primary" @click="submit">提交</button>
 		</view>
@@ -111,6 +110,7 @@
 					if(_this.userToken.userId == e.detailId){
 						_this.isMyself = true
 					}
+					
 					// 加载用户信息
 					_this.getJobUserByUserId(e.detailId);
 					
@@ -142,14 +142,14 @@
 			// 设置自定义表单校验规则，必须在节点渲染完毕后执行
 		},
 		mounted(){
-			this.initGetFontSize(); // 页面重新加载-恢复
+			
 		},
 		methods: {
 			getJobUserByUserId(detailId){
 				const _this = this;
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
-					data: {sysId: SYS_ID, userId: detailId, selfId: this.userToken.userId, token: this.userToken.token},
+					data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
@@ -199,12 +199,12 @@
 			fontScaleChange(baseFontSize=1){
 				var fontSize = baseFontSize * (this.fontSizeScale / 100);
 				/* #ifdef MP-WEIXIN */
-				return 'font-size :' + 37.5*fontSize + 'rpx !important; fontSize :'+ 37.5*fontSize+ 'rpx !important;'
+				return 'font-size :' + 37.5*fontSize + 'rpx;'
 				// console.log("WEIXIN 实时计算样式："+ this.fontSet)
 				/* #endif */
 				
 				/* #ifndef MP-WEIXIN */
-				return 'font-size :' + 1*fontSize + 'rem !important;fontSize :'+ 1*fontSize+ 'rem !important;'
+				return 'font-size :' + 1*fontSize + 'rem;'
 				// console.log("APP/H5 实时计算样式："+ this.fontSet)
 				/* #endif */
 			},
@@ -296,25 +296,9 @@
 			longPressEditHeadImage(){
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
 				if(this.isMyself){
-					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user_list/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
+					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user_list/user_detail?detailId=${this.detailId}`;
 					uni.navigateTo({ url });
 				}
-			},
-			initGetFontSize(){
-				// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)
-				var _this = this
-				uni.getStorage({
-					key: JOB_USER_FONT_SET,
-					success: function(resp){
-						// console.log("key:", JOB_USER_FONT_SET, "返回内存原值：", JSON.stringify(resp))
-						_this.fontSizeScale = resp.data
-						_this.onFontSizeChange(_this.fontSizeScale); // 初始化设置一次
-						// console.log("初始从缓存中取值，设置字体比例：" + _this.fontSizeScale)
-					},
-					fail:function(){
-						// console.log("首次存储，未取得 key:"+JOB_USER_FONT_SET);
-					}
-				});
 			},
 		}
 	}
@@ -323,17 +307,6 @@
 <style lang="scss">
 	.example {
 		
-	}
-	
-	::v-deep .uni-easyinput__content-textarea  {
-		/* #ifndef MP-WEIXIN */
-	    font-size: v-bind('fontScale') rem !important ; /* 使用 v-bind 动态绑定字体大小 */
-		/* #endif */
-		
-		/* #ifdef MP-WEIXIN */
-		font-size: calc(v-bind('fontScale') * 37.5 ) px !important ;
-		// font-size: 28 px !important ; /* 使用 v-bind 动态绑定字体大小 */
-		/* #endif */
 	}
 
 	.segmented-control {

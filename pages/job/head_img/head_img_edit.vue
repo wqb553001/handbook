@@ -92,6 +92,7 @@
 	import {requestSync} from "@/common/js/util.js"
   
 	const SYS_ID = 2025040301
+	const HEAD_IMG_CUT_EVENT = 'headImgCutEvent';
 	// 获取手机信息
 	let sysInfo = uni.getSystemInfoSync()
 	let SCREEN_WIDTH = sysInfo.screenWidth
@@ -150,14 +151,31 @@
 		},
 		async onLoad(options) {
 			this.userId = options.userId
-	        // 先转换blob:为base64
-	        if (options.src.startsWith('blob:')) {
-	          this.imageSrc = await this.blobToBase64(options.src);
-	        } else {
-	          this.imageSrc = options.src;
-	        }
-			this.loadImage();
-			console.log("接收传递参数：", JSON.stringify(options))
+			// console.log("传递参数："+JSON.stringify(options))
+			if (!options.src) {
+			  uni.showToast({ title: '图片路径无效', icon: 'none' });
+			  uni.navigateBack();
+			  return;
+			}
+			(async () => {
+				// 先转换blob:为base64
+				try {
+					if (options.src.startsWith('blob:')) {
+					  this.imageSrc = await this.blobToBase64(options.src);
+					} else {
+					  this.imageSrc = options.src;
+					}
+					this.loadImage();
+					// console.log("接收传递参数：", JSON.stringify(options))
+				} catch (err) {
+					uni.showToast({ title: '图片加载失败', icon: 'none' });
+					uni.navigateBack();
+				}
+			})();
+		},
+		onUnload(){
+			// 清空画布 && 解除图片引用
+			this.clearData()
 		},
 		/**
 		 * 生命周期函数--监听页面初次渲染完成
@@ -166,20 +184,31 @@
 		},
 		created() {
 			this.imageSrc = this.avatar
-			this.loadImage();
 		},
 		methods: {
 			
 			// Blob转Base64方法
 			async blobToBase64(blobUrl) {
-			  const response = await fetch(blobUrl);
-			  const blob = await response.blob();
-			  return new Promise((resolve, reject) => {
-			    const reader = new FileReader();
-			    reader.onloadend = () => resolve(reader.result);
-			    reader.onerror = reject;
-			    reader.readAsDataURL(blob);
-			  });
+			  try {
+			    const response = await fetch(blobUrl);
+			    const blob = await response.blob();
+			    const base64 = await new Promise((resolve, reject) => {
+			      let reader = new FileReader();
+			      reader.onloadend = () => {
+					  resolve(reader.result);
+					  reader.onloadend = null; // 解除引用
+					  reader.onerror = null;
+					  reader = null; // 主动释放
+				  }
+			      reader.onerror = reject;
+			      reader.readAsDataURL(blob);
+			    });
+				if (blob.close) blob.close(); // 如果支持，关闭Blob
+				return base64;
+			  } catch (err) {
+			  	console.error("Blob转换失败:", err);
+			  	return "";
+			  }
 			},
 			setData(obj) {
 				Object.keys(obj).forEach((key) => {
@@ -227,15 +256,15 @@
 						
 						uni.hideLoading()
 						this.getImageInfo()
+					},
+					fail: (err) => {
+						console.error("图片加载失败:", err);
+						uni.showToast({ title: "图片加载失败", icon: "none" });
+						this.imageSrc = null; // 释放引用
 					}
 				})
 			},
 			changeScale(num){
-				// let newScale = this.scaleTate + (num/100);
-				// newScale = Math.max(this.minScale, Math.min(newScale, this.maxScale));
-				// this.setData({ scaleTate: newScale });
-				// this.getImageInfo();
-				
 				let newL = 0
 				let newR = 0
 				let newT = 0
@@ -365,6 +394,7 @@
 		
 			// 获取图片
 			getImageInfo(isCut=false) {
+			  const weakThis = new WeakRef(this); // 使用弱引用
 			  try {
 				// 将图片写入画布
 				const ctx = uni.createCanvasContext('imageCanvas', this);
@@ -444,9 +474,14 @@
 							quality: 1,
 							canvasId: 'imageCanvas',
 							success: (res)=> {
-								this.setData({
-									imageViewSrc: res.tempFilePath
-								})
+								const self = weakThis.deref();
+								if (self) {
+									self.imageViewSrc = res.tempFilePath;
+								}
+								// this.imageViewSrc = res.tempFilePath
+								// this.setData({
+								// 	imageViewSrc: res.tempFilePath
+								// })
 							},
 							fail: (err)=> {
 								console.log(err)
@@ -528,111 +563,27 @@
 				  cutT: (750 - newSize) / 2,
 				  cutB: (750 - newSize) / 2
 				});
-				// let dragType = e.target.dataset.drag
-				// switch (dragType) {
-				// 	case 'right':
-				// 		let dragLengthR = (T_PAGE_X - e.touches[0].pageX) * DRAFG_MOVE_RATIO
-				// 		if (CUT_R + dragLengthR < 0) dragLengthR = -CUT_R
-				// 		this.setData({
-				// 			cutR: CUT_R + dragLengthR
-				// 		})
-				// 		break
-				// 	case 'left':
-				// 		let dragLengthL = (T_PAGE_X - e.touches[0].pageX) * DRAFG_MOVE_RATIO
-				// 		if (CUT_L - dragLengthL < 0) dragLengthL = CUT_L
-				// 		if ((CUT_L - dragLengthL) > (SCREEN_WIDTH - this.cutR)) dragLengthL = CUT_L - (SCREEN_WIDTH - this.cutR)
-				// 		this.setData({
-				// 			cutL: CUT_L - dragLengthL
-				// 		})
-				// 		break
-				// 	case 'top':
-				// 		let dragLengthT = (T_PAGE_Y - e.touches[0].pageY) * DRAFG_MOVE_RATIO
-				// 		if (CUT_T - dragLengthT < 0) dragLengthT = CUT_T
-				// 		if ((CUT_T - dragLengthT) > (SCREEN_WIDTH - this.cutB)) dragLengthT = CUT_T - (SCREEN_WIDTH - this.cutB)
-				// 		this.setData({
-				// 			cutT: CUT_T - dragLengthT
-				// 		})
-				// 		break
-				// 	case 'bottom':
-				// 		let dragLengthB = (T_PAGE_Y - e.touches[0].pageY) * DRAFG_MOVE_RATIO
-				// 		if (CUT_B + dragLengthB < 0) dragLengthB = -CUT_B
-				// 		this.setData({
-				// 			cutB: CUT_B + dragLengthB
-				// 		})
-				// 		break
-				// 	case 'rightBottom':
-				// 		let dragLengthRBX = (T_PAGE_X - e.touches[0].pageX) * DRAFG_MOVE_RATIO
-				// 		let dragLengthRBY = (T_PAGE_Y - e.touches[0].pageY) * DRAFG_MOVE_RATIO
-
-				// 		if (CUT_B + dragLengthRBY < 0) dragLengthRBY = -CUT_B
-				// 		if (CUT_R + dragLengthRBX < 0) dragLengthRBX = -CUT_R
-				// 		let cutB = CUT_B + dragLengthRBY
-				// 		let cutR = CUT_R + dragLengthRBX
-
-				// 		this.setData({
-				// 			cutB: cutB,
-				// 			cutR: cutR
-				// 		})
-				// 		break
-				// 	default:
-				// 		break
-				// }
 			},
 			dragEnd(){
 				this.getImageInfo();
+			},
+			clearData(){
+				const ctx = uni.createCanvasContext('imageCanvas', this);
+				ctx.clearRect(0, 0, this.rpxToPx(750), this.rpxToPx(750)); // 清空画布
+				ctx.draw(); // 强制渲染空白
+				this.imageSrc = null; // 解除图片引用
+				this.imageViewSrc = null;
 			},
 			async saveImageInfo(){
 				try {
 					// 1. 裁剪图片
 					this.getImageInfo(true);
+					// 2. 返回 最新图片地址 到上一页
+					uni.$emit(HEAD_IMG_CUT_EVENT, { avatar: this.imageViewSrc })
+					console.log("传递图片："+this.imageViewSrc)
 					
-					// 2. 获取后端颁发的上传凭证
-					const tokenRes = await uni.request({
-						url: process.env.UNI_BASE_URL + '/api/uploadBefore',
-						// url: 'http://localhost:18281/api/uploadBefore',
-						// url: 'http://xny.world:18281/api/uploadBefore',
-						method: 'GET',
-						data: {
-							sysId: SYS_ID,
-							key: 'jobUserId='+this.userId
-						}
-					}).catch(err=>{
-						uni.showToast({ title: '未能取得 上传凭证，请联系管理员！', icon: 'none' });
-						throw err; // 可选择抛出错误或返回默认值
-					});
-					console.log("getToken 返回值："+ JSON.stringify(tokenRes))
-					
-					// 3. 生成唯一文件名（按需）
-					const fileName = `job/${this.userId}_${Date.now()}_${Math.random().toString(36).substr(2)}.jpg`;
-					console.log("图片上传-URL: " + process.env.UNI_QINIUP_URL)
-					// 4. 执行上传
-					const uploadRes = await uni.uploadFile({
-					  url: process.env.UNI_QINIUP_URL, // 'http://up-z2.qiniup.com', // 根据存储区域选择上传域名
-					  filePath: this.imageViewSrc,
-					  name: 'file',
-					  formData: {
-						token: tokenRes.data.upToken,
-						key: fileName // 非必须，不传时七牛云自动生成文件名
-					  }
-					});
-					console.log("上传成功，返回值："+ JSON.stringify(uploadRes))
-					
-					// 5. 处理响应结果
-					if (uploadRes.statusCode === 200) {
-					  const resData = JSON.parse(uploadRes.data);
-					  this.imageViewSrc = process.env.UNI_CDN + `${resData.key}`;
-					  uni.showToast({ title: '上传成功' });
-					}
-					
-					// 6. 返回 最新图片地址 到上一页
-					uni.$emit('headImgCut', { avatar: this.imageViewSrc })
-					console.log("保存图片："+this.imageViewSrc)
-					
-					// 7. 返回上一页
+					// 3. 返回上一页
 					uni.navigateBack(); // 返回上一页
-					// uni.navigateBack({
-					//   delta: 1 // 返回的层数，默认为1，即返回上一页
-					// });
 					
 				} catch (err) {
 					uni.showToast({ title: '上传失败', icon: 'none' });
@@ -641,9 +592,6 @@
 				return this
 			},
 			
-		},
-		onUnload() {
-		  // this.clearTimer;
 		}
 	}
 </script>

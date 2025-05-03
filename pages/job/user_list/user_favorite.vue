@@ -109,7 +109,9 @@
 				
 				banner: {},
 				listData: [],
-				last_id: '',	// 分页指针；上一页的最后一项的id
+				total: 0,		// 总记录数
+				pages: 1,		// 总页数
+				currentPage: 1,	// 当前页码
 				reload: false,	// 上拉加载更多-false; 下拉刷新-true
 				status: 'more', // 加载状态  more：上拉加载更多；loading：加载中；nomore：没有更多
 				adpid: '',
@@ -130,7 +132,7 @@
 				searchValue:"",
 				
 				// 收藏
-				storeUserIdMap: new Map,
+				storeUserIdList: [],
 				
 				// 浮动按钮
 				fab:{
@@ -177,7 +179,6 @@
 				success: function(resp){
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-					_this.getStoreList();
 					_this.getList();		// 获取，内容列表数据
 				},
 				fail:function(){
@@ -209,12 +210,11 @@
 		onPullDownRefresh() {
 			console.log("触发 onPullDownRefresh()")
 			this.reload = true;
-			this.last_id = '';
 			this.getBanner();	// 获取，标题展示数据
 			this.getList();		// 获取，内容列表数据
 		},
 		onReachBottom() {
-			// console.log("触发 onReachBottom()")
+			// this.status = 'more';
 			this.getList();		// 获取，内容列表数据
 		},
 		mounted(){
@@ -226,16 +226,58 @@
 			// 		this.$set(this.$data, key, obj[key])
 			// 	})
 			// },
+			async onFontSizeChange(scale) {
+				// this.fontSizeScale = e.detail.value;
+				this.fontSizeScale = scale;
+				const scaleValue = this.fontSizeScale / 100;
+				this.fontScale = scaleValue
+				// console.log("字体大小设置为：" + this.fontSizeScale)
+				this.addressShowLen(scale)
+				// console.log("实时计算比例："+ this.fontScale)
+				
+				/* #ifdef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
+				// console.log("WEIXIN 实时计算样式："+ this.fontSet)
+				/* #endif */
+				
+				/* #ifndef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
+				// console.log("APP/H5 实时计算样式："+ this.fontSet)
+				/* #endif */
+				var _this = this
+				// 字体大小存入缓存记忆
+				uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
+			},
 			handleSearchChange(searchValue){
 				this.searchValue = searchValue
 				// console.log("搜索框输入："+ searchValue)
 				this.initData();
 				this.getList();
 			},
-			initData(){
-				this.listData 	= [];
-				this.last_id 	= '';
-				this.status		= 'more'
+			stringShowLen(showString, isHead=true){
+				// console.log("输入值："+ showString)
+				var len = scaleTitleMap[this.fontSizeScale]
+				// console.log("地址显示字数"+ len)
+				if(showString.length < len+1) return showString;
+				if (typeof showString == 'string') {
+					showString = isHead ? '…' + showString.slice(-len-1) : showString.slice(0, len)+'…'
+				}
+				// console.log("输出值："+ showString)
+				return showString;
+			},
+			addressShowLen(scale){
+				// console.log("初始倍数："+ scale)
+				// if(scale>140) scale = 150 + Math.trunc((scale - 150)/20)*10
+				// console.log("换算后倍数："+ scale)
+				// var addressLen = 10 + (10 - scale/100 * 10)
+				// console.log("地址显示字数"+ addressLen)
+				var addressLen = scaleAddressMap[scale]
+				// console.log("地址显示字数"+ addressLen)
+				var str = this.location.address;
+				if (typeof str == 'string') {
+					str = str.length > addressLen ? '…' + str.slice(-addressLen-1) : str
+				}
+				this.location.text = str;
 			},
 			leftClick(){
 				// console.log("点击了 导航栏 L 左侧……")
@@ -265,6 +307,17 @@
 					}
 				});
 			},
+			initData(){
+				this.listData	= [];
+				this.offset 	= 0;
+				this.status 	= 'more';
+				this.pages 		= 0;		// 总页数
+				this.currentPage= 1;		// 当前页码
+			},
+			
+			nextPage(){
+				this.offset = (this.currentPage - 1) * PAGE_LIMIT;
+			},
 			
 			// 获取，内容列表数据
 			getList() {
@@ -273,38 +326,40 @@
 				if(this.searchValue){
 					data.likeAllSkills =  "%"+this.searchValue+"%"
 				}
-				if (this.last_id) {
+				if (this.offset>0) {
 					// 说明已有数据，目前处于上拉加载
 					this.status = 'loading';
-					data.minId = this.last_id;				// 有序取数，下一批数据的指针
+					data.offset = this.offset;				// 有序取数，下一批数据的指针
 					data.time = new Date().getTime() + '';	// 添加请求时间戳，作用：防止 重复取数
 					data.limit = PAGE_LIMIT;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
 				// console.log('请求参数：' + JSON.stringify(data))
 				uni.request({
-					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
+					url: process.env.UNI_BASE_URL+'/api/job/searchStore',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
 						// console.log('userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data.rows;
-							if(respData.length<1){
-								this.reload = false;
-								this.status = 'nomore';	// 没有更多
-								return;
-							}
-							let list = this.dataHandle(respData);
-							this.listData = this.reload ? list : this.listData.concat(list);
-							if(respData.length<PAGE_LIMIT) {
+							this.total = result.data.data.total
+							if(respData.length<1) {
 								this.reload = false;
 								this.status = 'nomore';	// 没有更多
 								return;
 							};
-							this.last_id = list[list.length - 1].userId;
+							let list = this.dataHandle(respData);
+							this.listData = this.reload ? list : this.listData.concat(list);
+							this.currentPage += 1;
+							this.pages = Math.ceil(this.total / PAGE_LIMIT);
+							if(this.currentPage>this.pages) {
+								this.status = 'nomore';	// 没有更多，退出
+								return;
+							};
 							this.reload = false;
 							this.status = 'more';		// 上拉加载更多
+							this.nextPage()
 						}
 					},
 					fail: (result, code) => {
@@ -345,7 +400,7 @@
 					e.age 			= _this.calculateAge(e.birth);
 					e.tools 		= _this.truncateString(e.tools, 20);
 					e.introduction 	= _this.truncateString(e.introduction, 45);
-					e.isStore 		= this.storeUserIdMap.get(e.userId)?true:false
+					e.isStore 		= true
 					return e;
 				});
 				return items;
@@ -378,30 +433,9 @@
 				});
 				return newItems;
 			},
+			
 			aderror(e) {
 				console.log("aderror: " + JSON.stringify(e.detail));
-			},
-			async onFontSizeChange(scale) {
-				// this.fontSizeScale = e.detail.value;
-				this.fontSizeScale = scale;
-				const scaleValue = this.fontSizeScale / 100;
-				this.fontScale = scaleValue
-				// console.log("字体大小设置为：" + this.fontSizeScale)
-				this.addressShowLen(scale)
-				// console.log("实时计算比例："+ this.fontScale)
-				
-				/* #ifdef MP-WEIXIN */
-				this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
-				// console.log("WEIXIN 实时计算样式："+ this.fontSet)
-				/* #endif */
-				
-				/* #ifndef MP-WEIXIN */
-				this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
-				// console.log("APP/H5 实时计算样式："+ this.fontSet)
-				/* #endif */
-				var _this = this
-				// 字体大小存入缓存记忆
-				uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
 			},
 			
 			calculateAge(birth){
@@ -419,6 +453,7 @@
 			  }			  
 			  return age;
 			},
+
 			// 打电话
 			makePhoneCall: function (phone) {
 				uni.makePhoneCall({
@@ -459,6 +494,7 @@
 					opt = '取消收藏';
 				}
 				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: userId, enabled: enabled}
+				console.log("收藏操作："+JSON.stringify(store))
 				const result = await uni.request({
 					url: process.env.UNI_BASE_URL + '/api/job/storeOpt',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -471,31 +507,6 @@
 					// uni.navigateBack(); // 返回上一页
 				}else{
 					uni.showToast({ title: opt+'未成功，请后续重试！', icon: 'error' });
-				}
-			},
-			
-			async getStoreList(){
-				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
-				// console.log("取值："+JSON.stringify(store))
-				try{
-					const result = await uni.request({
-						url: process.env.UNI_BASE_URL + '/api/job/storeUserIdList',
-						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-						method: 'POST',
-						data: store
-					});
-					// console.log("result", JSON.stringify(result))
-					let _this = this
-					if(result.statusCode == 200 && result.data.code == 0){
-						const storeIds = result.data.data;
-						if(storeIds != null && storeIds.length > 0){
-							storeIds.forEach((value, index) => {
-							  _this.storeUserIdMap.set(value, true); // 或 map.set(value, index) 反向映射
-							});
-						}
-					}
-				}catch(error){
-					
 				}
 			},
 			
@@ -513,31 +524,6 @@
 					title: text+ JSON.stringify(worker),
 					icon: 'none'
 				})
-			},
-			stringShowLen(showString, isHead=true){
-				// console.log("输入值："+ showString)
-				var len = scaleTitleMap[this.fontSizeScale]
-				// console.log("地址显示字数"+ len)
-				if(showString.length < len+1) return showString;
-				if (typeof showString == 'string') {
-					showString = isHead ? '…' + showString.slice(-len-1) : showString.slice(0, len)+'…'
-				}
-				// console.log("输出值："+ showString)
-				return showString;
-			},
-			addressShowLen(scale){
-				// console.log("初始倍数："+ scale)
-				// if(scale>140) scale = 150 + Math.trunc((scale - 150)/20)*10
-				// console.log("换算后倍数："+ scale)
-				// var addressLen = 10 + (10 - scale/100 * 10)
-				// console.log("地址显示字数"+ addressLen)
-				var addressLen = scaleAddressMap[scale]
-				// console.log("地址显示字数"+ addressLen)
-				var str = this.location.address;
-				if (typeof str == 'string') {
-					str = str.length > addressLen ? '…' + str.slice(-addressLen-1) : str
-				}
-				this.location.text = str;
 			},
 			initGetFontSize(){
 				// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)

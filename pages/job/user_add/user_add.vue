@@ -13,7 +13,7 @@
 						<uni-data-checkbox v-model="baseFormData.rule" :localdata="rules" />
 					</uni-forms-item>
 					
-					<uni-forms-item label="性别">
+					<uni-forms-item label="性别" required>
 						<uni-data-checkbox v-model="baseFormData.sex" :localdata="sexs" />
 					</uni-forms-item>
 					<uni-forms-item label="技能" required>
@@ -37,7 +37,7 @@
 						</view>
 					</uni-forms-item>
 					
-					<uni-forms-item label="是否自带工具\设备">
+					<uni-forms-item label="工具\设备">
 						<uni-data-checkbox v-model="tool" @change="hasTool" :localdata="toolsOptions" />
 						<uni-easyinput v-if="hasTools" v-model="baseFormData.tools" 
 						placeholder="多个用逗号分隔" />

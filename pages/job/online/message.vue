@@ -1,0 +1,479 @@
+<template>
+	<view class="page">
+		<scroll-view class="scroll-view" scroll-y scroll-with-animation :scroll-top="top">
+			<view style="padding: 30rpx 30rpx 240rpx;">
+				<view class="message" :class="[item.userType]" v-for="(item,index) in list" :key="index"
+					@click="msgClick(item)">
+					<image :src="item.avatar" v-if="item.userType === 'friend'" class="avatar" mode="widthFix"></image>
+					<view class="content" v-if="item.messageType === 'image'">
+						<image :src="item.content" mode="widthFix"></image>
+					</view>
+					<view class="content" v-else>
+						{{ item.content }}
+					</view>
+					<image :src="item.avatar" v-if="item.userType === 'self'" class="avatar" mode="widthFix"></image>
+				</view>
+			</view>
+		</scroll-view>
+
+		<view class="tool">
+			<block v-if="messageType === 'text'">
+				
+				<!-- #ifdef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-TOUTIAO || MP-QQ -->
+				<image src="@/static/img/online/voice.png" mode="widthFix" class="left-icon" @click="messageType='voice'" ></image>
+				<!-- #endif --> 
+				<!-- #ifndef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-TOUTIAO || MP-QQ -->
+				<image src="@/static/img/online/text.png" mode="widthFix" class="left-icon" ></image>
+				<!-- #endif --> 
+				
+				<input type="text" v-model="content" class="input" @confirm="send" />
+				<uni-icons type="plus" size="34" @click="chooseImage" class="plus-img" ></uni-icons>
+				<button mode="widthFix" class="thumb" @click="send" >发送</button>
+			</block>
+			
+			<!-- #ifdef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-TOUTIAO || MP-QQ -->
+			<block v-else-if="messageType === 'voice'">
+				<image src="@/static/img/online/text.png" mode="widthFix" class="left-icon" @click="messageType='text'"></image>
+				<text class="voice-crl" @touchstart="touchstart" @touchend="touchend">{{ recordStart ? '松开 发送' : '按住 说话' }}</text>
+			</block>
+			<!-- #endif --> 
+			 
+		</view>
+
+		<view v-if="recordStart" class="audio-animation">
+			<view class="audio-wave">
+				<text class="audio-wave-text" v-for="item in 10" :style="{'animation-delay': `${item/10}s`}"></text>
+				<view class="text">松开 发送</view>
+			</view>
+		</view>
+		
+	</view>
+</template>
+
+<script>
+	// const recorderManager = wx.getRecorderManager()
+	// #ifdef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-TOUTIAO || MP-QQ
+	// 在移动端环境下调用录音方法
+	const recorderManager = uni.getRecorderManager();
+	// 使用recorderManager进行录音操作
+	// #endif
+	export default {
+		data() {
+			return {
+				content: '',
+				list: [],
+				top: 0,
+				messageType: 'text', // text 发送文本；voice 发送语音
+				recordStart: false
+			};
+		},
+		onLoad(options) {
+			uni.setNavigationBarTitle({
+				title: options.name
+			})
+			this._friendAvatar = options.avatar
+			this._selfAvatar = 'https://ask.dcloud.net.cn/uploads/avatar/001/43/07/62_avatar_max.jpg?=1705916918'
+			this.list = [{
+					content: '对方历史回复消息',
+					userType: 'friend',
+					avatar: this._friendAvatar
+				},
+				{
+					content: '历史消息',
+					userType: 'self',
+					avatar: this._selfAvatar
+				}
+			]
+		},
+		onHide() {
+			if (this._innerAudioContext) {
+				this._innerAudioContext.stop()
+			}
+		},
+		methods: {
+			send() {
+				if(!this.content) return;
+				this.list.push({
+					content: this.content,
+					userType: 'self',
+					avatar: this._selfAvatar
+				})
+				this.content = ''
+				this.scrollToBottom()
+				// 模拟对方回复
+				setTimeout(() => {
+					this.list.push({
+						content: '好的',
+						userType: 'friend',
+						avatar: this._friendAvatar
+					})
+					this.scrollToBottom()
+				}, 1500)
+			},
+
+			chooseImage() {
+				uni.chooseImage({
+					// sourceType: 'album',
+					success: (res) => {
+						this.list.push({
+							content: res.tempFilePaths[0],
+							userType: 'self',
+							messageType: 'image',
+							avatar: this._selfAvatar
+						})
+						this.scrollToBottom()
+						// 模拟对方回复
+						setTimeout(() => {
+							this.list.push({
+								content: '风景好漂亮啊~',
+								userType: 'friend',
+								avatar: this._friendAvatar
+							})
+							this.scrollToBottom()
+						}, 1500)
+					}
+				})
+			},
+
+			scrollToBottom() {
+				this.top = this.list.length * 1000
+			},
+
+			msgClick(data) {
+				if (data.messageType === 'voice') {
+					if (this._innerAudioContext) {
+						this._innerAudioContext.stop()
+						this._innerAudioContext.src = data.audioSrc
+						this._innerAudioContext.play()
+						return
+					}
+					this.play(data.audioSrc)
+				}
+			},
+
+			authTips() {
+				uni.showModal({
+					title: '提示',
+					content: '您拒绝了麦克风权限，将导致功能不能正常使用，去设置权限？',
+					confirmText: '去设置',
+					cancelText: '取消',
+					success: (res) => {
+						if (res.confirm) {
+							uni.openSetting({
+								success: (res) => {
+									if (res.authSetting['scope.record']) {
+										console.log("已授权麦克风");
+										this._recordAuth = true
+									} else {
+										// 未授权
+										wx.showModal({
+											title: '提示',
+											content: '您未授权麦克风，功能将无法使用',
+											showCancel: false,
+											confirmText: '知道了'
+										})
+									}
+								}
+							})
+						}
+					}
+				})
+			},
+
+			touchstart() {
+				if (!recorderManager) {
+				  uni.showToast({
+				    title: '录音功能在当前环境下不支持',
+				    icon: 'none'
+				  });
+				  return;
+				}
+				
+				//开始录音
+				const _permission = 'scope.record'
+				uni.getSetting({
+					success: (res) => {
+						// 判断是否有相关权限属性
+						if (res.authSetting.hasOwnProperty(_permission)) {
+							// 属性存在，且为false，用户拒绝过权限
+							if (!res.authSetting[_permission]) {
+								this.authTips()
+							} else {
+								// 已授权
+								this._recordAuth = true
+								// 开始录音
+								recorderManager.start()
+								recorderManager.onStart(() => {
+									this.recordStart = true
+								})
+
+								// 错误回调
+								recorderManager.onError((res) => {
+									console.log('recorder error', res)
+									uni.showToast({
+										icon: 'none',
+										title: '系统出错，请重试'
+									})
+									this.recordStart = false
+								})
+							}
+						} else {
+							// 属性不存在，需要授权
+							uni.authorize({
+								scope: _permission,
+								success: () => {
+									// 授权成功
+									this._recordAuth = true
+								},
+								fail: (res) => {
+									/**
+									 * 104 未授权隐私协议
+									 * 用户可能拒绝官方隐私授权弹窗，为了避免过度弹窗打扰用户，开发者再次调用隐私相关接口时，
+									 * 若距上次用户拒绝不足10秒，将不再触发弹窗，直接给到开发者用户拒绝隐私授权弹窗的报错
+									 */
+									if (res.errno == 104) {
+										uni.showModal({
+											title: '温馨提示',
+											content: '您拒绝了隐私协议，请稍后再试',
+											confirmText: '知道了',
+											showCancel: false,
+											success: () => {}
+										})
+									} else {
+										// 用户拒绝授权
+										this.authTips()
+									}
+								}
+							})
+						}
+					}
+				})
+			},
+
+			touchend() {
+				if (!this._recordAuth || !this.recordStart) return
+				//停止录音
+				recorderManager.stop();
+				recorderManager.onStop((res) => {
+					console.log('结束录音', res)
+					const { duration, tempFilePath } = res
+					this.recordStart = false
+
+					this.list.push({
+						content: `语音 ${Math.round(duration/1000)}''`,
+						audioSrc: tempFilePath,
+						userType: 'self',
+						avatar: this._selfAvatar,
+						messageType: 'voice'
+					})
+					this.scrollToBottom()
+				})
+			},
+
+			//播放声音
+			play(src) {
+				this._innerAudioContext = wx.createInnerAudioContext()
+				this._innerAudioContext.src = src
+				this._innerAudioContext.play()
+				this._innerAudioContext.onPlay(() => {
+					console.log('开始播放')
+				})
+				this._innerAudioContext.onEnded(() => {
+					// 播放完毕，清除音频链接
+					console.log('播放完毕');
+				})
+				this._innerAudioContext.onError((res) => {
+					console.log('audio play error', res)
+				})
+			},
+		}
+	}
+</script>
+
+<style lang="scss" scoped>
+	.scroll-view {
+		/* #ifdef H5 */
+		height: calc(100vh - 44px);
+		/* #endif */
+		/* #ifndef H5 */
+		height: 100vh;
+		/* #endif */
+		background: #eee;
+		box-sizing: border-box;
+	}
+
+	.message {
+		display: flex;
+		align-items: flex-start;
+		margin-bottom: 30rpx;
+
+		.avatar {
+			width: 80rpx;
+			height: 80rpx;
+			border-radius: 10rpx;
+			margin-right: 30rpx;
+		}
+
+		.content {
+			min-height: 80rpx;
+			max-width: 60vw;
+			box-sizing: border-box;
+			font-size: 28rpx;
+			line-height: 1.3;
+			padding: 20rpx;
+			border-radius: 10rpx;
+			background: #fff;
+
+			image {
+				width: 200rpx;
+			}
+		}
+
+		&.self {
+			justify-content: flex-end;
+
+			.avatar {
+				margin: 0 0 0 30rpx;
+			}
+
+			.content {
+				position: relative;
+
+				&::after {
+					position: absolute;
+					content: '';
+					width: 0;
+					height: 0;
+					border: 16rpx solid transparent;
+					border-left: 16rpx solid #fff;
+					right: -28rpx;
+					top: 24rpx;
+				}
+			}
+		}
+
+		&.friend {
+			.content {
+				position: relative;
+
+				&::after {
+					position: absolute;
+					content: '';
+					width: 0;
+					height: 0;
+					border: 16rpx solid transparent;
+					border-right: 16rpx solid #fff;
+					left: -28rpx;
+					top: 24rpx;
+				}
+			}
+		}
+	}
+
+	.tool {
+		position: fixed;
+		width: 100%;
+		min-height: 120rpx;
+		left: 0;
+		bottom: 0;
+		background: #fff;
+		display: flex;
+		align-items: flex-start;
+		box-sizing: border-box;
+		padding: 20rpx 24rpx 20rpx 40rpx;
+		padding-bottom: calc(20rpx + constant(safe-area-inset-bottom)/2) !important;
+		padding-bottom: calc(20rpx + env(safe-area-inset-bottom)/2) !important;
+		.left-icon {
+			width: 56rpx;
+			height: 56rpx;
+			margin-right: 10rpx;
+		}
+
+		.input,
+		.voice-crl {
+			background: #eee;
+			border-radius: 10rpx;
+			height: 70rpx;
+			// margin-right: 30rpx;
+			flex: 1;
+			padding: 0 20rpx;
+			box-sizing: border-box;
+			font-size: 28rpx;
+		}
+
+		.thumb {
+			// width: 64rpx;
+			text-align: center;        /* 水平居中 */
+			display: flex;             /* 以下三行实现垂直居中 */
+			align-items: center;
+			justify-content: center;
+			height: 64rpx;
+		}
+
+		.voice-crl {
+			text-align: center;
+			line-height: 70rpx;
+			font-weight: bold;
+		}
+		
+		.plus-img {
+			margin: auto; 
+			
+			/* #ifdef H5 */
+			padding-bottom: 7px;
+			/* #endif */
+		}
+	}
+
+	.audio-animation {
+		position: fixed;
+		// width: 100vw;
+		// height: 100vh;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 202410;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		
+		.text {
+			text-align: center;
+			font-size: 28rpx;
+			color: #333;
+			margin-top: 60rpx;
+		}
+
+		.audio-wave {
+			padding: 50rpx;
+
+			.audio-wave-text {
+				background-color: blue;
+				width: 7rpx;
+				height: 12rpx;
+				margin: 0 6rpx;
+				border-radius: 5rpx;
+				display: inline-block;
+				border: none;
+				animation: wave 0.25s ease-in-out;
+				animation-iteration-count: infinite;
+				animation-direction: alternate;
+			}
+
+			/*  声波动画  */
+			@keyframes wave {
+				from {
+					transform: scaleY(1);
+				}
+
+				to {
+					transform: scaleY(4);
+				}
+			}
+		}
+	}
+	
+	.uni-icons{
+		
+	}
+</style>

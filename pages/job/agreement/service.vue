@@ -107,7 +107,7 @@ const handleAgree = () => {
     border-bottom: 1rpx solid rgba(0, 0, 0, 0.06);
     
     .title {
-      font-size: 36rpx;
+      font-size: 46rpx;
       font-weight: 600;
       color: #333;
       margin-bottom: 12rpx;
@@ -118,6 +118,8 @@ const handleAgree = () => {
       color: #999;
       text-transform: uppercase;
       letter-spacing: 2rpx;
+      display: block;
+	  padding-top: 5px;
     }
     
     .update-time {

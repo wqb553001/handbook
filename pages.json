@@ -1,6 +1,13 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
+			"path" : "pages/job/index",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		}
+		,{
 			"path": "pages/stock/add",
 			"style": {
 				"navigationBarTitleText": "%schema.tb.working%"
@@ -77,68 +84,104 @@
         	}
         }
         ,{
-        	"path" : "pages/job/index",
-        	"style" : 
-        	{
-        		"navigationBarTitleText" : ""
-        	}
-        }
-        ,{
         	"path" : "pages/job/user_list/user_list",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "找用工"
         	}
         }
         , {
         	"path" : "pages/job/user_list/user_detail",
         	"style" : 
         	{
+        		"navigationBarTitleText" : "详情"
+        	}
+        },
+        {
+        	"path" : "pages/job/user_list/user_my",
+        	"style" : 
+        	{
         		"navigationBarTitleText" : ""
+        	}
+        },
+        {
+        	"path" : "pages/job/user_list/my",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : "我的"
+        	}
+        },
+        {
+        	"path" : "pages/job/user_list/user_favorite",
+        	"style" : 
+        	{
+        		"navigationBarTitleText" : "我的收藏"
         	}
         }
         ,{
         	"path" : "pages/job/map/map",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "接单区域"
         	}
         },
         {
         	"path" : "pages/job/head_img/head_img",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "头像选取"
         	}
         },
         {
         	"path" : "pages/job/head_img/head_img_edit",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "头像编辑"
         	}
         },
         {
         	"path" : "pages/job/agreement/user",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "用户协议"
         	}
         },
         {
         	"path" : "pages/job/agreement/privacy",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "隐私"
         	}
         },
         {
         	"path" : "pages/job/agreement/service",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""
+        		"navigationBarTitleText" : "提供服务"
         	}
-        }
+        },
+		{
+			"path": "pages/job/online/index",
+			"style": {
+				"navigationBarTitleText": "消息中心"
+			}
+		},
+		{
+			"path" : "pages/job/online/message",
+			"style" : 
+			{
+				"navigationBarTitleText" : "",
+				"enablePullDownRefresh" : false
+			}
+		},
+		{
+			"path" : "pages/job/suggest/suggest",
+			"style" : 
+			{
+				"navigationBarTitleText" : "建议/意见",
+				"enablePullDownRefresh" : false
+			}
+		}
   //       ,{
 		// 	"path": "pages/job/user_list/user_list",
 		// 	"style": {
@@ -198,36 +241,45 @@
 	
 	"tabBar": {
 		"list": [
-			{
-				"pagePath": "pages/stock/show",
-				"text": "%schema.tb.looking%"
-			}
+			// {
+			// 	"pagePath": "pages/stock/show",
+			// 	"text": "%schema.tb.looking%"
+			// }
 			// ,{
 			// 	"pagePath": "pages/stock/popup",
 			// 	"text": "弹窗"
 			// }
-			,{
-				"pagePath": "pages/stock/add",
-				"text": "%schema.tb.working%"
-			}
-			,{
-				"pagePath": "pages/stock/rule",
-				"text": "%schema.tb.rule%"
-			},
-			{
+			// ,{
+			// 	"pagePath": "pages/stock/add",
+			// 	"text": "%schema.tb.working%"
+			// }
+			// ,{
+			// 	"pagePath": "pages/stock/rule",
+			// 	"text": "%schema.tb.rule%"
+			// },
+			// {
 				
-				"pagePath" : "pages/job/index",
-				"text" : "登录"
+			// 	"pagePath" : "pages/job/index",
+			// 	"text" : "登录"
+			// }
+			// ,
+			{
+				"pagePath" : "pages/job/user_list/user_list",
+				"text" : "列工" 
 			}
+			,{
+				"pagePath" : "pages/job/user_list/my",
+				"text" : "我的"
+			}
+			// ,{
+			// 	"pagePath" : "pages/job/user_add/user_add",
+			// 	"text" : "我的"
+			// }
 			// ,{
 			// 	"pagePath" : "pages/job/user_add/user_add",
 			// 	"text" : "找工" 
 			// }
 			
-			// ,{
-			// 	"pagePath" : "pages/job/user_list/user_list",
-			// 	"text" : "列工" 
-			// }
 			
 			// ,{
 			// 	"pagePath": "pages/list/list",

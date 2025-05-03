@@ -288,7 +288,10 @@ export default {
 			success: function(resp){
 				_this.userToken = resp.data
 				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-				uni.navigateTo({ url: `/pages/job/user_list/user_list` });
+				// uni.navigateTo({ url: `/pages/job/user_list/user_list` });
+				wx.switchTab({
+				  url: '/pages/job/user_list/user_list' // 需要跳转的 tabbar 页面路径
+				});
 			},
 			fail:function(){
 			}
@@ -414,8 +417,11 @@ export default {
 								let ret = retData.data;
 								uni.setStorage({ key:JOB_TOKEN, data: ret });
 								// 登录成功
-								const url = '/pages/job/user_list/user_list'
-								uni.navigateTo({ url });
+								// const url = '/pages/job/user_list/user_list'
+								// uni.navigateTo({ url });
+								wx.switchTab({
+								  url: '/pages/job/user_list/user_list' // 需要跳转的 tabbar 页面路径
+								});
 								return;
 							}
 							uni.showToast({title: retData.msg, icon: 'error', duration: 3000});
@@ -490,8 +496,11 @@ export default {
 		},
 		
         goList(){
-			const url = `/pages/job/user_list/user_list`;
-			uni.navigateTo({ url });
+			// const url = `/pages/job/user_list/user_list`;
+			// uni.navigateTo({ url });
+			wx.switchTab({
+			  url: '/pages/job/user_list/user_list' // 需要跳转的 tabbar 页面路径
+			});
 		},
 		
 		goFull(){
@@ -533,7 +542,7 @@ export default {
 		
         goToForgetPassword() {
             uni.navigateTo({
-                url: './forget-password'
+                url: '/pages/job/forget-password'
             })
         }
     }
