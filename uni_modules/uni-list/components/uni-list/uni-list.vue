@@ -112,7 +112,7 @@
 		position: absolute;
 		bottom: 0;
 		right: 0;
-		left: 0;
+		// left: 0;
 		height: 1px;
 		-webkit-transform: scaleY(0.5);
 		transform: scaleY(0.5);

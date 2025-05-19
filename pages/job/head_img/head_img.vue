@@ -55,8 +55,8 @@ export default {
 	  userId: 0,
 	  afterUrl: '', 
       avatars: [
-        { url: '/static/avatars/default1.png' },
-        { url: '/static/avatars/default2.png' }
+        { url: 'http://cdn.xny.world/job/headImg/47_1746936343570_oyw2olleigr.jpg' },
+        { url: 'http://cdn.xny.world/job/46_1746277832161_54vfvgc8rvm.jpg' }
       ],
       selectedIndex: 0,			// 所选照片索引（-1,0,1）：默认0选中第一张图片；0,1：为预提供图片的索引；-1：为用户自定义图片
       showUploadSheet: false,  	// 弹出 选项

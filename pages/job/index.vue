@@ -288,9 +288,11 @@ export default {
 			success: function(resp){
 				_this.userToken = resp.data
 				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-				// uni.navigateTo({ url: `/pages/job/user_list/user_list` });
+				// uni.navigateTo({ url: `/pages/job/user/user_list` });
+				
+				// uni.reLaunch({url:'/pages/job/user/user_list'});
 				wx.switchTab({
-				  url: '/pages/job/user_list/user_list' // 需要跳转的 tabbar 页面路径
+				  url: '/pages/job/user/user_list' // 需要跳转的 tabbar 页面路径
 				});
 			},
 			fail:function(){
@@ -380,7 +382,7 @@ export default {
 		},
 		
         
-        handleSubmit(isRegister) {
+        async handleSubmit(isRegister) {
             if (!this.agreePrivacy) {
                 uni.showToast({ title: '请先同意用户协议和隐私政策', icon: 'none' })
                 return
@@ -416,12 +418,15 @@ export default {
 							if(retData.code == 0){
 								let ret = retData.data;
 								uni.setStorage({ key:JOB_TOKEN, data: ret });
-								// 登录成功
-								// const url = '/pages/job/user_list/user_list'
-								// uni.navigateTo({ url });
+								// console.log("登录成功")
+								
 								wx.switchTab({
-								  url: '/pages/job/user_list/user_list' // 需要跳转的 tabbar 页面路径
+								  url: '/pages/job/user/user_list' // 需要跳转的 tabbar 页面路径
 								});
+								// 登录成功
+								// const url = '/pages/job/user/user_list'
+								// uni.navigateTo({ url });
+								
 								return;
 							}
 							uni.showToast({title: retData.msg, icon: 'error', duration: 3000});
@@ -469,7 +474,7 @@ export default {
 								uni.setStorage({ key:JOB_TOKEN, data: ret });
 								
 								console.log("this.saveUser 返回值：" + JSON.stringify(ret))
-								const url = '/pages/job/user_add/user_add?username='+userData.username;
+								const url = '/pages/job/user/user_add?username='+userData.username;
 								uni.navigateTo({ url });
 								// console.log('注册信息：', JSON.stringify(this.form))
 								uni.showToast({
@@ -496,15 +501,15 @@ export default {
 		},
 		
         goList(){
-			// const url = `/pages/job/user_list/user_list`;
+			// const url = `/pages/job/user/user_list`;
 			// uni.navigateTo({ url });
 			wx.switchTab({
-			  url: '/pages/job/user_list/user_list' // 需要跳转的 tabbar 页面路径
+			  url: '/pages/job/user/user_list' // 需要跳转的 tabbar 页面路径
 			});
 		},
 		
 		goFull(){
-			const url = `/pages/job/user_add/user_add`;
+			const url = `/pages/job/user/user_add`;
 			uni.navigateTo({ url });
 		},
 		switchLoginType(isRegister){

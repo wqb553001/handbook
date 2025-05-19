@@ -172,24 +172,10 @@
 				}
 			}
 		},
-		onLoad(options) {
-			const _this = this
-			uni.getStorage({
-				key: JOB_TOKEN,
-				success: function(resp){
-					_this.userToken = resp.data
-					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-					_this.baseFormData.userId = _this.userToken.userId;
-				},
-				fail:function(){
-				}
-			});
-			// console.log("传递参数：" + JSON.stringify(options))
-			this.baseFormData.username = options.username;
+		onLoad() {
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
-				
-			    // console.log("接收地址：" + JSON.stringify(data))
+				// console.log("接收地址：" + JSON.stringify(data))
 				// this.baseFormData.address = data.title;
 				this.baseFormData.latitude 	= data.location.lat;	// 纬度
 				this.baseFormData.longitude = data.location.lng;	// 经度
@@ -201,22 +187,39 @@
 				
 				// console.log("转化数据：" + JSON.stringify(data))
 				// console.log("跳转地址："+ url)
-				uni.navigateTo({ url: `/pages/job/user_list/user_list` });
+				uni.navigateTo({ url: `/pages/job/user/user_list` });
 			});
-			this.initGetKills();
+			
 		},
 		onUnload() {
 			// 避免泄露，结束卸载监听
 			uni.$off('acceptAddress');
 		},
 		mounted(){
-		  if (typeof this.baseFormData.skills === 'string') {
-			try {
-			  this.baseFormData.skills = JSON.parse(this.baseFormData.skills)
-			} catch {
-			  this.baseFormData.skills = []
+			const _this = this
+			uni.getStorage({
+				key: JOB_TOKEN,
+				success: function(resp){
+					_this.userToken = resp.data
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					_this.baseFormData.userId = _this.userToken.userId;
+				},
+				fail:function(){
+					uni.showToast({ title: '需要先登录！', icon: 'none' });
+					setTimeout(() => {
+					  uni.navigateTo({ url: `/pages/job/index` });
+					}, 1000); // 1000毫秒等于1秒
+				}
+			});
+			// console.log("传递参数：" + JSON.stringify(options))
+			if (typeof this.baseFormData.skills === 'string') {
+				try {
+					this.baseFormData.skills = JSON.parse(this.baseFormData.skills)
+				} catch {
+					this.baseFormData.skills = []
+				}
 			}
-		  }
+			this.initGetKills();
 		},
 		onReady() {},
 		methods: {
@@ -255,7 +258,7 @@
 				const userId = await this.updateUser(submitForm);
 				if(userId){
 					// console.log("保存成功，userId:", userId)
-					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.userId}&afterUrl=/pages/job/user_list/user_list`;
+					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.userId}&afterUrl=/pages/job/index`;
 					uni.navigateTo({ url });
 				}else{
 					uni.showToast({ title: '提交失败', icon: 'none' });
@@ -434,7 +437,7 @@
 			  uni.chooseImage({
 			    count: 1, // 默认9，这里我们只选一张图
 			    sizeType: ['original', 'compressed'], // 可选择原图或压缩图
-			    sourceType: ['album', 'camera'], // 支持从相册和摄像头选择
+			    sourceType: ['album', 'camera'], 	  // 支持从相册和摄像头选择
 			    success: (res) => {
 			      const filePath = res.tempFilePaths; // 获取选择的第一张图片路径
 			      // 在这里可以对图片进行进一步处理，如上传、预览等

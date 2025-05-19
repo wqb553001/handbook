@@ -6,7 +6,7 @@
 			:hover-class="(!clickable && !link) || disabled || showSwitch ? '' : 'uni-list-item--hover'"
 			class="uni-list-item" @click="onClick">
 			<view v-if="!isFirstChild" class="border--left" :class="{ 'uni-list--border': border }"></view>
-			<view class="uni-list-item__container"
+			<view class="uni-list-item__container" 
 				:class="{ 'container--right': showArrow || link, 'flex--direction': direction === 'column'}"
 				:style="{paddingTop:padding.top,paddingLeft:padding.left,paddingRight:padding.right,paddingBottom:padding.bottom}">
 				<slot name="header">
@@ -32,7 +32,7 @@
 						:class="{ 'flex--justify': direction === 'column' }">
 						<text v-if="rightText" class="uni-list-item__extra-text">{{ rightText }}</text>
 						<uni-badge v-if="showBadge" :type="badgeType" :text="badgeText" :custom-style="badgeStyle" />
-						<switch v-if="showSwitch" :color="innerColor" :disabled="disabled" :checked="switchChecked" :switchId="switchId"
+						<switch v-if="showSwitch" :color="innerColor" :disabled="disabled" :checked="switchChecked" :switchObj="switchObj"
 							@change="onSwitchChange" />
 					</view>
 				</slot>
@@ -71,7 +71,7 @@
 	 * @property {String | PageURIString} 	to  			跳转目标页面
 	 * @property {Boolean} 	showBadge = [true|false] 		是否显示数字角标
 	 * @property {Boolean} 	showSwitch = [true|false] 		是否显示Switch
-	 * @property {Number | String} 	switchId  				Switch的Id
+	 * @property {Object} 	switchObj  				Switch的对象
 	 * @property {Boolean} 	switchChecked = [true|false] 	Switch是否被选中
 	 * @property {Boolean} 	showExtraIcon = [true|false] 	左侧是否显示扩展图标
 	 * @property {Object} 	extraIcon 						扩展图标参数，格式为 {color: '#4cd964',size: '22',type: 'spinner'}
@@ -134,9 +134,11 @@
 				type: [Boolean, String],
 				default: false
 			},
-			switchId: {
-				type: [Number, String],
-				default: 0
+			switchObj: {
+				type: Object,
+				default () {
+					return {}
+				}
 			},
 			switchChecked: {
 				type: [Boolean, String],
@@ -185,7 +187,7 @@
 			},
 			border: {
 				type: Boolean,
-				default: true
+				default: false
 			},
 			customStyle: {
 				type: Object,
@@ -289,8 +291,8 @@
 				}
 			},
 			onSwitchChange(e) {
-				console.log("switch 变更："+this.switchId)
-				this.$emit('switchChange', {data: e.detail.value, switchId: this.switchId});
+				console.log("switch 变更："+this.switchObj)
+				this.$emit('switchChange', {data: e.detail.value, switchObj: this.switchObj});
 			},
 			openPage() {
 				if (['navigateTo', 'redirectTo', 'reLaunch', 'switchTab'].indexOf(this.link) !== -1) {

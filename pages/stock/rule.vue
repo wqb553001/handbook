@@ -234,7 +234,7 @@
 	import tTr from '@/components/t-table/t-tr.vue';
 	import tTd from '@/components/t-table/t-td.vue';
 	import { Decimal } from 'decimal.js';
-	import { formatMoney } from '@/common/util/formatMoney.js'
+	import { formatMoney } from '@/common/js/util/formatMoney.js'
 	
 	export default {
 		components: {

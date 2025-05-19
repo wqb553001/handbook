@@ -296,7 +296,7 @@
 			longPressEditHeadImage(){
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
 				if(this.isMyself){
-					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user_list/user_detail?detailId=${this.detailId}`;
+					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}`;
 					uni.navigateTo({ url });
 				}
 			},

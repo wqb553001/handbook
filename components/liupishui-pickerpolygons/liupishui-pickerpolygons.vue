@@ -43,7 +43,7 @@
 	// #ifdef H5
 	import '@/common/js/jquery-3.7.1.min.js'
 	// #endif
-	import { exportExcel,showToast,showLoading,hideLoading } from '@/common/util/excelUtil.js'
+	import { exportExcel,showToast,showLoading,hideLoading } from '@/common/js/util/excelUtil.js'
 	var handleRegionchangeTimer;
 	const MAP_PICKER_POSITION = "map_Picker_Position"
 	export default {

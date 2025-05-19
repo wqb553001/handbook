@@ -119,7 +119,7 @@
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						console.log('userStream 返回值' + JSON.stringify(result));
+						console.log('getUser 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							const respData = result.data.data;
 							console.log("getUser返回值："+JSON.stringify(respData))

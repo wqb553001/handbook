@@ -30,7 +30,7 @@
 					<template v-slot:title>
 						<uni-list>
 							<uniListItem :titleStyle="handleTitleStyle(18)" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
-							@switchChange="handleSwitchChange" :switchId="worker.userId" :switchChecked="worker.isStore" />
+							@switchChange="handleSwitchChange" :switchObj="worker" :switchChecked="worker.isStore" />
 						</uni-list>
 					</template>
 					<view class="uni-flex uni-row">
@@ -91,6 +91,8 @@
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "jobUserListFontSet";
+	const JOB_HISTORY_RECORD = 'JOB_HISTORY_RECORD';
+	const JOB_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const PAGE_LIMIT = 10
 	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
@@ -133,6 +135,7 @@
 				
 				// 收藏
 				storeUserIdList: [],
+				historyRecord: [],
 				
 				// 浮动按钮
 				fab:{
@@ -202,6 +205,8 @@
 				}
 				this.initGetFontSize();
 			});
+			// 读取历史记录
+			this.readHistoryRecord(); 
 		},
 		onUnload() {
 			// 避免泄露，结束卸载监听
@@ -439,6 +444,9 @@
 			},
 			
 			calculateAge(birth){
+			  if(!birth) return;
+			  const bIndex = birth.indexOf(' 00:00:00');
+			  if(bIndex>0){birth = birth.substring(0, bIndex)}
 			  // 将出生日期字符串转换为Date对象
 			  const birthDateObj = new Date(birth);			  
 			  // 获取当前日期
@@ -467,7 +475,7 @@
 			toDetail(userId){
 				console.log("跳转："+userId)
 				uni.navigateTo({
-					url: '/pages/job/user_list/user_detail?detailId='+ userId
+					url: '/pages/job/user/user_detail?detailId='+ userId
 				});
 			},
 			
@@ -483,16 +491,19 @@
 			
 			handleSwitchChange(e){
 				// console.log("用户ID:", e.switchId, "改变值:", e.data);
-				this.storeOpt(e.switchId, e.data);
+				this.storeOpt(e.switchObj, e.data);
 			},
 			
-			async storeOpt(userId, isStore=true){
+			async storeOpt(obj, isStore=true){
 				let opt = '收藏';
 				let enabled = 0;
 				if(!isStore) {
 					enabled = 1;
 					opt = '取消收藏';
 				}
+				// 记录操作
+				this.writeHistoryRecord(opt, obj.username, obj.headImgPath); 
+				const userId = obj.userId
 				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: userId, enabled: enabled}
 				console.log("收藏操作："+JSON.stringify(store))
 				const result = await uni.request({
@@ -619,7 +630,31 @@
 			handleTitleStyle(baseFontSize=16) {
 				var fontSize = baseFontSize * (this.fontSizeScale / 100);
 				return 'color: #000000; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
-			}
+			},
+			readHistoryRecord() {
+				this.historyRecord = [];
+				// 获取用户信息
+				const _this = this
+				uni.getStorage({
+					key: JOB_HISTORY_RECORD,
+					success: function(resp){
+						_this.historyRecord = resp.data
+						// console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
+					},
+					fail:function(){
+					}
+				});
+			},
+			writeHistoryRecord(opt, obj, img) {
+				let optRecord = { title: `${opt}了${obj}`, 	time: ((new Date()).toLocaleDateString() + " " + (new Date()).toLocaleTimeString()), 	image: img }
+				// this.historyRecord.unshift(optRecord);
+				this.historyRecord = this.addToFront(this.historyRecord, optRecord, JOB_HISTORY_RECORD_LEN);
+				// 更新历史操作记录
+				uni.setStorage({key: JOB_HISTORY_RECORD, data: this.historyRecord});
+			},
+			addToFront(list, newItem, maxLength = 20) {
+			  return [newItem, ...list].slice(0, maxLength)
+			},
 		},
 		computed:{
 			scaledFontSize() {
@@ -636,7 +671,7 @@
 		onNavigationBarSearchInputClicked(e) {
 			console.log('输入变更：'+ e)
 			uni.navigateTo({
-				url: '/pages/job/user_list/history_record'
+				url: '/pages/job/user/history_record'
 			});
 		},
 		/**

@@ -7,21 +7,28 @@
                 <view class="profile-info">
 					<view class="headLeft">
 						<view class="headImg">
-							<image class="avatar" src="/static/logo.png" mode="aspectFill" />
+							<image class="avatar" :src="jobUser.headImgPath" mode="aspectFill" />
+							<!-- <image v-show="!isLogined" class="avatar" :src="jobUser.headImgPath" mode="aspectFill" /> -->
+							<!-- <uni-icons v-if="!isLogined" type="contact" class="avatar" size="14" color="#FFD700"></uni-icons> -->
 						</view>
 						
 						<view class="info-text">
-							<text class="nickname">{{  jobUser.username  }}</text>
+							<view style="display: flex;">
+								<text v-if="isLogined" class="nickname">{{  jobUser.username  }}</text>
+								<text v-else class="nickname" @click="navigateTo(`/pages/job/index`)">登录</text>
+								<text v-if="isLogined" class="mobile" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
+							</view>
+							
 							<text class="signature">{{ jobUser.skillsName }}</text>
 						</view>
 					</view>
 					<view class="headRight">
 						<view class="member-tag">
-							<uni-icons type="star" size="14" color="#FFD700"></uni-icons>
+							<uni-icons type="star" v-for="(item, index) in jobUser.multiScore" :key="index" size="14" color="#FFD700"></uni-icons>
 							<text>劳模</text>
 						</view>
 						<view class="setting-icon">
-							<uni-icons type="gear" size="28" color="#fff"></uni-icons>
+							<uni-icons type="gear" size="28" color="#fff" @click="isLogined?navigateTo('/pages/job/user/user_setting'):''"></uni-icons>
 						</view>
 					</view>
 					
@@ -36,27 +43,28 @@
             <view class="profile-stats">
                 <view class="stat-item">
                     <text class="num">1280</text>
+					<uni-icons type="hand-up-filled" size="28" color="#FFCC33" ></uni-icons>
                     <text class="label">获赞</text>
                 </view>
                 <view class="stat-item">
                     <text class="num">328</text>
-                    <text class="label">关注</text>
+					<uni-icons type="star-filled" size="28" color="#FFCC33" ></uni-icons>
+                    <text class="label">收藏</text>
                 </view>
                 <view class="stat-item">
                     <text class="num">999</text>
-                    <text class="label">粉丝</text>
+					<uni-icons type="redo-filled" size="28" color="#FFCC33" ></uni-icons>
+                    <text class="label">分享</text>
                 </view>
             </view>
         </view>
 
         <!-- 功能区域 -->
-        <view class="feature-section">
+       <view class="feature-section">
             <view class="section-title">我的服务</view>
             <view class="feature-grid">
-                <view class="feature-item" v-for="(item, index) in features" :key="index" @click="handleFeature(item)">
-                    <view class="feature-icon" :style="{ backgroundColor: item.bgColor }">
-                        <uni-icons :type="item.icon" size="24" :color="item.iconColor"></uni-icons>
-                    </view>
+                <view class="feature-item" v-for="(item, index) in features.slice(0, 2)" :key="index" @click="isLogined?handleFeature(item):''">
+                    <view class="feature-icon" :style="{ backgroundColor: item.bgColor }"> <uni-icons :type="item.icon" size="24" :color="item.iconColor"></uni-icons> </view>
                     <text class="feature-name">{{item.name}}</text>
                 </view>
             </view>
@@ -65,38 +73,71 @@
 
     <!-- 快捷功能区 -->
     <view class="quick-actions">
-      <view 
-        class="action-item" 
-        v-for="(item, index) in allServices.slice(0, 4)" 
-        :key="index"
-        @click="navigateTo(item.path)"
-      >
-        <view class="action-icon" :class="item.class">
-          <uni-icons :type="item.icon" size="24" color="#fff"></uni-icons>
-        </view>
+      <view class="action-item" v-for="(item, index) in allServices.slice(0, 0)" :key="index" @click="isLogined?navigateTo(item.path):''" >
+        <view class="action-icon" :class="item.class"> <uni-icons :type="item.icon" size="24" color="#fff"></uni-icons> </view>
         <text class="action-name">{{ item.name }}</text>
       </view>
     </view>
 
     <!-- 服务菜单列表 -->
     <view class="service-list">
-      <view 
-        class="service-item" 
-        v-for="(item, index) in allServices.slice(4)" 
-        :key="index"
-        @click="navigateTo(item.path)"
-      >
+<!--      <view class="service-item" v-for="(item, index) in allServices.slice(4)" :key="index" @click="isLogined?navigateTo(item.path):''" >
         <view class="left">
-          <view class="service-icon" :class="item.class">
-            <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
-          </view>
+          <view class="service-icon" :class="item.class"> <uni-icons :type="item.icon" size="20" color="#fff"></uni-icons> </view>
           <text class="service-name">{{ item.name }}</text>
         </view>
         <view class="right">
           <text v-if="item.desc" class="desc">{{ item.desc }}</text>
           <uni-icons type="right" size="14" color="#999"></uni-icons>
         </view>
-      </view>
+      </view> -->
+	  
+	  
+	  
+	    <view class="service-item" @click="navigateToServices(talkPath)" >
+			<view class="left">
+				<view class="service-icon bg-orange" > <uni-icons type="headphones" size="20" color="#fff"></uni-icons> </view>
+				<text class="service-name">客服中心</text>
+			</view>
+			<view class="right">
+				<text class="desc">留言</text>
+				<uni-icons type="right" size="14" color="#999"></uni-icons>
+			</view>
+	    </view>
+	  
+	    <view class="service-item" @click="" >
+			<view class="left">
+				<view class="service-icon bg-cyan" > <uni-icons type="help" size="20" color="#fff"></uni-icons> </view>
+				<text class="service-name">帮助中心</text>
+			</view>
+			<view class="right">
+				<uni-icons type="right" size="14" color="#999"></uni-icons>
+			</view>
+	    </view>
+	  
+	  	  
+		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest')" >
+			<view class="left">
+				<view class="service-icon bg-pink" > <uni-icons type="chat" size="20" color="#fff"></uni-icons> </view>
+				<text class="service-name">意见反馈</text>
+			</view>
+			<view class="right">
+				<uni-icons type="right" size="14" color="#999"></uni-icons>
+			</view>
+		</view>
+	  	  
+	  	  	  
+	  	<view class="service-item" @click="navigateToServices('/pages/job/user/user_setting')" >
+	  	  	<view class="left">
+	  	  		<view class="service-icon bg-gray" > <uni-icons type="gear" size="20" color="#fff"></uni-icons> </view>
+	  	  		<text class="service-name">设置</text>
+	  	  	</view>
+	  	  	<view class="right">
+	  	  		<uni-icons type="right" size="14" color="#999"></uni-icons>
+	  	  	</view>
+	  	</view>
+	  	  	  
+	  
     </view>
 
 
@@ -124,69 +165,69 @@ const JOB_USER_FONT_SET = "jobUserMySet";
 
 export default {
 	onLoad() {
+	},
+	mounted() {
+		// this.$forceUpdate();
 		// 获取用户信息
 		const _this = this
 		uni.getStorage({
 			key: JOB_TOKEN,
 			success: function(resp){
 				_this.userToken = resp.data
+				_this.isLogined = false
 				// 加载用户信息
 				_this.getJobUserByUserId();
-				
-				console.log("缓存取值："+ JSON.stringify(_this.userToken))
+				if(_this.userToken?.userId > 0) _this.isLogined = true
+				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 			},
 			fail:function(){
+				 _this.isLogined = false
 			}
 		});
 	},
     data() {
         return {
+			isLogined: true,
+			talkPath: '/pages/job/online/talk_list',
+			
 			userToken:{},
 			jobUser: {
 				avatar: '/static/logo.png',
-				username: '非鱼',
+				username: '',
 				phone: '15555555555'
 			},
             features: [
-                { name: '我的收藏', icon: 'star-filled', bgColor: '#FFE8E8', iconColor: '#FF4D4F', path: '/pages/collect' },
-                { name: '历史记录', icon: 'refresh', bgColor: '#E6F7FF', iconColor: '#1890FF', path: '/pages/history' },
-                { name: '我的订单', icon: 'bars', bgColor: '#F6FFED', iconColor: '#52C41A', path: '/pages/order' },
-                { name: '积分商城', icon: 'gift-filled', bgColor: '#FFF7E6', iconColor: '#FA8C16', path: '/pages/points' },
-                { name: '客户服务', icon: 'chat-filled', bgColor: '#F9F0FF', iconColor: '#722ED1', path: '/pages/service' },
-                { name: '设置', icon: 'gear-filled', bgColor: '#F0F5FF', iconColor: '#2F54EB', path: '/pages/job/user_add/user_add' }
+                { name: '我的收藏', 		icon: 'star-filled', 	bgColor: '#FFE8E8', 	iconColor: '#FF4D4F', 	path: '/pages/job/user/user_favorite' 	},
+                { name: '历史记录', 		icon: 'eye-filled',  	bgColor: '#E6F7FF', 	iconColor: '#1890FF', 	path: '/pages/job/user/user_history' 	},
+                { name: '我的找用工',	icon: 'bars', 		 	bgColor: '#F6FFED', 	iconColor: '#52C41A', 	path: '/pages/order' 					},
+                { name: '积分商城', 		icon: 'gift-filled', 	bgColor: '#FFF7E6', 	iconColor: '#FA8C16', 	path: '/pages/points' 					},
+                { name: '客户服务', 		icon: 'chat-filled', 	bgColor: '#F9F0FF', 	iconColor: '#722ED1', 	path: '/pages/service' 					},
+                { name: '设置', 			icon: 'gear-filled', 	bgColor: '#F0F5FF', 	iconColor: '#2F54EB', 	path: '/pages/job/user/user_add' 		}
             ],
             activities: [
-                {
-                    title: '浏览了《产品设计》',
-                    time: '2分钟前',
-                    image: '/static/logo.png'
-                },
-                {
-                    title: '收藏了《UI设计》',
-                    time: '1小时前',
-                    image: '/static/logo.png'
-                },
-                {
-                    title: '点赞了《前端开发》',
-                    time: '2小时前',
-                    image: '/static/logo.png'
-                }
+                { title: '浏览了《产品设计》', 	time: '2分钟前', 	image: '/static/logo.png' },
+                { title: '收藏了《UI设计》', 		time: '1小时前', 	image: '/static/logo.png' },
+                { title: '点赞了《前端开发》', 	time: '2小时前', 	image: '/static/logo.png' }
             ],
 			allServices: [
-				{ name: '收藏夹', icon: 'star', path: '/pages/job/user_list/user_favorite', class: 'bg-red' },
-				{ name: '浏览记录', icon: 'eye', path: '/pages/history/index', class: 'bg-blue' },
-				{ name: '收货地址', icon: 'location', path: '/pages/address/list', class: 'bg-green' },
-				{ name: '优惠券', icon: 'gift', path: '/pages/coupon/list', class: 'bg-purple' },
-				{ name: '客服中心', icon: 'headphones', path: '/pages/job/online/index', class: 'bg-orange', desc: '留言' },
-				{ name: '帮助中心', icon: 'help', path: '/pages/help/index', class: 'bg-cyan' },
-				{ name: '意见反馈', icon: 'chat', path: '/pages/job/suggest/suggest', class: 'bg-pink' },
-				{ name: '设置', icon: 'gear', path: '/pages/job/user_add/user_add', class: 'bg-gray' }
+				{ name: '收藏夹', 	icon: 'star', 		path: '/pages/job/user/user_favorite', 	class: 'bg-red' 	},
+				{ name: '浏览记录', 	icon: 'eye', 		path: '/pages/job/user/user_history', 	class: 'bg-blue' 	},
+				{ name: '收货地址', 	icon: 'location', 	path: '/pages/address/list', 			class: 'bg-green' 	},
+				{ name: '优惠券', 	icon: 'gift', 		path: '/pages/coupon/list', 			class: 'bg-purple' 	},
+				
+				{ name: '客服中心', 	icon: 'headphones', path: '/pages/job/online/talk_list', 	class: 'bg-orange', desc: '留言' },
+				{ name: '帮助中心', 	icon: 'help', 		path: '/pages/help/index', 				class: 'bg-cyan' },
+				{ name: '意见反馈', 	icon: 'chat', 		path: '/pages/job/suggest/suggest', 	class: 'bg-pink' },
+				{ name: '设置', 		icon: 'gear', 		path: '/pages/job/user/user_setting', 	class: 'bg-gray' }
 			],
 			fontSizeScale: 100, // 默认100%比例
         }
     },
     methods: {
-		
+		navigateToServices(path){
+			if(!this.isLogined) return;
+			uni.navigateTo({url: path});
+		},
 		getJobUserByUserId(){
 			const _this = this;
 			uni.request({
@@ -198,7 +239,7 @@ export default {
 					// console.log('userStream 返回值' + JSON.stringify(result));
 					if (result.statusCode == 200 && result.data.code == 0) {
 						const respData = result.data.data;
-						console.log("getUser返回值："+JSON.stringify(respData))
+						// console.log("getUser返回值："+JSON.stringify(respData))
 						if(respData) {
 							// console.log("转化前："+respData.skills)
 							respData.allSkills = respData.skillsName
@@ -209,7 +250,10 @@ export default {
 							respData.age 			= _this.calculateAge(respData.birth);
 							respData.tools 			= _this.truncateString(respData.tools, 20);
 							respData.introduction 	= _this.truncateString(respData.introduction, 45);
-							console.log("转化后："+JSON.stringify(respData))
+							if(respData.level != 1){
+								_this.talkPath = `/pages/job/online/message?senderId=${this.userToken.userId}`
+							}
+							// console.log("转化后："+JSON.stringify(respData))
 						};
 						_this.jobUser = respData;
 					}
@@ -234,6 +278,9 @@ export default {
 		},
 		
 		calculateAge(birth){
+		  if(!birth) return;
+		  const bIndex = birth.indexOf(' 00:00:00');
+		  if(bIndex>0){birth = birth.substring(0, bIndex)}
 		  // 将出生日期字符串转换为Date对象
 		  const birthDateObj = new Date(birth);			  
 		  // 获取当前日期
@@ -292,15 +339,19 @@ export default {
 .profile-info {
 	background: linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%);
     position: relative;
-    padding: 40rpx;
+    // padding: 40rpx;
+    padding: 40rpx 10rpx 40rpx 40rpx;
     display: flex;
     align-items: center;
     z-index: 1;
 	width: 100%;
+	box-sizing: border-box;
+	align-items: flex-start; /* 修改为顶部对齐 */
 	
 	.headLeft{
-		flex: 1;
+		flex: 0 0 50%;
 		display: flex;
+		max-width: 50%;
 		.avatar {
 		    width: 120rpx;
 		    height: 120rpx;
@@ -315,17 +366,28 @@ export default {
 	}
 	
 	.headRight{
-		flex: 1;
+		flex: 0 0 50%;
 		display: flex;
+		position: relative; /* 关键修改：添加定位上下文 */
+		flex-direction: row; /* 改为纵向布局 */
+		align-items: center; /* 右侧对齐 */
+		padding-left: 20rpx; /* 添加间距 */
+		box-sizing: border-box;
+		margin-top: 16rpx; /* 添加顶部间距 */
+		// justify-content: center; align-items: center;
 		// justify-content: space-evenly;
+		// justify-content: flex-end; 
 		.member-tag {
 		  display: flex;
+		  flex-wrap: wrap;
+		  max-width: 80%;
 		  align-items: center;
 		  background: rgba(255,255,255,0.2);
 		  padding: 4rpx 16rpx;
 		  border-radius: 24rpx;
-		  width: fit-content;
-		  
+		  // width: fit-content;
+		  margin-right: auto; /* 新增：自动占据左侧空间 */
+		  gap: 4rpx; /* 图标间距 */
 		  text {
 		    font-size: 24rpx;
 		    margin-left: 8rpx;
@@ -333,9 +395,17 @@ export default {
 		}
 		
 		.setting-icon{
-			margin: auto;
+			// position: absolute;
+			left: 50%; /* 关键修改：定位到父容器水平中心 */
+			// transform: translateX(-50%); /* 修正居中偏移 */
+			// margin-left: auto;
+			// right: 30px;
+			// min-width: 55px;
+			// justify-content: center;
+			// align-items: center;
 		}
-	}	
+		
+	}
 	
 }
 
@@ -346,6 +416,10 @@ export default {
     font-weight: bold;
     display: block;
     text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
+}
+
+.mobile{
+	font-size: 18rpx;
 }
 
 .signature {

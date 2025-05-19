@@ -1,7 +1,7 @@
 <template>
     <view class="container">
 		<uni-card :is-shadow="false" is-full style="text-align: center; display: block;z-index: 9999; ">
-			<view class="uni-h6" >有任何，你觉得好的，优化、改进的建议或意见，都请告知我！</view>
+			<view class="uni-h6" >有任何，你觉得好的，优化、改进、改善的建议或意见，都请告知我！</view>
 			<text class="uni-h6" >不必非得是专家或学者！不必有多成熟或完美！</text>
 		</uni-card>
 		
@@ -253,17 +253,17 @@ export default {
 .container {
     padding: 20px;
 }
-
-./* custom-camera-btn {
-    margin-top: 10px;
-    margin-bottom: 20px;
-    background: #f0f0f0;
-    color: #666;
-} */
-
+ 
 .submit-btn {
-    margin-top: 30px;
-    background-color: #007AFF;
-    color: white;
+    position: fixed;
+    bottom: 20px;       /* 距离底部20px */
+    left: 20px;         /* 左侧间距 */
+    right: 20px;        /* 右侧间距 */
+    background-color: #007AFF !important;
+    color: white !important;
+    border-radius: 8px;  /* 圆角 */
+    padding: 12px 0;     /* 内边距 */
+    font-size: 16px;     /* 字号 */
+    z-index: 999;        /* 确保按钮在最上层 */
 }
 </style>

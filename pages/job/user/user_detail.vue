@@ -225,12 +225,12 @@
 			},
 			submit() {
 				uni.request({
-					url: process.env.UNI_BASE_URL+'/api/job/saveTalk',  // 数据源的数据是 有序的
+					url: process.env.UNI_BASE_URL+'/api/job/saveScore',  // 数据源的数据是 有序的
 					data: {sysId: SYS_ID, selfId: 19, userId: this.jobUser.userId, score: this.talk.score, talk: this.talk.talk, orderId: 0},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						// console.log('job/saveTalk 返回值' + JSON.stringify(result));
+						// console.log('job/saveScore 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							uni.showToast({title:'感谢评价！'});
 							setTimeout(() => {
@@ -296,7 +296,7 @@
 			longPressEditHeadImage(){
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
 				if(this.isMyself){
-					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user_list/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
+					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
 					uni.navigateTo({ url });
 				}
 			},

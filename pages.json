@@ -1,13 +1,14 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		
 		{
 			"path" : "pages/job/index",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
 			}
-		}
-		,{
+		},
+		{
 			"path": "pages/stock/add",
 			"style": {
 				"navigationBarTitleText": "%schema.tb.working%"
@@ -77,47 +78,71 @@
             
         }
         ,{
-        	"path" : "pages/job/user_add/user_add",
+        	"path" : "pages/job/user/user_add",
         	"style" : 
         	{
         		"navigationBarTitleText" : "完善信息"
         	}
         }
         ,{
-        	"path" : "pages/job/user_list/user_list",
+        	"path" : "pages/job/user/user_list",
         	"style" : 
         	{
-        		"navigationBarTitleText" : "找用工"
+        		"navigationBarTitleText" : "",
+				"enablePullDownRefresh": true
         	}
         }
         , {
-        	"path" : "pages/job/user_list/user_detail",
+        	"path" : "pages/job/user/user_detail",
         	"style" : 
         	{
         		"navigationBarTitleText" : "详情"
         	}
         },
         {
-        	"path" : "pages/job/user_list/user_my",
+        	"path" : "pages/job/user/user_self",
         	"style" : 
         	{
         		"navigationBarTitleText" : ""
         	}
         },
         {
-        	"path" : "pages/job/user_list/my",
+        	"path" : "pages/job/user/user_my",
         	"style" : 
         	{
         		"navigationBarTitleText" : "我的"
         	}
         },
         {
-        	"path" : "pages/job/user_list/user_favorite",
+        	"path" : "pages/job/user/user_favorite",
         	"style" : 
         	{
         		"navigationBarTitleText" : "我的收藏"
         	}
-        }
+        },
+		{
+			"path" : "pages/job/user/user_setting",
+			"style" : 
+			{
+				"navigationBarTitleText" : "设置",
+				"enablePullDownRefresh" : false
+			}
+		},
+		{
+			"path" : "pages/job/user/clear_store",
+			"style" : 
+			{
+				"navigationBarTitleText" : "清除缓存",
+				"enablePullDownRefresh" : false
+			}
+		},
+		{
+			"path" : "pages/job/user/user_history",
+			"style" : 
+			{
+				"navigationBarTitleText" : "历史记录"
+			}
+		}
         ,{
         	"path" : "pages/job/map/map",
         	"style" : 
@@ -161,7 +186,7 @@
         	}
         },
 		{
-			"path": "pages/job/online/index",
+			"path": "pages/job/online/talk_list",
 			"style": {
 				"navigationBarTitleText": "消息中心"
 			}
@@ -183,7 +208,7 @@
 			}
 		}
   //       ,{
-		// 	"path": "pages/job/user_list/user_list",
+		// 	"path": "pages/job/user/user_list",
 		// 	"style": {
 		// 		"navigationBarTitleText": "导航栏带搜索框",
 		// 		"app-plus": {
@@ -210,7 +235,7 @@
 		// 	}
 		// }
 		// ,{
-		// 	"path": "pages/job/user_list/history_record",
+		// 	"path": "pages/job/user/history_record",
 		// 	"style": {
 		// 		"navigationBarTitleText": "搜索",
 		// 		"app-plus": {
@@ -264,19 +289,19 @@
 			// }
 			// ,
 			{
-				"pagePath" : "pages/job/user_list/user_list",
+				"pagePath" : "pages/job/user/user_list",
 				"text" : "列工" 
 			}
 			,{
-				"pagePath" : "pages/job/user_list/my",
+				"pagePath" : "pages/job/user/user_my",
 				"text" : "我的"
 			}
 			// ,{
-			// 	"pagePath" : "pages/job/user_add/user_add",
+			// 	"pagePath" : "pages/job/user/user_add",
 			// 	"text" : "我的"
 			// }
 			// ,{
-			// 	"pagePath" : "pages/job/user_add/user_add",
+			// 	"pagePath" : "pages/job/user/user_add",
 			// 	"text" : "找工" 
 			// }
 			

@@ -107,8 +107,8 @@
 	// import tTh from '@/components/t-table/t-th.vue';
 	// import tTr from '@/components/t-table/t-tr.vue';
 	// import tTd from '@/components/t-table/t-td.vue';
-	import { exportExcel } from '@/common/util/excelUtil.js'
-	import { formatNumber,formatDateThis,getUnixTime } from "@/common/util/dateUtil.js"
+	import { exportExcel } from '@/common/js/util/excelUtil.js'
+	import { formatNumber,formatDateThis,getUnixTime } from "@/common/js/util/dateUtil.js"
 	
 	export default {
 		components: { 

@@ -28,19 +28,19 @@
 			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
 				<uni-card style="padding:0px" >
 					<template v-slot:title>
-						<uni-list>
-							<uniListItem :titleStyle="handleTitleStyle(18)" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
-							@switchChange="handleSwitchChange" :switchId="worker.userId" :switchChecked="worker.isStore" />
+						<uni-list  style="border-bottom: none; border: none !important;">
+							<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
+							@switchChange="handleSwitchChange" :switchObj="worker" :switchChecked="worker.isStore" />
 						</uni-list>
 					</template>
-					<view class="uni-flex uni-row">
+					<view class="uni-flex uni-row" style="border: none; border-top: none;">
 						<view class="uni-row" style="width:100%" >
 							<view class="text" style="display: flex; padding-top: 10rpx;">
 								<view class="text uni-flex" style="width: 200rpx; height: 200rpx; padding-top: 10px;">
 									<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
 								</view>
 								<view class="uni-row" style="flex: 1; padding-top: 10rpx; ">
-									<view class="uni-flex uni-column" @click="toDetail(worker.userId)"
+									<view class="uni-flex uni-column" @click="toDetail(worker)"
 										style="min-height: 80rpx;  line-height:70rpx;" :style="fontSet">
 										{{ worker.introduction }}
 									</view>
@@ -91,6 +91,8 @@
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "jobUserListFontSet";
+	const JOB_HISTORY_RECORD = 'JOB_HISTORY_RECORD';
+	const JOB_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const PAGE_LIMIT = 10
 	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
@@ -99,6 +101,7 @@
         components: { uniListItem },
 		data() {
 			return {
+				historyRecord:[],
 				userId:0,
 				userToken:{},
 				// 字体缩放
@@ -171,6 +174,24 @@
 			};
 		},
 		onLoad() {
+		},
+		onUnload() {
+			// 避免泄露，结束卸载监听
+			uni.$off('acceptAddress');
+		},
+		onPullDownRefresh() {
+			console.log("没有触发 onPullDownRefresh()")
+			this.reload = true;
+			this.last_id = '';
+			this.getBanner();	// 获取，标题展示数据
+			this.getList();		// 获取，内容列表数据
+		},
+		onReachBottom() {
+			// console.log("触发 onReachBottom()")
+			this.getList();		// 获取，内容列表数据
+		},
+		mounted(){
+			// this.$forceUpdate();
 			const _this = this
 			uni.getStorage({
 				key: JOB_TOKEN,
@@ -201,31 +222,36 @@
 				}
 				this.initGetFontSize();
 			});
-		},
-		onUnload() {
-			// 避免泄露，结束卸载监听
-			uni.$off('acceptAddress');
-		},
-		onPullDownRefresh() {
-			console.log("触发 onPullDownRefresh()")
-			this.reload = true;
-			this.last_id = '';
-			this.getBanner();	// 获取，标题展示数据
-			this.getList();		// 获取，内容列表数据
-		},
-		onReachBottom() {
-			// console.log("触发 onReachBottom()")
-			this.getList();		// 获取，内容列表数据
-		},
-		mounted(){
 			this.initGetFontSize(); // 页面重新加载-恢复
+			// 读取历史记录
+			this.readHistoryRecord();
 		},
 		methods: {
-			// setData(obj) {
-			// 	Object.keys(obj).forEach((key) => {
-			// 		this.$set(this.$data, key, obj[key])
-			// 	})
-			// },
+			readHistoryRecord() {
+				this.historyRecord = [];
+				// 获取用户信息
+				const _this = this
+				uni.getStorage({
+					key: JOB_HISTORY_RECORD,
+					success: function(resp){
+						_this.historyRecord = resp.data
+						// console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
+					},
+					fail:function(){
+					}
+				});
+			},
+			writeHistoryRecord(opt, obj, img) {
+				let optRecord = { title: `${opt}了${obj}`, 	time: ((new Date()).toLocaleDateString() + " " + (new Date()).toLocaleTimeString()), 	image: img }
+				// this.historyRecord.unshift(optRecord);
+				// this.historyRecord = this.historyRecord.slice(0, JOB_HISTORY_RECORD_LEN)
+				this.historyRecord = this.addToFront(this.historyRecord, optRecord, JOB_HISTORY_RECORD_LEN);
+				// 更新历史操作记录
+				uni.setStorage({key: JOB_HISTORY_RECORD, data: this.historyRecord});
+			},
+			addToFront(list, newItem, maxLength = 20) {
+			  return [newItem, ...list].slice(0, maxLength)
+			},
 			handleSearchChange(searchValue){
 				this.searchValue = searchValue
 				// console.log("搜索框输入："+ searchValue)
@@ -405,6 +431,9 @@
 			},
 			
 			calculateAge(birth){
+			  if(!birth) return;
+			  const bIndex = birth.indexOf(' 00:00:00');
+			  if(bIndex>0){birth = birth.substring(0, bIndex)}
 			  // 将出生日期字符串转换为Date对象
 			  const birthDateObj = new Date(birth);			  
 			  // 获取当前日期
@@ -429,10 +458,12 @@
 				})
 			},
 			
-			toDetail(userId){
-				console.log("跳转："+userId)
+			toDetail(obj){
+				// console.log("跳转："+obj.userId)
+				// 记录操作
+				this.writeHistoryRecord('浏览', obj.username, obj.headImgPath); 
 				uni.navigateTo({
-					url: '/pages/job/user_list/user_detail?detailId='+ userId
+					url: '/pages/job/user/user_detail?detailId='+ obj.userId
 				});
 			},
 			
@@ -448,16 +479,19 @@
 			
 			handleSwitchChange(e){
 				// console.log("用户ID:", e.switchId, "改变值:", e.data);
-				this.storeOpt(e.switchId, e.data);
+				this.storeOpt(e.switchObj, e.data);
 			},
 			
-			async storeOpt(userId, isStore=true){
+			async storeOpt(obj, isStore=true){
 				let opt = '收藏';
 				let enabled = 0;
 				if(!isStore) {
 					enabled = 1;
 					opt = '取消收藏';
 				}
+				// 记录操作
+				this.writeHistoryRecord(opt, obj.username, obj.headImgPath); 
+				const userId = obj.userId
 				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: userId, enabled: enabled}
 				const result = await uni.request({
 					url: process.env.UNI_BASE_URL + '/api/job/storeOpt',
@@ -650,7 +684,7 @@
 		onNavigationBarSearchInputClicked(e) {
 			console.log('输入变更：'+ e)
 			uni.navigateTo({
-				url: '/pages/job/user_list/history_record'
+				url: '/pages/job/user/history_record'
 			});
 		},
 		/**
@@ -777,6 +811,10 @@
 	// 反馈输入框
 	.uni-modal__textarea{
 		height: 150px;
+	}
+	
+	.uni-list:after {
+	  left: unset !important;
 	}
 	
 </style>

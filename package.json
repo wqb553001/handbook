@@ -25,6 +25,7 @@
 	    "env": {
 	    	"UNI_PLATFORM": "h5",
 	    	"UNI_BASE_URL": "http://localhost:18281",
+	    	"UNI_WS_URL": "ws://localhost:18283/ws",
 			"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 			"UNI_CDN": "http://cdn.xny.world/"
 	    },
@@ -37,7 +38,8 @@
 	      "BROWSER": "chrome",
 	      "env": {
 	      	"UNI_PLATFORM": "h5",
-	      	"UNI_BASE_URL": "https://xny.world:18280",
+	      	"UNI_BASE_URL": "https://xny.world:8443",
+	      	"UNI_WS_URL": "wss://xny.world:18283/ws",
 			"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 		    "UNI_CDN": "http://cdn.xny.world/"
 	      },
@@ -51,6 +53,7 @@
   		  "ENV_TYPE": "dev",
   		  "UNI_PLATFORM": "mp-weixin",
   		  "UNI_BASE_URL": "http://localhost:18281",
+  		  "UNI_WS_URL": "ws://localhost:18283/ws",
 		  "UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 		  "UNI_CDN": "http://cdn.xny.world/"
   		},
@@ -63,7 +66,8 @@
   		"env": {
   		  "ENV_TYPE": "prod",
   		  "UNI_PLATFORM": "mp-weixin",
-  		  "UNI_BASE_URL": "https://xny.world:18280",
+  		  "UNI_BASE_URL": "https://xny.world:8443",
+  		  "UNI_WS_URL": "wss://xny.world:18283/ws",
 		  "UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 		  "UNI_CDN": "http://cdn.xny.world/"
   		},
