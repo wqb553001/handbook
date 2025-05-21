@@ -291,7 +291,7 @@
 				}
 			},
 			onSwitchChange(e) {
-				console.log("switch 变更："+this.switchObj)
+				// console.log("switch 变更："+this.switchObj)
 				this.$emit('switchChange', {data: e.detail.value, switchObj: this.switchObj});
 			},
 			openPage() {

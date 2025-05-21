@@ -7,7 +7,7 @@
 		<l-navbar title="找用工" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
 			:showRight="false" :debounce-delay="500" centerMargin="200px" leftWidth="300px" :border="false" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" placeholderText="请输入关键词"
-			@leftClick="leftClick" @change="handleSearchChange" 
+			@leftClick="leftClick" @midClick="midClick" @change="handleSearchChange" 
 			:searchStyle="handleSearchStyle" :fontSize="scaledFontSize"
 			:leftText="location.text" :leftTextFull="location.address" 
 			>
@@ -86,13 +86,14 @@
 
 <script>
 	import { dateUtils } from  '../../../common/js/util.js';
+	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
     import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
 
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "jobUserListFontSet";
-	const JOB_HISTORY_RECORD = 'JOB_HISTORY_RECORD';
-	const JOB_HISTORY_RECORD_LEN = 20;
+	const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const PAGE_LIMIT = 10
 	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
@@ -136,6 +137,7 @@
 				// 收藏
 				storeUserIdList: [],
 				historyRecord: [],
+				jobManager: null,
 				
 				// 浮动按钮
 				fab:{
@@ -152,26 +154,7 @@
 						iconColor: '#fff'
 					},
 					is_color_type: false,
-					// content: [{
-					// 		// iconPath: '/static/icons/steps.png',
-					// 		selectedIconPath: '/static/icons/steps.png',
-					// 		text: '想法、建议、问题、需求',
-					// 		active: false
-					// 	}
-					// 	// ,
-					// 	// {
-					// 	// 	iconPath: '/static/home.png',
-					// 	// 	selectedIconPath: '/static/home-active.png',
-					// 	// 	text: '首页',
-					// 	// 	active: false
-					// 	// },
-					// 	// {
-					// 	// 	iconPath: '/static/star.png',
-					// 	// 	selectedIconPath: '/static/star-active.png',
-					// 	// 	text: '收藏',
-					// 	// 	active: false
-					// 	// }
-					// ]
+					
 				}
 			};
 		},
@@ -284,7 +267,8 @@
 				}
 				this.location.text = str;
 			},
-			leftClick(){
+			leftClick(){},
+			midClick(){
 				// console.log("点击了 导航栏 L 左侧……")
 				uni.navigateTo({
 				  url: "/pages/job/map/map"
@@ -491,35 +475,12 @@
 			
 			handleSwitchChange(e){
 				// console.log("用户ID:", e.switchId, "改变值:", e.data);
-				this.storeOpt(e.switchObj, e.data);
-			},
-			
-			async storeOpt(obj, isStore=true){
-				let opt = '收藏';
-				let enabled = 0;
-				if(!isStore) {
-					enabled = 1;
-					opt = '取消收藏';
-				}
-				// 记录操作
-				this.writeHistoryRecord(opt, obj.username, obj.headImgPath); 
-				const userId = obj.userId
-				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: userId, enabled: enabled}
-				console.log("收藏操作："+JSON.stringify(store))
-				const result = await uni.request({
-					url: process.env.UNI_BASE_URL + '/api/job/storeOpt',
-					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-					method: 'POST',
-					data: store
-				});
-				// console.log("result", JSON.stringify(result))
-				if(result.data.code == 0){
-					uni.showToast({ title: opt+'成功', icon: 'success' });
-					// uni.navigateBack(); // 返回上一页
-				}else{
-					uni.showToast({ title: opt+'未成功，请后续重试！', icon: 'error' });
-				}
-			},
+				const obj = e.switchObj ;
+				const isStore = e.data ;
+				// this.storeOpt(e.switchObj, e.data);
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken, [...this.historyRecord])
+			},			
 			
 			handleStoreList(){
 				if(this.storeUserIdMap.size<1) return;
@@ -636,7 +597,7 @@
 				// 获取用户信息
 				const _this = this
 				uni.getStorage({
-					key: JOB_HISTORY_RECORD,
+					key: JOB_OPT_HISTORY_RECORD,
 					success: function(resp){
 						_this.historyRecord = resp.data
 						// console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
@@ -644,16 +605,6 @@
 					fail:function(){
 					}
 				});
-			},
-			writeHistoryRecord(opt, obj, img) {
-				let optRecord = { title: `${opt}了${obj}`, 	time: ((new Date()).toLocaleDateString() + " " + (new Date()).toLocaleTimeString()), 	image: img }
-				// this.historyRecord.unshift(optRecord);
-				this.historyRecord = this.addToFront(this.historyRecord, optRecord, JOB_HISTORY_RECORD_LEN);
-				// 更新历史操作记录
-				uni.setStorage({key: JOB_HISTORY_RECORD, data: this.historyRecord});
-			},
-			addToFront(list, newItem, maxLength = 20) {
-			  return [newItem, ...list].slice(0, maxLength)
 			},
 		},
 		computed:{

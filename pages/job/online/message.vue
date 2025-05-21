@@ -59,7 +59,6 @@
 
 <script>
 	import socket from '@/common/js/util/socket.js'
-	// import socketNew from '@/common/js/util/socket-new.js'
 	
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
@@ -271,7 +270,7 @@
 			async getList() {
 				console.log('请求 getList()')
 				if(this.status == 'nomore') return;
-				let data = {sysId: SYS_ID, talkerId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token}
+				let data = {sysId: SYS_ID, talkerId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
 				console.log('请求参数：' + JSON.stringify(data))
 				if (this.last_id) {
 					// 说明已有数据，目前处于上拉加载

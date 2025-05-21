@@ -64,10 +64,10 @@
         <view class="recent-section">
             <view class="section-title">最近动态</view>
             <view class="activity-list">
-                <view class="activity-item" v-for="(item, index) in historyRecord" :key="index">
+                <view class="activity-item" v-for="(item, index) in historyRecord" :key="index" >
                     <image class="activity-image" :src="item.image" mode="aspectFill" />
                     <view class="activity-content">
-                        <text class="activity-title">{{item.title}}</text>
+                        <text class="activity-title" @click="item.url?navigateTo(item.url):''">{{item.title}}</text>
                         <text class="activity-time">{{item.time}}</text>
                     </view>
                 </view>
@@ -81,7 +81,7 @@
 const SYS_ID = 2025040301;
 const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
-const JOB_HISTORY_RECORD = 'JOB_HISTORY_RECORD';
+const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
 
 export default {
 	onLoad() {
@@ -164,10 +164,10 @@ export default {
 			// 获取用户信息
 			const _this = this
 			uni.getStorage({
-				key: JOB_HISTORY_RECORD,
+				key: JOB_OPT_HISTORY_RECORD,
 				success: function(resp){
 					_this.historyRecord = resp.data
-					// console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
+					console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
 				},
 				fail:function(){
 				}

@@ -55,7 +55,7 @@
 			</view>
 		</view>
 		
-		<view v-if="!isMyself" style="margin-top: 80px;padding: 15px; background-color: #fff;">
+		<view v-if="!isMyself && jobUser.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;">
 			<text style="font: inherit; color: #777;" :style="fontScaleChange(1.2)">评分:</text>
 			<view class="text" style="text-align: left; -webkit-flex: 1;flex: 1; margin-top: 10px;margin-bottom: 10px;">
 				<uni-rate :max="10" v-model="talk.score" />
@@ -72,9 +72,14 @@
 </template>
 
 <script>
+	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
+	
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_FONT_SET = "jobUserDetailFontSet"
+	const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+	const JOB_OPT_HISTORY_RECORD_LEN = 20;
+	
 	export default {
 		data() {
 			return {
@@ -83,6 +88,7 @@
 				fontScale: 1.0,
 				fontSizeScale: 100,
 				jobUser: {
+					userId:0,
 					username:"",
 					sex:0,
 					tools:'',
@@ -98,6 +104,12 @@
 					talk: ''
 				},
 				isMyself: false,
+				
+				// 长按 收藏/取消收藏
+				jobManager: null,
+				isStore: true,
+				readHistoryRecord: true,
+				historyRecord: [],
 			}
 		},
 		computed: {
@@ -293,11 +305,35 @@
 					}
 				});
 			},
-			longPressEditHeadImage(){
+			async longPressEditHeadImage(){
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
 				if(this.isMyself){
 					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
 					uni.navigateTo({ url });
+				}else{
+					if(this.readHistoryRecord){
+						const _this = this;
+						await uni.getStorage({
+							key: JOB_OPT_HISTORY_RECORD,
+							success: function(resp){
+								_this.historyRecord = resp.data
+								// console.log("user_detail 缓存取值："+ JSON.stringify(resp.data));
+								// console.log("user_detail 赋值后："+ JSON.stringify(_this.historyRecord));
+								if(!_this.jobManager) _this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+								_this.jobManager.storeOpt(_this.jobUser, '收藏', _this.isStore, _this.userToken, [..._this.historyRecord])
+							},
+							fail:function(){
+							}
+						});
+					}else{
+						if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+						this.jobManager.storeOpt(this.jobUser, '收藏', this.isStore, this.userToken, [...this.historyRecord])
+					}
+					
+					// 已经读取过
+					this.readHistoryRecord = false
+					// 变更 收藏/取消收藏 标识
+					this.isStore?this.isStore=false:this.isStore=true;
 				}
 			},
 			initGetFontSize(){
@@ -316,6 +352,8 @@
 					}
 				});
 			},
+			
+			
 		}
 	}
 </script>

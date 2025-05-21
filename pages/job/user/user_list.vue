@@ -5,10 +5,10 @@
 		</uni-card> -->
 		
 		<l-navbar title="找用工" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
-			:showRight="false" :debounce-delay="500" centerMargin="200px" leftWidth="300px" :border="false" 
+			:showLeft="false" :showMid="true" :debounce-delay="500" centerMargin="195px" leftWidth="300px" :border="false" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" placeholderText="请输入关键词"
-			@leftClick="leftClick" @change="handleSearchChange" 
-			:searchStyle="handleSearchStyle" :fontSize="scaledFontSize"
+			@midClick="midClick" @change="handleSearchChange" 
+			:searchStyle="handleSearchStyle" :fontSize="scaledFontSize" 
 			:leftText="location.text" :leftTextFull="location.address" 
 			>
 		</l-navbar>
@@ -60,7 +60,7 @@
 							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between;justify-content: space-between;  line-height:70rpx;">
 								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
 								<view style="margin-top: 10px;"><uni-rate :readonly="true" :max="10" :value="worker.multiScore" :size="13*fontScale"  /></view>
-								<view class="text" style="display: flex;" @click="makePhoneCall(worker.mobile)">电话联系
+								<view class="text" style="display: flex;" @click="makePhoneCall(worker.userId)">电话联系
 									<u-icon name="phone" color="#D3D3D3" size="36rpx" />
 								</view>
 								
@@ -86,13 +86,14 @@
 
 <script>
 	import { dateUtils } from  '../../../common/js/util.js';
+	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
     import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
 
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "jobUserListFontSet";
-	const JOB_HISTORY_RECORD = 'JOB_HISTORY_RECORD';
-	const JOB_HISTORY_RECORD_LEN = 20;
+	const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const PAGE_LIMIT = 10
 	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
@@ -101,7 +102,6 @@
         components: { uniListItem },
 		data() {
 			return {
-				historyRecord:[],
 				userId:0,
 				userToken:{},
 				// 字体缩放
@@ -133,7 +133,9 @@
 				searchValue:"",
 				
 				// 收藏
+				historyRecord:[],
 				storeUserIdMap: new Map,
+				jobManager: null,
 				
 				// 浮动按钮
 				fab:{
@@ -150,26 +152,6 @@
 						iconColor: '#fff'
 					},
 					is_color_type: false,
-					// content: [{
-					// 		// iconPath: '/static/icons/steps.png',
-					// 		selectedIconPath: '/static/icons/steps.png',
-					// 		text: '想法、建议、问题、需求',
-					// 		active: false
-					// 	}
-					// 	// ,
-					// 	// {
-					// 	// 	iconPath: '/static/home.png',
-					// 	// 	selectedIconPath: '/static/home-active.png',
-					// 	// 	text: '首页',
-					// 	// 	active: false
-					// 	// },
-					// 	// {
-					// 	// 	iconPath: '/static/star.png',
-					// 	// 	selectedIconPath: '/static/star-active.png',
-					// 	// 	text: '收藏',
-					// 	// 	active: false
-					// 	// }
-					// ]
 				}
 			};
 		},
@@ -202,6 +184,7 @@
 					_this.getList();		// 获取，内容列表数据
 				},
 				fail:function(){
+					_this.getList();		// 获取，内容列表数据
 				}
 			});
 			
@@ -232,7 +215,7 @@
 				// 获取用户信息
 				const _this = this
 				uni.getStorage({
-					key: JOB_HISTORY_RECORD,
+					key: JOB_OPT_HISTORY_RECORD,
 					success: function(resp){
 						_this.historyRecord = resp.data
 						// console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
@@ -240,17 +223,6 @@
 					fail:function(){
 					}
 				});
-			},
-			writeHistoryRecord(opt, obj, img) {
-				let optRecord = { title: `${opt}了${obj}`, 	time: ((new Date()).toLocaleDateString() + " " + (new Date()).toLocaleTimeString()), 	image: img }
-				// this.historyRecord.unshift(optRecord);
-				// this.historyRecord = this.historyRecord.slice(0, JOB_HISTORY_RECORD_LEN)
-				this.historyRecord = this.addToFront(this.historyRecord, optRecord, JOB_HISTORY_RECORD_LEN);
-				// 更新历史操作记录
-				uni.setStorage({key: JOB_HISTORY_RECORD, data: this.historyRecord});
-			},
-			addToFront(list, newItem, maxLength = 20) {
-			  return [newItem, ...list].slice(0, maxLength)
 			},
 			handleSearchChange(searchValue){
 				this.searchValue = searchValue
@@ -263,7 +235,7 @@
 				this.last_id 	= '';
 				this.status		= 'more'
 			},
-			leftClick(){
+			midClick(){
 				// console.log("点击了 导航栏 L 左侧……")
 				uni.navigateTo({
 				  url: "/pages/job/map/map"
@@ -295,10 +267,11 @@
 			// 获取，内容列表数据
 			getList() {
 				if(this.status == 'nomore') return;
-				let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token}
+				let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, local: this.location}
 				if(this.searchValue){
 					data.likeAllSkills =  "%"+this.searchValue+"%"
 				}
+				data.distance = 1500	// 默认，方圆1500公里内工作机会
 				if (this.last_id) {
 					// 说明已有数据，目前处于上拉加载
 					this.status = 'loading';
@@ -307,7 +280,7 @@
 					data.limit = PAGE_LIMIT;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
-				// console.log('请求参数：' + JSON.stringify(data))
+				// console.log('userStream 请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
@@ -449,63 +422,82 @@
 			  return age;
 			},
 			// 打电话
-			makePhoneCall: function (phone) {
-				uni.makePhoneCall({
-					phoneNumber: phone,
-					success: () => {
-						console.log("成功拨打电话:"+phone)
+			makePhoneCall: function (receiverId) {
+				if(!this.userToken){
+					uni.showToast({ title: '先登录，才允许致电对方！', icon: 'none' });
+					return;
+				}
+				
+				uni.showModal({
+					title: '提示',
+					content: '不允许骚扰对方，本次通话会被记录，可能会录音，若被举报，会降低本人的信誉值，请正常开展！',
+					confirmText: '同意',
+					cancelText: '退出',
+					success: (res) => {
+						if (res.confirm) {
+							let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, receiverId: receiverId, userId: receiverId}
+							
+							uni.request({
+								url: process.env.UNI_BASE_URL+'/api/job/userMobile',  // 获取手机号
+								data: JSON.stringify(data),
+								method: 'POST',
+								success: result => {
+									// console.log('userMobile 返回值' + JSON.stringify(result));
+									if (result.statusCode == 200 && result.data.code == 0) {
+										const respData = result.data.data;
+										uni.makePhoneCall({
+											phoneNumber: respData,
+											success: () => {
+												// data.username = _this.username;
+												uni.request({
+													url: process.env.UNI_BASE_URL+'/api/job/recordCallMobile',  // 数据源的数据是 有序的
+													data: JSON.stringify(data),
+													method: 'POST',
+													success: result => {
+														console.log("完成记录。")
+													},
+												});
+												console.log("成功拨打电话:"+respData)
+											}
+										});
+									}
+								},
+								fail: (result, code) => {
+									console.log('fail' + JSON.stringify(result));
+								},
+								complete: (result) =>{
+									// console.log('result' + JSON.stringify(result));
+								},
+							});
+						}
 					}
-				})
+				});
+				
+				
+				
 			},
 			
 			toDetail(obj){
 				// console.log("跳转："+obj.userId)
+				const url = '/pages/job/user/user_detail?detailId='+ obj.userId
 				// 记录操作
-				this.writeHistoryRecord('浏览', obj.username, obj.headImgPath); 
+				// this.writeHistoryRecord('浏览', obj.username, obj.headImgPath, url);
+				
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.writeHistoryRecord('浏览', obj.username, obj.headImgPath, url, [...this.historyRecord])
+				
 				uni.navigateTo({
 					url: '/pages/job/user/user_detail?detailId='+ obj.userId
 				});
 			},
 			
-			onClick(phoneno) {
-				console.log(phoneno)
-				uni.makePhoneCall({
-					phoneNumber: phoneno,
-					success: () => {
-						console.log("成功拨打电话")
-					}
-				})
-			},
-			
 			handleSwitchChange(e){
 				// console.log("用户ID:", e.switchId, "改变值:", e.data);
-				this.storeOpt(e.switchObj, e.data);
-			},
-			
-			async storeOpt(obj, isStore=true){
-				let opt = '收藏';
-				let enabled = 0;
-				if(!isStore) {
-					enabled = 1;
-					opt = '取消收藏';
-				}
-				// 记录操作
-				this.writeHistoryRecord(opt, obj.username, obj.headImgPath); 
-				const userId = obj.userId
-				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: userId, enabled: enabled}
-				const result = await uni.request({
-					url: process.env.UNI_BASE_URL + '/api/job/storeOpt',
-					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-					method: 'POST',
-					data: store
-				});
-				// console.log("result", JSON.stringify(result))
-				if(result.data.code == 0){
-					uni.showToast({ title: opt+'成功', icon: 'success' });
-					// uni.navigateBack(); // 返回上一页
-				}else{
-					uni.showToast({ title: opt+'未成功，请后续重试！', icon: 'error' });
-				}
+				const obj = e.switchObj ;
+				const isStore = e.data ;
+				// this.storeOpt(e.switchObj, e.data);
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken, [...this.historyRecord])
 			},
 			
 			async getStoreList(){

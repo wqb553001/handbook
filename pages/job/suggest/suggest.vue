@@ -35,7 +35,7 @@
 			</uni-forms-item>
 			
             <!-- 联系方式 -->
-            <uni-forms-item label="联系方式">
+            <uni-forms-item label="联系方式(自愿)">
                 <uni-easyinput
                     v-model="formData.callPhone"
                     placeholder="如果愿意, 请留下(邮箱/QQ/微信/手机号)"
@@ -259,11 +259,13 @@ export default {
     bottom: 20px;       /* 距离底部20px */
     left: 20px;         /* 左侧间距 */
     right: 20px;        /* 右侧间距 */
-    background-color: #007AFF !important;
-    color: white !important;
+	background-color: #52c41a;
+	color: #000000;
     border-radius: 8px;  /* 圆角 */
     padding: 12px 0;     /* 内边距 */
     font-size: 16px;     /* 字号 */
     z-index: 999;        /* 确保按钮在最上层 */
+	
+	
 }
 </style>
