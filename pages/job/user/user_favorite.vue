@@ -5,7 +5,7 @@
 		</uni-card> -->
 		
 		<l-navbar title="找用工" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
-			:showRight="false" :debounce-delay="500" centerMargin="200px" leftWidth="300px" :border="false" 
+			:showRight="false" :showLeft="false" :debounce-delay="500" centerMargin="200px" leftWidth="300px" :border="false" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" placeholderText="请输入关键词"
 			@leftClick="leftClick" @midClick="midClick" @change="handleSearchChange" 
 			:searchStyle="handleSearchStyle" :fontSize="scaledFontSize"
@@ -22,7 +22,7 @@
 		<view class="banner" @click="goDetail(banner)">
 			<image v-if="banner.mediumType == 2" :src="banner.url" class="banner-img" style="object-fit: cover"></image>
 			<video v-if="banner.mediumType == 3" :src="banner.url" class="banner-img" controls></video>
-			<view class="banner-title" :style="fontSet+banner.fontColor+'text-align: center;'" ><text v-html="banner.title"></text></view>
+			<view class="banner-title" :style="fontSet+banner.fontColor+'text-align: center; line-height:50rpx;'" ><rich-text :nodes="banner.title"></rich-text></view>
 		</view>
 		
 		<view class="uni-list">
@@ -93,7 +93,7 @@
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "jobUserListFontSet";
-	const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const PAGE_LIMIT = 10
@@ -485,8 +485,8 @@
 				const obj = e.switchObj ;
 				const isStore = e.data ;
 				// this.storeOpt(e.switchObj, e.data);
-				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken, [...this.historyRecord])
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken)
 			},			
 			
 			handleStoreList(){
@@ -664,7 +664,7 @@
 	}
 
 	.banner-title {
-		max-height: 84rpx;
+		max-height: 124rpx;
 		overflow: hidden;
 		position: absolute;
 		left: 30rpx;

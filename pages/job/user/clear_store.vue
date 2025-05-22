@@ -4,11 +4,11 @@
 
     <!-- 服务菜单列表 -->
 		<view class="service-list">
-		  <button type="primary" @click="clearStore(0, '聊天', 		'JOB_TALK'				)">聊天缓存</button>
-		  <button type="primary" @click="clearStore(0, '浏览记录', 	'JOB_OPT_HISTORY_RECORD')">浏览记录缓存</button>
-		  <button type="primary" @click="clearStore(0, '字体', 		'jobUserMySet'			)">字体大小缓存</button>
-		  <button type="primary" @click="logout()">退出登录</button>
-		  <button type="primary" @click="clearAllStore()">所有缓存</button>
+		  <button type="primary" @click='clearStore(0, "聊天", 		"JOB_TALK"				)'>聊天缓存</button>
+		  <button type="primary" @click='clearStore(0, "浏览记录", 	"JOB_OPT_HISTORY_RECORD")'>浏览记录缓存</button>
+		  <button type="primary" @click='clearStore(0, "字体", 		"jobUserMySet"			)'>字体大小缓存</button>
+		  <button type="primary" @click='logout()'>退出登录</button>
+		  <button type="primary" @click='clearAllStore()'>所有缓存</button>
 		</view>
 
 
@@ -20,20 +20,10 @@
 const SYS_ID = 2025040301;
 const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
-const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 
 export default {
-    data() {
-        return {
-			userToken:{},
-			jobUser: {
-				avatar: '/static/logo.png',
-				username: '',
-				phone: '15555555555'
-			},
-			fontSizeScale: 100, // 默认100%比例
-        }
-    },
+    data() {},
     methods: {
 		clearStore(type, obj, storeKey){
 			// uni.removeStorage({key: ''})

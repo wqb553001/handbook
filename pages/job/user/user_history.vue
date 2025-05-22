@@ -81,7 +81,7 @@
 const SYS_ID = 2025040301;
 const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
-const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 
 export default {
 	onLoad() {
@@ -167,7 +167,7 @@ export default {
 				key: JOB_OPT_HISTORY_RECORD,
 				success: function(resp){
 					_this.historyRecord = resp.data
-					console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
+					// console.log("缓存取值："+ JSON.stringify(_this.historyRecord));
 				},
 				fail:function(){
 				}

@@ -353,7 +353,7 @@ export default {
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					data: param
 				});
-				console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
+				// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
 				if(res.data.code == 0) {
 					uni.showToast({ title: '验证码已发送' });
 					this.startCountdown();
@@ -429,7 +429,7 @@ export default {
 								
 								return;
 							}
-							uni.showToast({title: retData.msg, icon: 'error', duration: 3000});
+							uni.showToast({title: retData.msg, icon: 'error', duration: 1000});
 						}
 					},
 					fail: (result, code) => {
@@ -474,7 +474,7 @@ export default {
 								let ret = respData.data;
 								uni.setStorage({ key:JOB_TOKEN, data: ret });
 								
-								console.log("this.saveUser 返回值：" + JSON.stringify(ret))
+								// console.log("this.saveUser 返回值：" + JSON.stringify(ret))
 								const url = '/pages/job/user/user_add?username='+userData.username;
 								uni.navigateTo({ url });
 								// console.log('注册信息：', JSON.stringify(this.form))

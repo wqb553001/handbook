@@ -166,25 +166,14 @@ const JOB_USER_FONT_SET = "jobUserMySet";
 export default {
 	onLoad() {
 	},
+	onShow() {
+		// this.getToken();
+	},
 	mounted() {
-		// this.$forceUpdate();
-		// 获取用户信息
-		const _this = this
-		uni.getStorage({
-			key: JOB_TOKEN,
-			success: function(resp){
-				_this.userToken = resp.data
-				if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
-				_this.isLogined = false
-				// 加载用户信息
-				_this.getJobUserByUserId();
-				if(_this.userToken?.userId > 0) _this.isLogined = true
-				console.log("缓存取值："+ JSON.stringify(_this.userToken))
-			},
-			fail:function(){
-				 _this.isLogined = false
-			}
-		});
+		this.getToken();
+	},
+	onPullDownRefresh() {
+		this.getToken();
 	},
     data() {
         return {
@@ -195,7 +184,7 @@ export default {
 			jobUser: {
 				avatar: '/static/logo.png',
 				username: '',
-				phone: '15555555555'
+				mobile: ''
 			},
             features: [
                 { name: '我的收藏', 		icon: 'star-filled', 	bgColor: '#FFE8E8', 	iconColor: '#FF4D4F', 	path: '/pages/job/user/user_favorite' 	},
@@ -229,6 +218,26 @@ export default {
 			if(!this.isLogined) return;
 			uni.navigateTo({url: path});
 		},
+		
+		getToken(){
+			// 获取用户信息
+			const _this = this
+			uni.getStorage({
+				key: JOB_TOKEN,
+				success: function(resp){
+					_this.userToken = resp.data
+					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
+					_this.isLogined = false
+					// 加载用户信息
+					_this.getJobUserByUserId();
+					if(_this.userToken?.userId > 0) _this.isLogined = true
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+				},
+				fail:function(){
+					 _this.isLogined = false
+				}
+			});
+		},
 		getJobUserByUserId(){
 			const _this = this;
 			uni.request({
@@ -255,8 +264,8 @@ export default {
 								_this.talkPath = `/pages/job/online/message?senderId=${this.userToken.userId}`
 							}
 							// console.log("转化后："+JSON.stringify(respData))
+							_this.jobUser = respData;
 						};
-						_this.jobUser = respData;
 					}
 				},
 				fail: (result, code) => {

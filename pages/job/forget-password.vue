@@ -218,8 +218,9 @@ export default {
 							uni.setStorage({ key:JOB_TOKEN, data: ret });
 							
 							// console.log("this.resetPassword 返回值：" + JSON.stringify(ret))
-							const url = '/pages/job/index';
-							uni.navigateTo({ url });
+							// const url = '/pages/job/index';
+							// uni.navigateTo({ url });
+							uni.navigateBack()
 							// console.log('注册信息：', JSON.stringify(this.form))
 							uni.showToast({
 							    title: '密码重置成功',

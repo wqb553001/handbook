@@ -77,6 +77,7 @@
 					userId: 0,
 					username: '',
 					mobile: '',
+					rule:0,
 					introduction: '',
 					sex: 2,
 					birth: '1970-01',
@@ -203,6 +204,7 @@
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					_this.baseFormData.userId = _this.userToken.userId;
+					_this.getJobUserByUserId();
 				},
 				fail:function(){
 					uni.showToast({ title: '需要先登录！', icon: 'none' });
@@ -420,6 +422,32 @@
 				
 				// console.log("已保存 keyStr:", keyStr, "数据：", JSON.stringify(saveData));
 				// return 10;
+			},
+			
+			getJobUserByUserId(){
+				const _this = this;
+				uni.request({
+					url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
+					data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
+					method: 'POST',
+					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+					success: result => {
+						// console.log('userStream 返回值' + JSON.stringify(result));
+						if (result.statusCode == 200 && result.data.code == 0) {
+							const respData = result.data.data;
+							// console.log("getUser返回值："+JSON.stringify(respData))
+							if(respData) {
+								// console.log("转化前："+respData.skills)
+								this.baseFormData = respData
+								if(respData.birth) this.baseFormData.birth = respData.birth.substring(0, 7)
+								// console.log("转化后："+JSON.stringify(respData))
+							};
+						}
+					},
+					fail: (result, code) => {
+						console.log('fail' + JSON.stringify(result));
+					}
+				});
 			},
 			
 			setStore(map, saveData){

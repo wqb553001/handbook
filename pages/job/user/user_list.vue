@@ -22,7 +22,7 @@
 		<view class="banner" @click="goDetail(banner)">
 			<image v-if="banner.mediumType == 2" :src="banner.url" class="banner-img" style="object-fit: cover"></image>
 			<video v-if="banner.mediumType == 3" :src="banner.url" class="banner-img" controls></video>
-			<view class="banner-title" :style="fontSet+banner.fontColor+'text-align: center;'" ><text v-html="banner.title"></text></view>
+			<view class="banner-title" :style="fontSet+banner.fontColor+'text-align: center;'" ><rich-text :nodes="banner.title"></rich-text></view>
 		</view>
 		
 		<view class="uni-list">
@@ -93,7 +93,7 @@
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "jobUserListFontSet";
-	const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const PAGE_LIMIT = 10
@@ -168,7 +168,9 @@
 			uni.$off('acceptAddress');
 		},
 		onPullDownRefresh() {
-			console.log("没有触发 onPullDownRefresh()")
+			console.log("触发了 onPullDownRefresh()")
+			this.listData 	= [];
+			this.status = 'more';		// 上拉加载更多
 			this.reload = true;
 			this.last_id = '';
 			// this.getBanner();	// 获取，标题展示数据
@@ -487,15 +489,14 @@
 			
 			toDetail(obj){
 				// console.log("跳转："+obj.userId)
-				const url = '/pages/job/user/user_detail?detailId='+ obj.userId
+				const url = `/pages/job/user/user_detail?detailId=`+ obj.userId
 				// 记录操作
 				// this.writeHistoryRecord('浏览', obj.username, obj.headImgPath, url);
 				
-				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-				this.jobManager.writeHistoryRecord('浏览', obj.username, obj.headImgPath, url, [...this.historyRecord])
-				
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.writeHistoryRecord('浏览', obj.username, obj.headImgPath, url)
 				uni.navigateTo({
-					url: '/pages/job/user/user_detail?detailId='+ obj.userId
+					url: `/pages/job/user/user_detail?detailId=`+ obj.userId
 				});
 			},
 			
@@ -504,12 +505,12 @@
 					uni.showToast({ title: '先登录，才能有效收藏！', icon: 'none' });
 					return;
 				}
-				// console.log("用户ID:", e.switchId, "改变值:", e.data);
+				// console.log("用户:", JSON.stringify(e.switchObj), "改变值:", e.data);
 				const obj = e.switchObj ;
 				const isStore = e.data ;
 				// this.storeOpt(e.switchObj, e.data);
-				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken, [...this.historyRecord])
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken)
 			},
 			
 			async getStoreList(){

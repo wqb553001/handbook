@@ -77,7 +77,7 @@
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_FONT_SET = "jobUserDetailFontSet"
-	const JOB_OPT_HISTORY_RECORD = 'JOB_OPT_HISTORY_RECORD';
+	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	
 	export default {
@@ -319,14 +319,14 @@
 								_this.historyRecord = resp.data
 								// console.log("user_detail 缓存取值："+ JSON.stringify(resp.data));
 								// console.log("user_detail 赋值后："+ JSON.stringify(_this.historyRecord));
-								if(!_this.jobManager) _this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+								if(!_this.jobManager) _this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
 								_this.jobManager.storeOpt(_this.jobUser, '收藏', _this.isStore, _this.userToken, [..._this.historyRecord])
 							},
 							fail:function(){
 							}
 						});
 					}else{
-						if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, uni: uni, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+						if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
 						this.jobManager.storeOpt(this.jobUser, '收藏', this.isStore, this.userToken, [...this.historyRecord])
 					}
 					
