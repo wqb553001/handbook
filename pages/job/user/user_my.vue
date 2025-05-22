@@ -174,11 +174,12 @@ export default {
 			key: JOB_TOKEN,
 			success: function(resp){
 				_this.userToken = resp.data
+				if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
 				_this.isLogined = false
 				// 加载用户信息
 				_this.getJobUserByUserId();
 				if(_this.userToken?.userId > 0) _this.isLogined = true
-				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+				console.log("缓存取值："+ JSON.stringify(_this.userToken))
 			},
 			fail:function(){
 				 _this.isLogined = false

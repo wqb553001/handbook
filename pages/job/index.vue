@@ -61,7 +61,7 @@
 									<text 
 										class="code-btn" 
 										:class="{ disabled: isCounting }"
-										@tap="getVerifyCode"
+										@tap="getVerifyCode('login')"
 									>{{ isCounting ? `${countdown}s` : '获取验证码' }}</text>
 								</view>
 							</view>
@@ -152,7 +152,7 @@
 						        <view 
 						            class="code-btn" 
 						            :class="{ disabled: isCounting }"
-						            @tap="getVerifyCode"
+						            @tap="getVerifyCode('job user register')"
 						        >
 						            <text>{{ isCounting ? `${countdown}s` : '获取验证码' }}</text>
 						        </view>
@@ -258,7 +258,7 @@ export default {
     data() {
         return {
 			userToken:{},
-            isMobileLogin: true,
+            isMobileLogin: false,
             isRegister: false,
             form: {
 				sysId: SYS_ID,
@@ -322,7 +322,7 @@ export default {
         },
 		
         
-        async getVerifyCode() {
+        async getVerifyCode(opt) {
             if (this.isCounting) return
             
             if (!this.form.mobile) {
@@ -343,7 +343,7 @@ export default {
 			try {
 				const param = {
 						phone: this.form.mobile,
-						opt: 'add jobUser',
+						opt: opt,
 						sysId: SYS_ID
 				}
 				// 调用后端API发送验证码
@@ -412,7 +412,7 @@ export default {
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						// console.log('job/login 返回值' + JSON.stringify(result));
+						console.log('job/login 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							let retData = result.data
 							if(retData.code == 0){
@@ -459,6 +459,7 @@ export default {
 			try {
 				const _this = this
 				// console.log("注册信息："+ JSON.stringify(userData))
+				userData.opt = 'job user Register';
 				uni.request({
 					url: process.env.UNI_BASE_URL+ '/api/job/saveUser',
 					header: { 'Content-Type': 'application/json' },
@@ -481,8 +482,15 @@ export default {
 								    title: this.isRegister ? '注册成功' : '登录成功',
 								    icon: 'success'
 								})
+								this.form.verifyCode = ''
 								return;
-							};
+							}else{
+								uni.showToast({
+								    title: respData.msg,
+								    icon: 'error'
+								})
+							}
+							return;
 						}
 						
 						uni.showToast({

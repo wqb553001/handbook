@@ -25,7 +25,7 @@
                         <view class="input-box">
                             <input 
                                 type="number"
-                                v-model="form.phone"
+                                v-model="form.mobile"
                                 maxlength="11"
                                 placeholder="请输入手机号"
                                 placeholder-class="placeholder"
@@ -49,10 +49,10 @@
                             />
                             <view 
                                 class="code-btn" 
-                                :class="{ disabled: counting }"
+                                :class="{ disabled: isCounting }"
                                 @tap="getVerifyCode"
                             >
-                                <text>{{ counting ? `${counter}s` : '获取验证码' }}</text>
+                                <text>{{ isCounting ? `${countdown}s` : '获取验证码' }}</text>
                             </view>
                         </view>
                     </view>
@@ -102,17 +102,21 @@
 </template>
 
 <script>
+const SYS_ID = 2025040301
+const JOB_TOKEN = 'JOB_TOKEN'
 export default {
     data() {
         return {
             form: {
-                phone: '',
+				sysId: SYS_ID,
+                username: '',
+                mobile: '',
                 verifyCode: '',
                 password: '',
                 confirmPassword: ''
             },
-            counting: false,
-            counter: 60
+            isCounting: false,
+            countdown: 60
         }
     },
     methods: {
@@ -120,10 +124,10 @@ export default {
             uni.navigateBack()
         },
         
-        getVerifyCode() {
-            if (this.counting) return
+        async getVerifyCode() {
+            if (this.isCounting) return
             
-            if (!this.form.phone) {
+            if (!this.form.mobile) {
                 uni.showToast({
                     title: '请输入手机号',
                     icon: 'none'
@@ -131,7 +135,7 @@ export default {
                 return
             }
             
-            if (!/^1[3-9]\d{9}$/.test(this.form.phone)) {
+            if (!/^1[3-9]\d{9}$/.test(this.form.mobile)) {
                 uni.showToast({
                     title: '手机号格式不正确',
                     icon: 'none'
@@ -139,24 +143,50 @@ export default {
                 return
             }
             
-            this.counting = true
-            this.counter = 60
-            const timer = setInterval(() => {
-                this.counter--
-                if (this.counter <= 0) {
-                    clearInterval(timer)
-                    this.counting = false
-                }
-            }, 1000)
-            
-            uni.showToast({
-                title: '验证码已发送',
-                icon: 'success'
-            })
+			
+			try {
+				const param = {
+						phone: this.form.mobile,
+						opt: 'reset password',
+						sysId: SYS_ID
+				}
+				// 调用后端API发送验证码
+				const res = await uni.request({
+					url: process.env.UNI_BASE_URL+'/api/sys/sms/sendCodeMessage',
+					method: 'POST',
+					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+					data: param
+				});
+				// console.log("短信验证码-参数"+JSON.stringify(param)+"；返回值：" + JSON.stringify(res))
+				if(res.data.code == 0) {
+					uni.showToast({ title: '验证码已发送', icon: 'success' });
+					this.startCountdown();
+					return;
+				}
+				uni.showToast({ title: '发送失败，请稍后重试！', icon: 'none' });
+			} catch (error) {
+				uni.showToast({ title: '发送失败，请稍后重试！', icon: 'none' });
+			}
+			
         },
+		
+		// 倒计时逻辑
+		startCountdown() {
+			this.isisCounting = true;
+			this.countdown = 60;
+			const timer = setInterval(() => {
+				if(this.countdown <= 0) {
+					clearInterval(timer);
+					this.isisCounting = false;
+					return;
+				}
+				this.countdown--;
+			}, 1000);
+		},
+		
         
         handleSubmit() {
-            if (!this.form.phone || !this.form.verifyCode || 
+            if (!this.form.mobile || !this.form.verifyCode || 
                 !this.form.password || !this.form.confirmPassword) {
                 uni.showToast({
                     title: '请填写完整信息',
@@ -173,16 +203,49 @@ export default {
                 return
             }
             
-            uni.showToast({
-                title: '密码重置成功',
-                icon: 'success',
-                duration: 2000,
-                success: () => {
-                    setTimeout(() => {
-                        uni.navigateBack()
-                    }, 2000)
-                }
-            })
+			uni.request({
+				url: process.env.UNI_BASE_URL+ '/api/job/resetPassword',
+				header: { 'Content-Type': 'application/json' },
+				method: 'POST',
+				data: JSON.stringify(this.form),
+				success: result => {
+					// console.log('userStream 返回值' + JSON.stringify(result));
+					if (result.statusCode == 200) {
+						const respData = result.data;
+						// console.log("getUser返回值："+JSON.stringify(respData))
+						if(respData.code == 0) {
+							let ret = respData.data;
+							uni.setStorage({ key:JOB_TOKEN, data: ret });
+							
+							// console.log("this.resetPassword 返回值：" + JSON.stringify(ret))
+							const url = '/pages/job/index';
+							uni.navigateTo({ url });
+							// console.log('注册信息：', JSON.stringify(this.form))
+							uni.showToast({
+							    title: '密码重置成功',
+							    icon: 'success'
+							})
+							this.form.verifyCode = ''
+							return;
+						}else{
+							uni.showToast({
+							    title: respData.msg,
+							    icon: 'error'
+							})
+						}
+						return;
+					}
+					
+					uni.showToast({
+					    title: '密码重置失败，请稍后重试！',
+					    icon: 'error'
+					})
+				},
+				fail: (result, code) => {
+					console.log('fail' + JSON.stringify(result));
+				}
+			});
+			
         }
     }
 }

@@ -20,8 +20,9 @@
 		</view>
 		
 		<view class="banner" @click="goDetail(banner)">
-			<image class="banner-img" :src="banner.cover"></image>
-			<view class="banner-title" :style="fontSet" >{{ banner.title }}</view>
+			<image v-if="banner.mediumType == 2" :src="banner.url" class="banner-img" style="object-fit: cover"></image>
+			<video v-if="banner.mediumType == 3" :src="banner.url" class="banner-img" controls></video>
+			<view class="banner-title" :style="fontSet+banner.fontColor+'text-align: center;'" ><text v-html="banner.title"></text></view>
 		</view>
 		
 		<view class="uni-list">
@@ -110,7 +111,12 @@
 				fontSizeScale: 100, // 默认100%比例
 				baseFontSize: 16,   // 基础字体大小（根据设计稿调整）
 				
-				banner: {},
+				banner: {
+					mediumType: 2,
+					url: '',
+					titile: '',
+					fontColor: '',
+				},
 				listData: [],
 				total: 0,		// 总记录数
 				pages: 1,		// 总页数
@@ -165,14 +171,15 @@
 				success: function(resp){
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					_this.getBanner();	// 获取，标题展示数据
 					_this.getList();		// 获取，内容列表数据
 				},
 				fail:function(){
+					_this.getBanner();	// 获取，标题展示数据
 				}
 			});
 			
 			this.adpid = this.$adpid;
-			this.getBanner();	// 获取，标题展示数据
 			
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
@@ -279,16 +286,16 @@
 			},
 			// 获取，标题展示数据
 			getBanner() {
-				let data = {
-					column: 'id,post_id,title,author_name,cover,published_at' //需要的字段名
-				};
+				let data = {sysId: SYS_ID, level: this.userToken.level, showWhere: 1, selfId: this.userToken.userId, token: this.userToken.token};
 				uni.request({
-					url: 'https://unidemo.dcloud.net.cn/api/banner/36kr',
-					data: data,
+					url: process.env.UNI_BASE_URL+'/api/job/getBanner',
+					data: JSON.stringify(data),
+					method: 'POST',
 					success: data => {
 						uni.stopPullDownRefresh();
-						if (data.statusCode == 200) {
-							this.banner = data.data;
+						// console.log("getBanner() 返回值："+JSON.stringify(data))
+						if (data.statusCode == 200 && data.data.code == 0) {
+							this.banner = data.data.data;
 						}
 					},
 					fail: (data, code) => {

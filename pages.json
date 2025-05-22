@@ -206,6 +206,14 @@
 				"navigationBarTitleText" : "建议/意见",
 				"enablePullDownRefresh" : false
 			}
+		},
+		{
+			"path" : "pages/job/forget-password",
+			"style" : 
+			{
+				"navigationBarTitleText" : "",  // 重命名
+				"enablePullDownRefresh" : false
+			}
 		}
   //       ,{
 		// 	"path": "pages/job/user/user_list",
