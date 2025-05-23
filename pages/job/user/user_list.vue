@@ -104,7 +104,7 @@
 		data() {
 			return {
 				userId:0,
-				userToken:{},
+				userToken: {},
 				// 字体缩放
 				fontSet: '',
 				fontScale: 1.0,
@@ -175,6 +175,7 @@
 			this.last_id = '';
 			// this.getBanner();	// 获取，标题展示数据
 			this.getList();		// 获取，内容列表数据
+			uni.stopPullDownRefresh();
 		},
 		onReachBottom() {
 			// console.log("触发 onReachBottom()")
@@ -190,10 +191,10 @@
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
 					_this.getStoreList();
-					_this.getBanner();		// 获取，标题展示数据
-					_this.getList();		// 获取，内容列表数据
 				},
 				fail:function(){
+				},
+				complete() {
 					_this.getBanner();		// 获取，标题展示数据
 					_this.getList();		// 获取，内容列表数据
 				}
@@ -433,11 +434,10 @@
 			},
 			// 打电话
 			makePhoneCall: function (receiverId) {
-				if(!this.userToken){
+				if(!this.userToken?.userId){
 					uni.showToast({ title: '先登录，才允许致电对方！', icon: 'none' });
 					return;
 				}
-				
 				uni.showModal({
 					title: '提示',
 					content: '不允许骚扰对方，本次通话会被记录，可能会录音，若被举报，会降低本人的信誉值，请正常开展！',
@@ -496,7 +496,7 @@
 				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
 				this.jobManager.writeHistoryRecord('浏览', obj.username, obj.headImgPath, url)
 				uni.navigateTo({
-					url: `/pages/job/user/user_detail?detailId=`+ obj.userId
+					url: url
 				});
 			},
 			
@@ -724,7 +724,7 @@
 	}
 
 	.banner-title {
-		max-height: 84rpx;
+		min-height: 54rpx;
 		overflow: hidden;
 		position: absolute;
 		left: 30rpx;

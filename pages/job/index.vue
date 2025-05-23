@@ -685,7 +685,7 @@ export default {
             background: linear-gradient(45deg, #a18cd1 0%, #fbc2eb 100%);
             border-radius: 36rpx;
             color: #fff;
-            font-size: 28rpx;
+            font-size: 40rpx;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -697,7 +697,7 @@ export default {
         .switch-text {
             width: 50%;
             text-align: center;
-            font-size: 28rpx;
+            font-size: 40rpx;
             color: rgba(255, 255, 255, 0.5);
             transition: color 0.3s;
             z-index: 1;
@@ -748,7 +748,7 @@ export default {
         }
         
         .header-text {
-            font-size: 40rpx;
+            font-size: 80rpx;
             // color: #333;
             font-weight: 600;
 			background: linear-gradient(45deg, #a18cd1 0%, #fbc2eb 100%);
@@ -766,20 +766,21 @@ export default {
 		
         .input-label {
 			flex: 0 0 25%; 		/* 固定比例宽度 */
-			min-width: 100rpx; /* 最小宽度 */
+			min-width: 180rpx; /* 最小宽度 */
 			max-width: 240rpx; /* 最大宽度 */
             display: flex;
             align-items: center;
 			white-space: nowrap; /* 防止文字换行 */
             margin-bottom: 16rpx;
+			
             .required {
-                color: #ef4444;
+                color: #ef4444 !important;
                 margin-right: 8rpx;
             }
             
             text {
                 color: #666 !important;
-                font-size: 26rpx;
+                font-size: 35rpx;
             }
         }
         
@@ -795,7 +796,7 @@ export default {
                 height: 100%;
                 // color: #fff;
 				color: #333;
-                font-size: 28rpx;
+                font-size: 35rpx;
             }
             
             &.code-box {
@@ -810,7 +811,8 @@ export default {
                 
                 .code-btn {
                     height: 60rpx;
-                    padding: 0 30rpx;
+                    padding: 0 10rpx;
+					margin-right: -8rpx;
                     background: rgba(161, 140, 209, 0.1) !important;
                     border: 1px solid rgba(161, 140, 209, 0.3) !important;
                     border-radius: 30rpx;
@@ -856,7 +858,7 @@ export default {
         
         input {
             flex: 1;
-            font-size: 28rpx;
+            font-size: 40rpx;
             color: #333;
         }
         
@@ -874,7 +876,7 @@ export default {
             right: 30rpx;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 26rpx;
+            font-size: 40rpx;
             color: #a18cd1;
             
             &.disabled {
@@ -897,13 +899,13 @@ export default {
         align-items: center;
         justify-content: center;
         color: #fff;
-        font-size: 30rpx;
+        font-size: 35rpx;
         font-weight: 500;
         box-shadow: 0 8rpx 20rpx rgba(161, 140, 209, 0.3) !important;
         
         .btn-icon {
             margin-left: 12rpx;
-            font-size: 32rpx;
+            font-size: 40rpx;
         }
         
         &:active {
@@ -922,18 +924,18 @@ export default {
 			
 	    
 	    .forget-pwd {
-	        font-size: 26rpx;
+	        font-size: 35rpx;
 	        color: #a18cd1;
 	    }
 	    
 	    .switch-box {
 	        .switch-tip {
-	            font-size: 26rpx;
+	            font-size: 35rpx;
 	            color: #666;
 	        }
 	        
 	        .switch-btn {
-	            font-size: 26rpx;
+	            font-size: 35rpx;
 	            color: #a18cd1;
 	            margin-left: 10rpx;
 	        }
@@ -986,7 +988,7 @@ export default {
 		text-align: center;
 	}
 	.policy-link {
-		font-size: 24rpx;
+		font-size: 30rpx;
 		color: #a18cd1 !important;
 	}
     
@@ -995,13 +997,13 @@ export default {
         align-items: center;
         
         .policy-text {
-            font-size: 24rpx;
+            font-size: 40rpx;
             color: #666 !important;
             margin-left: 10rpx;
         }
         
         .policy-link {
-            font-size: 24rpx;
+            font-size: 40rpx;
             color: #a18cd1 !important;
         }
     }

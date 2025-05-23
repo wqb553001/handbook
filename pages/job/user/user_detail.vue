@@ -112,8 +112,7 @@
 				historyRecord: [],
 			}
 		},
-		computed: {
-		},
+		computed: {},
 		onLoad(e) {
 			const _this = this
 			uni.getStorage({
@@ -123,17 +122,17 @@
 					if(_this.userToken.userId == e.detailId){
 						_this.isMyself = true
 					}
-					// 加载用户信息
-					_this.getJobUserByUserId(e.detailId);
-					
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 				},
 				fail:function(){
+				},
+				complete() {
+					// 加载用户信息
+					_this.getJobUserByUserId(e.detailId);
 				}
 			});
 			// console.log("参数："+ e.detailId)
 			this.detailId = e.detailId
-			
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
 			    // console.log("接收地址：" + JSON.stringify(data))
@@ -153,20 +152,23 @@
 		onReady() {
 			// 设置自定义表单校验规则，必须在节点渲染完毕后执行
 		},
-		mounted(){
+		onShow(){
 			this.initGetFontSize(); // 页面重新加载-恢复
 		},
 		methods: {
 			getJobUserByUserId(detailId){
 				const _this = this;
+				let data = {sysId: SYS_ID, userId: detailId}; // , selfId: this.userToken.userId, token: this.userToken.token
+				if(this.userToken?.userId) data.selfId = this.userToken?.userId;
+				if(this.userToken?.token) data.token = this.userToken?.token;
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
-					data: {sysId: SYS_ID, userId: detailId, selfId: this.userToken.userId, token: this.userToken.token},
+					data: data,
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						// console.log('userStream 返回值' + JSON.stringify(result));
-						if (result.statusCode == 200) {
+						// console.log('user_detail.getUser 返回值' + JSON.stringify(result));
+						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data;
 							// console.log("getUser返回值："+JSON.stringify(respData))
 							if(respData) {
@@ -194,10 +196,7 @@
 				console.log(e);
 				this.current = e.currentIndex
 			},
-			add() {
-				
-				
-			},
+			
 			onFontSizeChange(scale) {
 				// this.fontSizeScale = e.detail.value;
 				this.fontSizeScale = scale;
@@ -238,7 +237,7 @@
 			submit() {
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/saveScore',  // 数据源的数据是 有序的
-					data: {sysId: SYS_ID, selfId: 19, userId: this.jobUser.userId, score: this.talk.score, talk: this.talk.talk, orderId: 0},
+					data: {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: this.jobUser.userId, score: this.talk.score, talk: this.talk.talk, orderId: 0},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
@@ -307,34 +306,38 @@
 			},
 			async longPressEditHeadImage(){
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
+				
 				if(this.isMyself){
 					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
 					uni.navigateTo({ url });
-				}else{
-					if(this.readHistoryRecord){
-						const _this = this;
-						await uni.getStorage({
-							key: JOB_OPT_HISTORY_RECORD,
-							success: function(resp){
-								_this.historyRecord = resp.data
-								// console.log("user_detail 缓存取值："+ JSON.stringify(resp.data));
-								// console.log("user_detail 赋值后："+ JSON.stringify(_this.historyRecord));
-								if(!_this.jobManager) _this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-								_this.jobManager.storeOpt(_this.jobUser, '收藏', _this.isStore, _this.userToken, [..._this.historyRecord])
-							},
-							fail:function(){
-							}
-						});
-					}else{
-						if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-						this.jobManager.storeOpt(this.jobUser, '收藏', this.isStore, this.userToken, [...this.historyRecord])
-					}
-					
-					// 已经读取过
-					this.readHistoryRecord = false
-					// 变更 收藏/取消收藏 标识
-					this.isStore?this.isStore=false:this.isStore=true;
+					return ;
 				}
+				if(!this.userToken?.userId) return ;
+				
+				if(this.readHistoryRecord){
+					const _this = this;
+					await uni.getStorage({
+						key: JOB_OPT_HISTORY_RECORD,
+						success: function(resp){
+							_this.historyRecord = resp.data
+							// console.log("user_detail 缓存取值："+ JSON.stringify(resp.data));
+							// console.log("user_detail 赋值后："+ JSON.stringify(_this.historyRecord));
+							if(!_this.jobManager) _this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+							_this.jobManager.storeOpt(_this.jobUser, '收藏', _this.isStore, _this.userToken, [..._this.historyRecord])
+						},
+						fail:function(){
+						}
+					});
+				}else{
+					if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+					this.jobManager.storeOpt(this.jobUser, '收藏', this.isStore, this.userToken, [...this.historyRecord])
+				}
+				
+				// 已经读取过
+				this.readHistoryRecord = false
+				// 变更 收藏/取消收藏 标识
+				this.isStore?this.isStore=false:this.isStore=true;
+				
 			},
 			initGetFontSize(){
 				// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)

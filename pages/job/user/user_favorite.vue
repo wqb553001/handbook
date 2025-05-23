@@ -171,10 +171,11 @@
 				success: function(resp){
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-					_this.getBanner();	// 获取，标题展示数据
 					_this.getList();		// 获取，内容列表数据
 				},
 				fail:function(){
+				},
+				complete() {
 					_this.getBanner();	// 获取，标题展示数据
 				}
 			});
@@ -664,7 +665,7 @@
 	}
 
 	.banner-title {
-		max-height: 124rpx;
+		min-height: 54rpx;
 		overflow: hidden;
 		position: absolute;
 		left: 30rpx;

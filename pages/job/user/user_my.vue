@@ -6,29 +6,29 @@
                 <!-- <image class="bg-image" src="/static/logo.png" mode="aspectFill" /> -->
                 <view class="profile-info">
 					<view class="headLeft">
-						<view class="headImg">
+						<view class="headImg" @longpress="longPressEditHeadImage">
 							<image class="avatar" :src="jobUser.headImgPath" mode="aspectFill" />
 							<!-- <image v-show="!isLogined" class="avatar" :src="jobUser.headImgPath" mode="aspectFill" /> -->
 							<!-- <uni-icons v-if="!isLogined" type="contact" class="avatar" size="14" color="#FFD700"></uni-icons> -->
 						</view>
 						
 						<view class="info-text">
-							<view style="display: flex;">
-								<text v-if="isLogined" class="nickname">{{  jobUser.username  }}</text>
-								<text v-else class="nickname" @click="navigateTo(`/pages/job/index`)">登录</text>
-								<text v-if="isLogined" class="mobile" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
+							<view style="display: flex;" :style="fontSet" >
+								<text v-if="isLogined" class="nickname" :style="fontSet">{{  jobUser.username  }}</text>
+								<text v-else class="nickname" :style="fontSet" @click="navigateTo(`/pages/job/index`)">登录</text>
+								<text v-if="isLogined" class="mobile" :style="fontSet" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
 							</view>
 							
-							<text class="signature">{{ jobUser.skillsName }}</text>
+							<text class="signature" :style="fontSet">{{ jobUser.skillsName }}</text>
 						</view>
 					</view>
 					<view class="headRight">
 						<view class="member-tag">
-							<uni-icons type="star" v-for="(item, index) in jobUser.multiScore" :key="index" size="14" color="#FFD700"></uni-icons>
-							<text>劳模</text>
+							<uni-icons type="star" v-for="(item, index) in jobUser.multiScore" :key="index" :size="18*fontScale" color="#FFD700"></uni-icons>
+							<text :style="fontSet">劳模</text>
 						</view>
 						<view class="setting-icon">
-							<uni-icons type="gear" size="28" color="#fff" @click="isLogined?navigateTo('/pages/job/user/user_setting'):''"></uni-icons>
+							<uni-icons type="gear" :size="23*fontScale" color="#fff" @click="isLogined?navigateTo('/pages/job/user/user_setting'):''"></uni-icons>
 						</view>
 					</view>
 					
@@ -42,30 +42,30 @@
 			</view>
             <view class="profile-stats">
                 <view class="stat-item">
-                    <text class="num">1280</text>
-					<uni-icons type="hand-up-filled" size="28" color="#FFCC33" ></uni-icons>
-                    <text class="label">获赞</text>
+                    <text class="num" :style="fontSet">1280</text>
+					<uni-icons type="hand-up-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+                    <text class="label" :style="fontSet">获赞</text>
                 </view>
                 <view class="stat-item">
-                    <text class="num">328</text>
-					<uni-icons type="star-filled" size="28" color="#FFCC33" ></uni-icons>
-                    <text class="label">收藏</text>
+                    <text class="num" :style="fontSet">328</text>
+					<uni-icons type="star-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+                    <text class="label" :style="fontSet">收藏</text>
                 </view>
                 <view class="stat-item">
-                    <text class="num">999</text>
-					<uni-icons type="redo-filled" size="28" color="#FFCC33" ></uni-icons>
-                    <text class="label">分享</text>
+                    <text class="num" :style="fontSet">999</text>
+					<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+                    <text class="label" :style="fontSet">分享</text>
                 </view>
             </view>
         </view>
 
         <!-- 功能区域 -->
        <view class="feature-section">
-            <view class="section-title">我的服务</view>
+            <view class="section-title" :style="fontSet">我的服务</view>
             <view class="feature-grid">
                 <view class="feature-item" v-for="(item, index) in features.slice(0, 2)" :key="index" @click="isLogined?handleFeature(item):''">
-                    <view class="feature-icon" :style="{ backgroundColor: item.bgColor }"> <uni-icons :type="item.icon" size="24" :color="item.iconColor"></uni-icons> </view>
-                    <text class="feature-name">{{item.name}}</text>
+                    <view class="feature-icon" :style="{ backgroundColor: item.bgColor }"> <uni-icons :type="item.icon"  :size="23*fontScale" :color="item.iconColor"></uni-icons> </view>
+                    <text class="feature-name" :style="fontSet">{{item.name}}</text>
                 </view>
             </view>
         </view>
@@ -74,8 +74,8 @@
     <!-- 快捷功能区 -->
     <view class="quick-actions">
       <view class="action-item" v-for="(item, index) in allServices.slice(0, 0)" :key="index" @click="isLogined?navigateTo(item.path):''" >
-        <view class="action-icon" :class="item.class"> <uni-icons :type="item.icon" size="24" color="#fff"></uni-icons> </view>
-        <text class="action-name">{{ item.name }}</text>
+        <view class="action-icon" :style="fontSet" :class="item.class"> <uni-icons :type="item.icon"  :size="23*fontScale" color="#fff"></uni-icons> </view>
+        <text class="action-name" :style="fontSet">{{ item.name }}</text>
       </view>
     </view>
 
@@ -97,10 +97,10 @@
 	    <view class="service-item" @click="navigateToServices(talkPath)" >
 			<view class="left">
 				<view class="service-icon bg-orange" > <uni-icons type="headphones" size="20" color="#fff"></uni-icons> </view>
-				<text class="service-name">客服中心</text>
+				<text class="service-name" :style="fontSet">客服中心</text>
 			</view>
 			<view class="right">
-				<text class="desc">留言</text>
+				<text class="desc" :style="fontSet" >留言</text>
 				<uni-icons type="right" size="14" color="#999"></uni-icons>
 			</view>
 	    </view>
@@ -108,10 +108,10 @@
 	    <view class="service-item" @click="" >
 			<view class="left">
 				<view class="service-icon bg-cyan" > <uni-icons type="help" size="20" color="#fff"></uni-icons> </view>
-				<text class="service-name">帮助中心</text>
+				<text class="service-name" :style="fontSet" >帮助中心</text>
 			</view>
 			<view class="right">
-				<uni-icons type="right" size="14" color="#999"></uni-icons>
+				<uni-icons type="right" :style="fontSet" size="14" color="#999"></uni-icons>
 			</view>
 	    </view>
 	  
@@ -119,10 +119,10 @@
 		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest')" >
 			<view class="left">
 				<view class="service-icon bg-pink" > <uni-icons type="chat" size="20" color="#fff"></uni-icons> </view>
-				<text class="service-name">意见反馈</text>
+				<text class="service-name" :style="fontSet" >意见反馈</text>
 			</view>
 			<view class="right">
-				<uni-icons type="right" size="14" color="#999"></uni-icons>
+				<uni-icons type="right" :style="fontSet" size="14" color="#999"></uni-icons>
 			</view>
 		</view>
 	  	  
@@ -130,7 +130,7 @@
 	  	<view class="service-item" @click="navigateToServices('/pages/job/user/user_setting')" >
 	  	  	<view class="left">
 	  	  		<view class="service-icon bg-gray" > <uni-icons type="gear" size="20" color="#fff"></uni-icons> </view>
-	  	  		<text class="service-name">设置</text>
+	  	  		<text class="service-name" :style="fontSet" >设置</text>
 	  	  	</view>
 	  	  	<view class="right">
 	  	  		<uni-icons type="right" size="14" color="#999"></uni-icons>
@@ -168,12 +168,14 @@ export default {
 	},
 	onShow() {
 		// this.getToken();
+		this.initGetFontSize(); // 页面重新加载-恢复
 	},
 	mounted() {
 		this.getToken();
 	},
 	onPullDownRefresh() {
 		this.getToken();
+		uni.stopPullDownRefresh();
 	},
     data() {
         return {
@@ -210,7 +212,12 @@ export default {
 				{ name: '意见反馈', 	icon: 'chat', 		path: '/pages/job/suggest/suggest', 	class: 'bg-pink' },
 				{ name: '设置', 		icon: 'gear', 		path: '/pages/job/user/user_setting', 	class: 'bg-gray' }
 			],
+			
+			// 字体缩放
+			fontSet: '',
+			fontScale: 1.0,
 			fontSizeScale: 100, // 默认100%比例
+			baseFontSize: 16,   // 基础字体大小（根据设计稿调整）
         }
     },
     methods: {
@@ -304,6 +311,53 @@ export default {
 		    age--;
 		  }			  
 		  return age;
+		},
+		
+		initGetFontSize(){
+			// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)
+			var _this = this
+			uni.getStorage({
+				key: JOB_USER_FONT_SET,
+				success: function(resp){
+					// console.log("key:", JOB_USER_FONT_SET, "返回内存原值：", JSON.stringify(resp))
+					_this.fontSizeScale = resp.data
+					_this.onFontSizeChange(_this.fontSizeScale); // 初始化设置一次
+					// console.log("初始从缓存中取值，设置字体比例：" + _this.fontSizeScale)
+				},
+				fail:function(){
+					// console.log("首次存储，未取得 key:"+JOB_USER_FONT_SET);
+				}
+			});
+		},
+		
+		onFontSizeChange(scale) {
+			// this.fontSizeScale = e.detail.value;
+			this.fontSizeScale = scale;
+			const scaleValue = this.fontSizeScale / 100;
+			this.fontScale = scaleValue
+			// console.log("字体大小设置为：" + this.fontSizeScale)
+			
+			// console.log("实时计算比例："+ this.fontScale)
+			
+			/* #ifdef MP-WEIXIN */
+			this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
+			// console.log("WEIXIN 实时计算样式："+ this.fontSet)
+			/* #endif */
+			
+			/* #ifndef MP-WEIXIN */
+			this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
+			// console.log("APP/H5 实时计算样式："+ this.fontSet)
+			/* #endif */
+			var _this = this
+			// 字体大小存入缓存记忆
+			uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
+		},
+		
+		longPressEditHeadImage(){
+			if(!this.userToken?.userId) return ;
+			const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
+			uni.navigateTo({ url });
+			return ;
 		},
 		
 		navigateTo(path) {

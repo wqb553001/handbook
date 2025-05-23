@@ -255,7 +255,7 @@ export default {
 <style lang="scss" scoped>
 .container {
     min-height: 100vh;
-    background: #1a1b1e;
+    background: #f8f9fd;
     position: relative;
     overflow: hidden;
 }
@@ -271,14 +271,14 @@ export default {
     
     .shape {
         position: absolute;
-        filter: blur(100rpx);
-        opacity: 0.3;
-        will-change: transform;
+        filter: blur(100rpx); // 减小模糊半径
+        opacity: 0.3; // 降低不透明度
+        will-change: transform; // 优化动画性能
         
         &-1 {
             width: 600rpx;
             height: 600rpx;
-            background: linear-gradient(135deg, #7c3aed, #3b82f6);
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
             top: -200rpx;
             right: -200rpx;
             border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
@@ -288,7 +288,7 @@ export default {
         &-2 {
             width: 500rpx;
             height: 500rpx;
-            background: linear-gradient(225deg, #6366f1, #8b5cf6);
+            background: linear-gradient(225deg, #84fab0 0%, #8fd3f4 100%);
             bottom: -150rpx;
             left: -150rpx;
             border-radius: 58% 42% 30% 70% / 55% 55% 45% 45%;
@@ -302,7 +302,7 @@ export default {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
+		background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(60rpx);
         -webkit-backdrop-filter: blur(60rpx);
     }
@@ -337,12 +337,12 @@ export default {
 
 /* 表单卡片 */
 .form-card {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.9);
     border-radius: 30rpx;
     padding: 40rpx;
     backdrop-filter: blur(20rpx);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20rpx 40rpx rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 20rpx 40rpx rgba(0, 0, 0, 0.05);
 }
 
 /* 表单标题 */
@@ -358,7 +358,7 @@ export default {
     
     .header-text {
         font-size: 40rpx;
-        color: #fff;
+        color: #333;
         font-weight: 600;
     }
 }
@@ -367,34 +367,39 @@ export default {
 .form-content {
     .input-group {
         margin-bottom: 40rpx;
+        display: flex;
         
         .input-label {
+			flex: 0 0 25%; 		/* 固定比例宽度 */
+			min-width: 200rpx; /* 最小宽度 */
+			max-width: 240rpx; /* 最大宽度 */
             display: flex;
             align-items: center;
+			white-space: nowrap; /* 防止文字换行 */
             margin-bottom: 16rpx;
             
             .required {
-                color: #ef4444;
+                color: #ef4444 !important;
                 margin-right: 8rpx;
             }
             
             text {
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 26rpx;
+                color: #666 !important;
+                font-size: 35rpx;
             }
         }
         
         .input-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: #f8f9fd;
+            border: 1px solid #e6e6e6;
             border-radius: 16rpx;
             height: 90rpx;
             padding: 0 30rpx;
             
             input {
                 height: 100%;
-                color: #fff;
-                font-size: 28rpx;
+                color: #333;
+                font-size: 30rpx;
             }
             
             &.code-box {
@@ -408,7 +413,8 @@ export default {
                 
                 .code-btn {
                     height: 60rpx;
-                    padding: 0 30rpx;
+                    padding: 0 20rpx;
+					margin-right: -13rpx;
                     background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(99, 102, 241, 0.2));
                     border: 1px solid rgba(124, 58, 237, 0.3);
                     border-radius: 30rpx;
@@ -442,7 +448,7 @@ export default {
         align-items: center;
         justify-content: center;
         color: #fff;
-        font-size: 30rpx;
+        font-size: 40rpx;
         font-weight: 500;
         box-shadow: 0 8rpx 20rpx rgba(124, 58, 237, 0.3);
         
@@ -455,6 +461,6 @@ export default {
 
 /* 占位符样式 */
 .placeholder {
-    color: rgba(255, 255, 255, 0.2);
+    color: #999 !important;
 }
 </style> 

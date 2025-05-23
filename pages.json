@@ -118,7 +118,7 @@
         	"path" : "pages/job/user/user_favorite",
         	"style" : 
         	{
-        		"navigationBarTitleText" : ""  //   // 不比填“我的收藏”，填写PC端会造成 样式遮挡问题
+        		"navigationBarTitleText" : "我的收藏"  //   // 不比填“我的收藏”，填写PC端会造成 样式遮挡问题
         	}
         },
 		{
