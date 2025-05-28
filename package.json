@@ -25,7 +25,7 @@
 	    "env": {
 	    	"UNI_PLATFORM": "h5",
 	    	"UNI_BASE_URL": "http://localhost:18281",
-	    	"UNI_WS_URL": "ws://localhost:18283/ws",
+	    	"UNI_WS_URL": "wss://localhost:18283/ws",
 			"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 			"UNI_CDN": "http://cdn.xny.world/"
 	    },
@@ -53,7 +53,7 @@
   		  "ENV_TYPE": "dev",
   		  "UNI_PLATFORM": "mp-weixin",
   		  "UNI_BASE_URL": "http://localhost:18281",
-  		  "UNI_WS_URL": "ws://localhost:18283/ws",
+  		  "UNI_WS_URL": "wss://localhost:18283/ws",
 		  "UNI_QINIUP_URL": "https://up-z2.qiniup.com",
 		  "UNI_CDN": "http://cdn.xny.world/"
   		},

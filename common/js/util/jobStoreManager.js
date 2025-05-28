@@ -37,13 +37,14 @@ export class JobStoreManager {
 
       if (result.data.code === 0) {
         uni.showToast({ title: `${opt}成功`, icon: 'success' })
-      } else {
-        uni.showToast({ title: `${opt}未成功，请后续重试！`, icon: 'error' })
-      }
+      } 
+	  // else {
+   //      uni.showToast({ title: `${opt}未成功，请后续重试！`, icon: 'error' })
+   //    }
       return result.data
     } catch (error) {
       console.error('storeOpt error:', error)
-      uni.showToast({ title: '操作失败，请检查网络', icon: 'error' })
+      uni.showToast({ title: '操作失败，请检查网络', icon: 'error', duration: 10000 })
       throw error
     }
   }

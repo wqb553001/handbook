@@ -117,12 +117,15 @@
 					titile: '',
 					fontColor: '',
 				},
+				
+				// 分页
 				listData: [],
 				total: 0,		// 总记录数
-				pages: 1,		// 总页数
+				pages: 0,		// 总页数
 				currentPage: 1,	// 当前页码
 				reload: false,	// 上拉加载更多-false; 下拉刷新-true
 				status: 'more', // 加载状态  more：上拉加载更多；loading：加载中；nomore：没有更多
+				
 				adpid: '',
 				contentText: {
 					contentdown: '上拉加载更多',
@@ -130,7 +133,7 @@
 					contentnomore: '没有更多'
 				},
 				location:{
-					text: "四方河路宜家尚城",  	// 显示地址
+					text: "选取位置获取周围工作机会",  	// 显示地址
 					address: "四方河路宜家尚城",	// 实际完整地址
 					latitude: "",
 					longitude: "",
@@ -306,6 +309,7 @@
 			},
 			initData(){
 				this.listData	= [];
+				this.total 		= 0;
 				this.offset 	= 0;
 				this.status 	= 'more';
 				this.pages 		= 0;		// 总页数
@@ -331,16 +335,15 @@
 					data.limit = PAGE_LIMIT;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
-				// console.log('请求参数：' + JSON.stringify(data))
+				// console.log('user_favorite.searchStore请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/searchStore',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						// console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('user_favorite.searchStore 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data.rows;
-							this.total = result.data.data.total
 							if(respData.length<1) {
 								this.reload = false;
 								this.status = 'nomore';	// 没有更多
@@ -349,6 +352,7 @@
 							let list = this.dataHandle(respData);
 							this.listData = this.reload ? list : this.listData.concat(list);
 							this.currentPage += 1;
+							this.total = result.data.data.total
 							this.pages = Math.ceil(this.total / PAGE_LIMIT);
 							if(this.currentPage>this.pages) {
 								this.status = 'nomore';	// 没有更多，退出
@@ -356,7 +360,7 @@
 							};
 							this.reload = false;
 							this.status = 'more';		// 上拉加载更多
-							this.nextPage()
+							this.nextPage();
 						}
 					},
 					fail: (result, code) => {

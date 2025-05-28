@@ -5,11 +5,12 @@
     <!-- 服务菜单列表 -->
 		<view class="service-list">
 		  <button type="primary" @click='clearStore(0, "聊天", 		"JOB_TALK"				)'>聊天缓存</button>
+		  <button type="primary" @click='clearStore(0, "位置", 		"map_Picker_Position"	)'>位置缓存</button>
 		  <button type="primary" @click='clearStore(0, "浏览记录", 	"JOB_OPT_HISTORY_RECORD")'>浏览记录缓存</button>
 		  <button type="primary" @click='clearStore(0, "字体", 		"jobUserMySet"			)'>字体大小缓存</button>
 		  <button type="primary" @click='clearStore(0, "技能", 		"jobUserSkills"			)'>技能选项缓存</button>
 		  <button type="primary" @click='logout()'>退出登录</button>
-		  <button type="primary" @click='clearAllStore()'>所有缓存</button>
+		  <!-- <button type="primary" @click='clearAllStore()'>所有缓存</button> -->
 		</view>
 
 
@@ -23,6 +24,7 @@ const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
 const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 const JOB_USER_SKILLS = "jobUserSkills"
+const MAP_PICKER_POSITION = "map_Picker_Position"
 
 export default {
     data() {},
@@ -41,24 +43,22 @@ export default {
 				}
 			});
 		},
-		clearAllStore(){
-			const obj = "所有"
-			const storeKey = "storeKey"
-			uni.showModal({
-				title: '提示',
-				content: `确定需要清除${obj}缓存？`,
-				confirmText: '确定',
-				cancelText: '退出',
-				success: (res) => {
-					if (res.confirm) {
-						uni.removeStorage({key:storeKey});
-					}
-				}
-			});
-		},
-		clearAll(){
-			
-		},
+		// clearAllStore(){
+		// 	const obj = "所有"
+		// 	const storeKey = "storeKey"
+		// 	uni.showModal({
+		// 		title: '提示',
+		// 		content: `确定需要清除${obj}缓存？`,
+		// 		confirmText: '确定',
+		// 		cancelText: '退出',
+		// 		success: (res) => {
+		// 			if (res.confirm) {
+		// 				uni.removeStorage({key:storeKey});
+		// 			}
+		// 		}
+		// 	});
+		// },
+		
 		logout(){
 			const obj = "登录"
 			uni.showModal({

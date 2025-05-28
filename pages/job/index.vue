@@ -122,6 +122,22 @@
 						
 						<view class="input-group">
 						    <view class="input-label">
+								<!-- <text class="required">·</text> -->
+						        <text style="margin-left: 20rpx;">邀请码</text>
+						    </view>
+						    <view class="input-box code-box">
+						        <input 
+						            type="number"
+						            v-model="form.fromCode"
+						            maxlength="10"
+						            placeholder="请输入邀请码"
+						            placeholder-class="placeholder"
+						        />
+						    </view>
+						</view>
+						
+						<view class="input-group">
+						    <view class="input-label">
 						        <text class="required">*</text>
 						        <text>手机号</text>
 						    </view>
@@ -469,7 +485,7 @@ export default {
 						// console.log('userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
 							const respData = result.data;
-							// console.log("getUser返回值："+JSON.stringify(respData))
+							// console.log("index.saveUser 返回值："+JSON.stringify(respData))
 							if(respData.code == 0) {
 								let ret = respData.data;
 								uni.setStorage({ key:JOB_TOKEN, data: ret });

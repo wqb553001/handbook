@@ -19,13 +19,13 @@
 								<text v-if="isLogined" class="mobile" :style="fontSet" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
 							</view>
 							
-							<text class="signature" :style="fontSet">{{ jobUser.skillsName }}</text>
+							<!-- <text class="signature" :style="fontSet">{{ jobUser.skillsName }}</text> -->
 						</view>
 					</view>
 					<view class="headRight">
 						<view class="member-tag">
 							<uni-icons type="star" v-for="(item, index) in jobUser.multiScore" :key="index" :size="18*fontScale" color="#FFD700"></uni-icons>
-							<text :style="fontSet">劳模</text>
+							<text :style="fontSet">{{score(jobUser.multiScore)}}</text>
 						</view>
 						<view class="setting-icon">
 							<uni-icons type="gear" :size="23*fontScale" color="#fff" @click="isLogined?navigateTo('/pages/job/user/user_setting'):''"></uni-icons>
@@ -61,7 +61,13 @@
 
         <!-- 功能区域 -->
        <view class="feature-section">
-            <view class="section-title" :style="fontSet">我的服务</view>
+            <view class="section-title" :style="fontSet" style="display: flex; justify-content: space-between;">
+				<text>我的服务</text>
+				<view @longpress="longpressCopyCode(jobUser.selfCode)" >
+					<text style="color: #FFCC33;" >我的邀请码：</text>
+					<text @longpress="longpressCopyCode(jobUser.selfCode)" style="color: #ff6043;">{{jobUser.selfCode}}</text>
+				</view>
+			</view>
             <view class="feature-grid">
                 <view class="feature-item" v-for="(item, index) in features.slice(0, 2)" :key="index" @click="isLogined?handleFeature(item):''">
                     <view class="feature-icon" :style="{ backgroundColor: item.bgColor }"> <uni-icons :type="item.icon"  :size="23*fontScale" :color="item.iconColor"></uni-icons> </view>
@@ -94,13 +100,16 @@
 	  
 	  
 	  
-	    <view class="service-item" @click="navigateToServices(talkPath)" >
+	    <view v-if="jobUser.sumId && jobUser.sumId>0" class="service-item" @click="navigateToServices('/pages/job/online/talk_list')" >
 			<view class="left">
 				<view class="service-icon bg-orange" > <uni-icons type="headphones" size="20" color="#fff"></uni-icons> </view>
-				<text class="service-name" :style="fontSet">客服中心</text>
+				<text class="service-name" :style="fontSet">留言回复</text>
 			</view>
 			<view class="right">
-				<text class="desc" :style="fontSet" >留言</text>
+				<uni-badge v-if="jobUser.sumRead" :text="jobUser.sumRead" class="desc uni-badge-left-margin" absolute="rightTop" :offset="[5, 5]" size="small">
+					<view class="desc"><text class="desc" :style="fontSet" >未读</text></view>
+				</uni-badge>
+				<text v-else class="desc" :style="fontSet" >留言</text>
 				<uni-icons type="right" size="14" color="#999"></uni-icons>
 			</view>
 	    </view>
@@ -162,6 +171,13 @@
 const SYS_ID = 2025040301;
 const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
+const workerScoreMap = 
+	{
+		"-5":"",	"-4":"",	"-3":"",		"-2":"",		"-1":"",
+		"0":"",		"1":"",		"2":"",			"3":"",			"4":"",			"5":"",
+		"6":"",		"7":"",		"8":"劳模",		"9":"工匠",		"10":"",
+		"11":"",	"12":"",	"13":"",		"13":"",
+	}
 
 export default {
 	onLoad() {
@@ -248,7 +264,7 @@ export default {
 		getJobUserByUserId(){
 			const _this = this;
 			uni.request({
-				url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
+				url: process.env.UNI_BASE_URL+'/api/job/userMy',  // 用户数据
 				data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
 				method: 'POST',
 				header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -355,7 +371,7 @@ export default {
 		
 		longPressEditHeadImage(){
 			if(!this.userToken?.userId) return ;
-			const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
+			const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.userToken.userId}&headPath=${this.jobUser.headImgPath}`;
 			uni.navigateTo({ url });
 			return ;
 		},
@@ -367,7 +383,36 @@ export default {
             uni.navigateTo({
                 url: item.path
             });
-        }
+        },
+		
+		score(score){
+			return workerScoreMap[score]
+		},
+		longpressCopyCode(val){
+			// console.log("复制内容：", val)
+			if(!val || val==""){
+				return;
+			}
+			// console.log("开始复制……")
+			uni.setClipboardData({
+				data: String(val),
+				success() {
+					uni.showToast({
+						title:'已复制到剪贴板',
+						icon:'none',
+						position:'top'
+					});
+					console.log("复制完成")
+				},
+			    fail: (err) => {
+				  console.log("复制失败", err)  // 输出错误信息
+			    },
+			    complete: () => {
+				  // console.log("复制操作完成")   // 无论成功与否都会触发
+			    }
+			});
+			// console.log("异步复制……")
+		},
     }
 }
 </script>

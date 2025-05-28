@@ -87,6 +87,7 @@
 				receiverId: 0,
 				headImg:{},
 				
+				// 加载信息，滚动条复位
 				top: -1,
 				autoScrollId: '',       // 自动滚动锚点
 				isLoading: false,       // 加载锁定
@@ -106,7 +107,8 @@
 					contentnomore: '没有更多'
 				},
 				
-				socket: null,
+				// 发送信息
+				socketTaskNew: null,
 				wsUrl: process.env.UNI_WS_URL,
 				isFirstQequest: true,
 				is_open_socket: false ,			// 避免重复连接
@@ -121,6 +123,7 @@
 			// uni.setNavigationBarTitle({
 			// 	title: options.name
 			// })
+			console.log("to message 传递参数："+ JSON.stringify(options))
 			this.senderId = options.senderId
 			this.receiverId = options.receiverId
 			const _this = this
@@ -154,7 +157,7 @@
 			this.getHeadImg();
 			
 			console.log("准备构建 websocket: "+ process.env.UNI_WS_URL)
-			this.socket = new socket(
+			this.socketTaskNew = new socket(
 				process.env.UNI_WS_URL, this.userId
 			);
 			console.log("构建了 wss")
@@ -191,6 +194,11 @@
 				    setTimeout(() => this.top = 9999999, 100);
 				});
 			},
+			initData(){
+				this.listData 	= [];
+				this.last_id 	= '';
+				this.status		= 'more'
+			},
 			getHeadImg(){
 				let data = {sysId: SYS_ID, senderId: this.senderId, receiverId: this.receiverId, selfId: this.userToken.userId, token: this.userToken.token}
 				console.log('请求参数：' + JSON.stringify(data))
@@ -201,7 +209,7 @@
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						console.log('headImgPath 返回值' + JSON.stringify(result));
+						// console.log('headImgPath 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const headImg = result.data.data;
 							if(this.userId == this.senderId){
@@ -270,8 +278,8 @@
 			async getList() {
 				console.log('请求 getList()')
 				if(this.status == 'nomore') return;
-				let data = {sysId: SYS_ID, talkerId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
-				console.log('请求参数：' + JSON.stringify(data))
+				let data = {sysId: SYS_ID, talkerId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token, 
+							senderId: this.senderId, receiverId: this.receiverId, enabled: 0}
 				if (this.last_id) {
 					// 说明已有数据，目前处于上拉加载
 					this.status = 'loading';
@@ -280,13 +288,13 @@
 					data.limit = PAGE_LIMIT;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
-				// console.log('请求参数：' + JSON.stringify(data))
+				console.log('message.listTalk 请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/listTalk',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						// console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('message.listTalk 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data.rows;
 							if(respData.length<1){
@@ -389,9 +397,10 @@
 				while (i > -1) {
 				  let item = items[i];
 				  item = this.judgeObj(item);
-				  console.log(`处理元素: ${item.content}: ${item.createTime}`);
+				  // console.log(`处理元素: ${item.content}: ${item.createTime}`);
 				  if(this.isFirstQequest){
 					  this.timeBuffer = item.createTime
+					  // 穿插 发送时间 展示
 					  this.list.unshift({
 						content: item.createTime,
 						userType: -1, 	// 'self',
@@ -401,7 +410,7 @@
 					  // this.judgeObj(item);
 					  continue;
 				  }
-				  console.log(" item.createTime Type:" + typeof item.createTime)
+				  // console.log(" item.createTime Type:" + typeof item.createTime)
 				  // 根据条件添加新元素  Math.round((item.createTime.getTime() - this.timeBuffer.getTime()) / 1000)>300
 				  if (this.timeBuffer && this.isOver5Minutes(item.createTime, this.timeBuffer)) {
 					this.timeBuffer = item.createTime
@@ -415,7 +424,7 @@
 				    // 	userType: -1, 	// 'self',
 				    // 	messageType: -1, // 'image',
 				    // }); // 新增元素
-				    console.log('新增元素');
+				    // console.log('新增元素');
 				  }
 				  
 				  i--; // 手动控制索引
@@ -446,11 +455,6 @@
 			  // 3. 5分钟 = 300,000 毫秒
 			  return diff > 300000;
 			},
-			initData(){
-				this.listData 	= [];
-				this.last_id 	= '';
-				this.status		= 'more'
-			},
 
 			send() {
 				if(!this.content) return;
@@ -461,22 +465,25 @@
 				});
 				
 				const message = JSON.stringify({sysId: SYS_ID, senderId: this.userId, receiverId: this.receiverId, content: this.content, messageType:0})
-				this.socket.send(message)
+				this.socketTaskNew.send(message)
 				console.log("发送了信息："+message)
 				this.content = '';
 				this.scrollToBottom();
 			},
 			//接受消息
 			watchSocket() {
-				this.socket.getMessage(opt => {
+				this.socketTaskNew.getMessage(opt => {
 					const message = JSON.parse(opt.data); // 解析接收的数据
 					console.log("消息接收：", opt);
 					console.warn("消息接收：", opt);
 					if(message.code != 0){
-						uni.showToast({
-						  title: message.content,
-						  icon: 'none'
-						});
+						// 未能连接成功的异常不提示，就作为留言使用。
+						// uni.showToast({
+						//   title: message.content,
+						//   icon: 'none'
+						// });
+						
+						
 						return;
 					}
 					this.list.push({
@@ -493,9 +500,9 @@
 				if(this.autoReplied){
 					// 模拟对方回复
 					this.list.push({
-						content: '欢迎留言！后台会做归档、整理，并全量提交。尽快给您回复！',
-						userType: 1, 				// 'friend',
-						avatar: this._friendAvatar  	// _friendAvatar
+						content: '欢迎留言！尽快给您回复！',	// 后台会做归档、整理，并全量提交。
+						userType: 1, 						// 'friend',
+						avatar: this._friendAvatar  		// _friendAvatar
 					})
 					this.scrollToBottom()
 					

@@ -140,6 +140,12 @@ export default {
 	},
 	
     async confirmSelection() {
+		if(this.selectedIndex == 0){
+			uni.showToast({ title: '延用原头像，放弃修改！' })
+			uni.navigateBack(); // 返回上一页
+			return;
+		}
+		
 		if(this.selectedIndex !== -1){
 			// 选用预提供头像
 			this.updateData(this.avatars[this.selectedIndex].url);
@@ -163,7 +169,7 @@ export default {
 			method: 'POST',
 			data: JSON.stringify(saveData)
 		});
-		// console.log("result", JSON.stringify(result))
+		console.log("result", JSON.stringify(result))
 		if(result.data.code == 0){
 			uni.showToast({ title: '头像设置成功' });
 			this.timeoutId = setTimeout(() => {

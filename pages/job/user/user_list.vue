@@ -4,14 +4,21 @@
 			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
 		</uni-card> -->
 		
+		<!-- #ifndef H5 -->
+		<uni-notice-bar v-if="banner.noticeShow" :fontSize="13*fontScale" :speed="20" class="fixed-notice" show-get-more show-icon scrollable :text="banner.noticeText" @getmore="getMore" @longpress="getMore"  />
+		<!-- #endif -->
 		<l-navbar title="找用工" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
 			:showLeft="false" :showMid="true" :debounce-delay="500" centerMargin="195px" leftWidth="300px" :border="false" 
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" placeholderText="请输入关键词"
-			@midClick="midClick" @change="handleSearchChange" 
+			@midClick="midClick" @change="handleSearchChange" style="z-index: 999;"
 			:searchStyle="handleSearchStyle" :fontSize="scaledFontSize" 
 			:leftText="location.text" :leftTextFull="location.address" 
 			>
 		</l-navbar>
+		
+		<!-- #ifdef H5 -->
+		<uni-notice-bar v-if="banner.noticeShow" :fontSize="13*fontScale" :speed="10" style="position: absolute; margin-top: -70rpx; z-index: 99999;" show-get-more show-icon scrollable :text="banner.noticeText" @getmore="getMore" @longpress="getMore" />
+		<!-- #endif -->
 		
 		<view class="slider-container" style="z-index: 9999;">
 			<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
@@ -51,8 +58,9 @@
 											{{ worker.tools || ' ' }}
 										</view>
 										
-										<view class="text" style="color: #2E8B57; font-weight: bold;  line-height:70rpx;" :style="fontSet" @longpress="longPressCopyText(worker.address)">
-											{{ worker.address || ' ' }}
+										<view class="text" style="color: #2E8B57; font-weight: bold;  line-height:70rpx;" @longpress="longPressCopyText(worker.address)">
+											<text :style="handleFontSize(16)" >{{ worker.address || ' ' }}</text>
+											<text :style="handleFontSize(10)" style="margin-left: 5rpx;">{{ ((worker.district)?worker.district:worker.city) || ' ' }}</text>
 										</view>
 									</view>
 								</view>
@@ -61,8 +69,8 @@
 							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between;justify-content: space-between;  line-height:70rpx;">
 								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
 								<view style="margin-top: 10px;"><uni-rate :readonly="true" :max="10" :value="worker.multiScore" :size="13*fontScale"  /></view>
-								<view class="text" style="display: flex;" @click="makePhoneCall(worker.userId)">电话联系
-									<u-icon name="phone" color="#D3D3D3" size="36rpx" />
+								<view v-if="worker.userId != this.userToken?.userId" class="text" style="display: flex; font-weight: bold; color: #2E8B57;" @click="makePhoneCall(worker.userId)">立即联系
+									<u-icon name="chat" color="#D3D3D3" size="36rpx" />
 								</view>
 								
 							</view>
@@ -96,6 +104,7 @@
 	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
+	const MAP_PICKER_POSITION = "map_Picker_Position"
 	const PAGE_LIMIT = 10
 	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
 	const scaleTitleMap 	= {50:25, 60:23, 70:20, 80:17, 90:15, 100: 12, 110:11, 120:10, 130:9, 140:8, 150:8, 160:8, 170:7, 180:7, 190:6, 200:6}
@@ -117,10 +126,15 @@
 					titile: '',
 					fontColor: ''
 				},
+				
+				// 分页
 				listData: [],
-				last_id: '',	// 分页指针；上一页的最后一项的id
+				total: 0,		// 总记录数
+				pages: 0,		// 总页数
+				currentPage: 1,	// 当前页码
 				reload: false,	// 上拉加载更多-false; 下拉刷新-true
 				status: 'more', // 加载状态  more：上拉加载更多；loading：加载中；nomore：没有更多
+				
 				adpid: '',
 				contentText: {
 					contentdown: '上拉加载更多',
@@ -169,16 +183,13 @@
 		},
 		onPullDownRefresh() {
 			console.log("触发了 onPullDownRefresh()")
-			this.listData 	= [];
-			this.status = 'more';		// 上拉加载更多
-			this.reload = true;
-			this.last_id = '';
+			this.initData();
 			// this.getBanner();	// 获取，标题展示数据
 			this.getList();		// 获取，内容列表数据
 			uni.stopPullDownRefresh();
 		},
 		onReachBottom() {
-			// console.log("触发 onReachBottom()")
+			console.log("触发 onReachBottom()")
 			this.getList();		// 获取，内容列表数据
 		},
 		mounted(){
@@ -196,6 +207,7 @@
 				},
 				complete() {
 					_this.getBanner();		// 获取，标题展示数据
+					_this.getFromStore();			// 读取位置信息
 					_this.getList();		// 获取，内容列表数据
 				}
 			});
@@ -215,6 +227,7 @@
 					district 	: data.district
 				}
 				this.initGetFontSize();
+				this.getList();		// 获取，内容列表数据
 			});
 			this.initGetFontSize(); // 页面重新加载-恢复
 			// 读取历史记录
@@ -235,6 +248,18 @@
 					}
 				});
 			},
+			
+			getFromStore(){
+				const map_Picker_Position = uni.getStorageSync(MAP_PICKER_POSITION);
+				if(map_Picker_Position){
+					this.location.latitude	= map_Picker_Position.position?.latitude;
+					this.location.longitude	= map_Picker_Position.position?.longitude;
+					this.location.text		= map_Picker_Position.position?.text;
+					this.location.text		= map_Picker_Position.position?.address;
+					this.searchlist = map_Picker_Position.searchlist;
+				}
+			},
+			
 			handleSearchChange(searchValue){
 				this.searchValue = searchValue
 				// console.log("搜索框输入："+ searchValue)
@@ -242,9 +267,15 @@
 				this.getList();
 			},
 			initData(){
-				this.listData 	= [];
-				this.last_id 	= '';
-				this.status		= 'more'
+				this.listData	= [];
+				this.total 		= 0;
+				this.offset 	= 0;
+				this.status 	= 'more';
+				this.pages 		= 0;		// 总页数
+				this.currentPage= 1;		// 当前页码
+			},
+			nextPage(){
+				this.offset = (this.currentPage - 1) * PAGE_LIMIT;
 			},
 			midClick(){
 				// console.log("点击了 导航栏 L 左侧……")
@@ -263,11 +294,11 @@
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: data => {
-						uni.stopPullDownRefresh();
 						// console.log("getBanner() 返回值："+JSON.stringify(data))
 						if (data.statusCode == 200 && data.data.code == 0) {
 							this.banner = data.data.data;
 						}
+						// uni.stopPullDownRefresh();
 					},
 					fail: (data, code) => {
 						console.log('fail' + JSON.stringify(data));
@@ -282,39 +313,41 @@
 				if(this.searchValue){
 					data.likeAllSkills =  "%"+this.searchValue+"%"
 				}
-				data.distance = 1500	// 默认，方圆1500公里内工作机会
-				if (this.last_id) {
+				data.distance = 500	// 默认，方圆1500公里内工作机会
+				if (this.offset>0) {
 					// 说明已有数据，目前处于上拉加载
 					this.status = 'loading';
-					data.minId = this.last_id;				// 有序取数，下一批数据的指针
+					data.offset = this.offset;				// 有序取数，下一批数据的指针
 					data.time = new Date().getTime() + '';	// 添加请求时间戳，作用：防止 重复取数
 					data.limit = PAGE_LIMIT;
 				}
 				console.log('Base URL:', process.env.UNI_BASE_URL)
-				// console.log('userStream 请求参数：' + JSON.stringify(data))
+				// console.log('user_list.userStream 请求参数：' + JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/userStream',  // 数据源的数据是 有序的
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						// console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('user_list.userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data.rows;
-							if(respData.length<1){
+							let list = this.dataHandle(respData);
+							if(list.length<1){
 								this.reload = false;
 								this.status = 'nomore';	// 没有更多
 								return;
 							}
-							let list = this.dataHandle(respData);
 							this.listData = this.reload ? list : this.listData.concat(list);
-							if(respData.length<PAGE_LIMIT) {
-								this.reload = false;
+							this.currentPage += 1;
+							this.total = result.data.data.total
+							this.pages = Math.ceil(this.total / PAGE_LIMIT);
+							if(this.currentPage>this.pages) {
 								this.status = 'nomore';	// 没有更多
 								return;
 							};
-							this.last_id = list[list.length - 1].userId;
 							this.reload = false;
 							this.status = 'more';		// 上拉加载更多
+							this.nextPage();
 						}
 					},
 					fail: (result, code) => {
@@ -341,7 +374,12 @@
 			dataHandle(items) {
 				var newItems = [];
 				var _this = this
-				items.forEach(e => {
+				let uIndex = null;
+				items.forEach((e, index) => {
+					// if(e.userId == this.userToken?.userId) {
+					// 	console.log("当前用户index:", index, ";userId:" + e.userId)
+					// 	uIndex = index;
+					// }
 					let allSkills = e.skillsName;
 					// if(e.skills) allSkills = JSON.parse(e.skills)
 					//  .filter(obj =>!(Object.keys(obj).includes('-1')))
@@ -349,7 +387,7 @@
 					//  .join(',');
 					// console.log("allSkills:"+allSkills+";e.otherSkills:"+e.otherSkills)
 					allSkills = (!allSkills)?e.otherSkills:(e.otherSkills!="")?(allSkills +'；'+ e.otherSkills):allSkills;
-					
+					if(e.address) e.address = e.address.replace(e.district, '').replace(e.city, '');
 					// console.log("allSkills:"+allSkills)
 					e.allSkills 	= _this.truncateString(allSkills, 20);
 					e.age 			= _this.calculateAge(e.birth);
@@ -358,6 +396,12 @@
 					e.isStore 		= this.storeUserIdMap.get(e.userId)?true:false
 					return e;
 				});
+				// if(uIndex) {
+				// 	console.log("移除元素", uIndex);
+				// 	items.splice(uIndex, 1); // 移除索引为 1 的元素
+				// }else{
+				// 	console.log("无需移除元素");
+				// }
 				return items;
 			},
 			
@@ -391,7 +435,7 @@
 			aderror(e) {
 				console.log("aderror: " + JSON.stringify(e.detail));
 			},
-			async onFontSizeChange(scale) {
+			onFontSizeChange(scale) {
 				// this.fontSizeScale = e.detail.value;
 				this.fontSizeScale = scale;
 				const scaleValue = this.fontSizeScale / 100;
@@ -432,12 +476,18 @@
 			  }			  
 			  return age;
 			},
-			// 打电话
+			// 打电话 => 发信息
 			makePhoneCall: function (receiverId) {
 				if(!this.userToken?.userId){
-					uni.showToast({ title: '先登录，才允许致电对方！', icon: 'none' });
+					uni.showToast({ title: '先登录，才能有效联系对方！', icon: 'none' });
 					return;
 				}
+				
+				uni.navigateTo({
+					url:`/pages/job/online/message?senderId=${this.userToken.userId}&receiverId=${receiverId}`
+				})
+				return;
+				
 				uni.showModal({
 					title: '提示',
 					content: '不允许骚扰对方，本次通话会被记录，可能会录音，若被举报，会降低本人的信誉值，请正常开展！',
@@ -623,6 +673,7 @@
 				    success: function (res) {
 				        if (res.confirm) {
 				            // console.log('用户输入的内容：', res.content);
+							if(!res.content) return;
 							_this.sendMessage(res.content)
 							uni.showToast({
 								title:'非常感谢！祝好！(*￣︶￣*)',
@@ -631,7 +682,7 @@
 							});
 				        } else if (res.cancel) {
 							uni.showToast({
-								title:'期待您的反馈！！ (*￣︶￣*)',
+								title:'期待您的反馈！！(*￣︶￣*)',
 								icon:'success',
 								position:'center'
 							});
@@ -672,7 +723,19 @@
 			handleTitleStyle(baseFontSize=16) {
 				var fontSize = baseFontSize * (this.fontSizeScale / 100);
 				return 'color: #000000; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
-			}
+			},
+			
+			handleFontSize(baseFontSize=16) {
+				var fontSize = baseFontSize * (this.fontSizeScale / 100);
+				return 'fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
+			},
+			getMore(){
+				console.log("跳转至:", this.banner.noticeUrl)
+				if(!this.banner.noticeUrl) return;
+				uni.navigateTo({
+					url: '/pages/job/user/'+this.banner.noticeUrl
+				});
+			},
 		},
 		computed:{
 			scaledFontSize() {
@@ -711,6 +774,15 @@
 
 <style lang="scss">
 	@import url('@/common/css/uni.css');
+	
+	/* 固定定位 + 层级控制 */
+	.fixed-notice {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  z-index: 999999; /* 确保高于 l-navbar */
+	}
 	
 	.banner {
 		height: 360rpx;

@@ -285,6 +285,7 @@
 				// #endif
 			},
 			clickMore() {
+				console.log("click  getmore()")
 				this.$emit('getmore')
 			},
 			close() {

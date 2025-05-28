@@ -10,7 +10,7 @@ class socket {
 		this.reconnectTimeOut = null //重连之后多久再次重连
 
 		try {
-			console.log("开始构建 ws ……")
+			// console.log("开始构建 wss ……")
 			return this.socketInit()
 		} catch (e) {
 			console.log('catch');
@@ -24,16 +24,16 @@ class socket {
 		this.socketTask = uni.connectSocket({
 			url: this.url,
 			success: () => {
-				console.log("正准备建立websocket中...");
+				// console.log("正准备建立websocket中...");
 				// 返回实例
 				return this.socketTask
 			},
 			complete(e) {
-				console.log("构建 ws 返回值："+JSON.stringify(e))
+				// console.log("构建 wss 返回值："+JSON.stringify(e))
 			}
 		});
 		this.socketTask.onOpen((res) => {
-			console.log("WebSocket连接正常！");
+			// console.log("WebSocket连接正常！");
 			// 发送认证信息
 			this.send(JSON.stringify({
 				sysId: -1,  // 新增认证类型
@@ -63,6 +63,11 @@ class socket {
 		})
 	}
 	close() {
+		// 标记为人为关闭，避免重连
+		this.is_open_socket = true; // 注意：这里设置为true，表示人为关闭，在reconnect方法中就不会重连了
+		clearInterval(this.heartbeatInterval);
+		clearTimeout(this.reconnectTimeOut);
+		
 		this.socketTask.close({
 			success(){
 				console.log("已经被关闭了")

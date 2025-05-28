@@ -4,6 +4,12 @@
 			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
 		</uni-card>
 		
+		<view class="slider-container" style="z-index: 9999;">
+			<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
+			 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value></u-slider>
+		    <!-- <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text> -->
+		</view>
+		
 		<!-- <uni-section title="基础信息" type="line"> -->
 			<view class="example" >
 				<!-- 基础用法，不包含校验规则 -->
@@ -94,7 +100,7 @@
 				},
 				// 技能
 				skillsOptions: [
-					// {"value":30,"text":"汽修","keyword":["汽修"]},{"value":40,"text":"外语","keyword":["外语","英语","法语","德语","俄语","韩语","日语","西班牙语"]},{"value":50,"text":"剪辑","keyword":["剪辑","图片","图像"]},{"value":60,"text":"编辑","keyword":["编辑","文本","文员","world","wps","文档"]},{"value":70,"text":"驾驶","keyword":["驾驶","司机","代驾"]},{"value":80,"text":"才艺","keyword":["才艺","艺术","艺术","美术","素描","临摹","水彩","画画","钢琴","乐器","电子琴"]},{"value":90,"text":"教练","keyword":["教练","健身","游泳","拳击","跆拳道","截拳道"]},{"value":10,"text":"砌砖","keyword":["泥水工","砌砖"]},{"value":20,"text":"维修","keyword":["维修","水电","电器","家电"]},{"value":-1,"text":"其他","keyword":[]}
+				// {"value":30,"text":"汽修","keyword":["汽修"]},{"value":40,"text":"外语","keyword":["外语","英语","法语","德语","俄语","韩语","日语","西班牙语"]},{"value":50,"text":"剪辑","keyword":["剪辑","图片","图像"]},{"value":60,"text":"编辑","keyword":["编辑","文本","文员","world","wps","文档"]},{"value":70,"text":"驾驶","keyword":["驾驶","司机","代驾"]},{"value":80,"text":"才艺","keyword":["才艺","艺术","艺术","美术","素描","临摹","水彩","画画","钢琴","乐器","电子琴"]},{"value":90,"text":"教练","keyword":["教练","健身","游泳","拳击","跆拳道","截拳道"]},{"value":10,"text":"砌砖","keyword":["泥水工","砌砖"]},{"value":20,"text":"维修","keyword":["维修","水电","电器","家电"]},{"value":-1,"text":"其他","keyword":[]}
 
 				// 	[10,"泥水工",["泥水工","砌砖"]],
 				// 	[20,"维修工",["维修","水电","电器","家电"]],
@@ -140,6 +146,11 @@
 				smsCodeDisabled: false,
 				canGetCode : false,
 				
+				// 字体缩放
+				fontSet: '',
+				fontScale: 1.0,
+				fontSizeScale: 100, // 默认100%比例
+				baseFontSize: 16,   // 基础字体大小（根据设计稿调整）
 			}
 		},
 		computed: {
@@ -237,9 +248,8 @@
 				if (!graceChecker.check(this.baseFormData, baseRules)) {
 					uni.showToast({ title: graceChecker.error, icon: 'none' });
 					return;
-				}else{
-					uni.showToast({ title: `校验通过` });
 				}
+				
 				const submitForm = {
 					sysId: 			SYS_ID,
 					userId: 		this.baseFormData.userId,
@@ -257,17 +267,17 @@
 					otherSkills:	this.baseFormData.otherSkills,			// 其他技能
 					tools:			this.baseFormData.tools					// 工具/设备 名称
 				}
-				const userId = await this.updateUser(submitForm);
-				if(userId){
+				this.updateUser(submitForm);
+				
+				if(!this.baseFormData?.headImgPath){
 					// console.log("保存成功，userId:", userId)
 					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.userId}&afterUrl=/pages/job/index`;
 					uni.navigateTo({ url });
-				}else{
-					uni.showToast({ title: '提交失败', icon: 'none' });
 				}
 				
 				// 清除缓存 
 				uni.removeStorage({key: JOB_USER_SKILLS});
+				uni.navigateBack()
 			},
 			getSkills(){
 				const _this = this;
@@ -389,35 +399,22 @@
 				});
 			},
 			
-			async updateUser(form){
+			updateUser(form){
 				form.token 	= this.userToken.token;
 				form.selfId = this.userToken.userId;
 				form.userId = this.userToken.userId;
-				// console.log("提交表单内容："+JSON.stringify(form))
-				try {
-					// const result = {}
-					const result = await uni.request({
-						url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
-						header: { 'Content-Type': 'application/json' },
-						method: 'POST',
-						data: JSON.stringify(form)
-					});
-					// console.log("result", JSON.stringify(result))
-					
-					if (result.statusCode !== 200) {
-					  // console.error('请求失败:', error || result.data);
-					  throw new Error('保存失败，请检查网络');
+				uni.request({
+					url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
+					header: { 'Content-Type': 'application/json' },
+					method: 'POST',
+					data: JSON.stringify(form),
+					success() {
+						uni.showToast({ title: `修改成功！` });
+					},
+					fail() {
+						uni.showToast({ title: '更新失败，请稍后重试！', icon: 'none' });
 					}
-					if (result.data.code != 0) {
-					  // console.error('保存失败:', result.data.msg);
-					  throw new Error(result.data.msg || '保存失败');
-					}
-
-					// 明确返回数据给调用处
-					return result.data.data;
-				} catch (err) {
-				    console.error('捕获异常:', err);
-				}
+				});
 				
 				
 				// console.log("已保存 keyStr:", keyStr, "数据：", JSON.stringify(saveData));
