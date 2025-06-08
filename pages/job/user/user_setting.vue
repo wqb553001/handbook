@@ -20,7 +20,27 @@
 				</view>
 			
 			</view>
-		  
+			
+			<view class="service-item" >
+				<view class="left">
+				  <view class="service-icon bg-green" >
+					<uni-icons type="circle-filled" size="20" color="#fff"></uni-icons>
+				  </view>
+				  <text class="service-name">授权开放手机号</text>
+				</view>
+				<!-- <uni-list  style="border-bottom: none; border: none !important;">
+					<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true" :title="授权手机号"
+					@switchChange="handleSwitchChange" :switchObj="jobUser" switchChecked="true" />
+				</uni-list> -->
+				<!-- <uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true"
+				@switchChange="handleSwitchChange" :switchObj="jobUser" :switchChecked="true" title="授权手机号" /> -->
+				<view class="right">
+					<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true" 
+					@switchChange="handleSwitchChange" :switchObj="jobUser" :switchChecked="isShowMobile" :title="showMobileText" />
+				</view>
+				
+			</view>
+			
 			<button type="primary" @click="logout">退出登录</button>
 		</view>
 
@@ -29,12 +49,14 @@
 </template>
 
 <script>
-	
-const SYS_ID = 2025040301;
-const JOB_TOKEN = 'JOB_TOKEN';
-const JOB_USER_FONT_SET = "jobUserMySet";
+
+    import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
+	const SYS_ID = 2025040301;
+	const JOB_TOKEN = 'JOB_TOKEN';
+	const JOB_USER_FONT_SET = "jobUserMySet";
 
 export default {
+	components: { uniListItem },
 	onLoad() {
 		// 获取用户信息
 		const _this = this
@@ -56,8 +78,11 @@ export default {
 			jobUser: {
 				avatar: '/static/logo.png',
 				username: '',
-				phone: '15555555555'
+				phone: '15555555555',
+				showMobile: 1
 			},
+			isShowMobile: false,
+			showMobileText: "未授权",
             features: [
                 { name: '我的收藏', icon: 'star-filled', bgColor: '#FFE8E8', iconColor: '#FF4D4F', path: '/pages/collect' },
                 { name: '历史记录', icon: 'refresh', bgColor: '#E6F7FF', iconColor: '#1890FF', path: '/pages/history' },
@@ -83,6 +108,7 @@ export default {
 				{ name: '设置', icon: 'gear', path: '/pages/job/user/user_add', class: 'bg-gray' }
 			],
 			fontSizeScale: 100, // 默认100%比例
+			baseFontSize: 16,
         }
     },
     methods: {
@@ -114,7 +140,7 @@ export default {
 					// console.log('userStream 返回值' + JSON.stringify(result));
 					if (result.statusCode == 200 && result.data.code == 0) {
 						const respData = result.data.data;
-						// console.log("getUser返回值："+JSON.stringify(respData))
+						console.log("user_setting.getUser返回值："+JSON.stringify(respData))
 						if(respData) {
 							// console.log("转化前："+respData.skills)
 							respData.allSkills = respData.skillsName
@@ -128,6 +154,7 @@ export default {
 							// console.log("转化后："+JSON.stringify(respData))
 						};
 						_this.jobUser = respData;
+						_this.showMobile(_this);
 					}
 				},
 				fail: (result, code) => {
@@ -175,8 +202,73 @@ export default {
             uni.navigateTo({
                 url: item.path
             });
-        }
-    }
+        },
+		
+		handleSwitchChange(e){
+			if(!this.userToken){
+				uni.showToast({ title: '先登录，才能有效收藏！', icon: 'none' });
+				return;
+			}
+			console.log("用户:", JSON.stringify(e.switchObj), "改变值:", e.data);
+			const obj = e.switchObj ;
+			const isOpen = e.data ;
+			if(isOpen){
+				this.showMobileText = "已授权";
+				this.updateUser(0);
+				return;
+			}
+			this.showMobileText = "未授权";
+			this.updateUser(1);
+		},
+		
+		updateUser(showMobile){
+			let user = {}
+			user.sysId	= SYS_ID
+			user.token 	= this.userToken.token;
+			user.selfId = this.userToken.userId;
+			user.userId = this.userToken.userId;
+			user.showMobile = showMobile
+			uni.request({
+				url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
+				header: { 'Content-Type': 'application/json' },
+				method: 'POST',
+				data: JSON.stringify(user),
+				success() {
+					uni.showToast({ title: `授权已变更！` });
+				},
+				fail() {
+					// uni.showToast({ title: '授权失败，请稍后重试！', icon: 'none' });
+				}
+			});
+		},
+		
+		handleTitleStyle(baseFontSize=16) {
+			var fontSize = baseFontSize * (this.fontSizeScale / 100);
+			return 'color: #000000; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
+		},
+		showMobile(_this){
+			if(_this.jobUser.showMobile == 0){
+				this.isShowMobile = true
+				_this.showMobileText = "已授权";
+				return true;
+			}
+			this.isShowMobile = false
+			this.showMobileText = "未授权";
+			return false;
+		},
+    },
+	computed:{
+		isShowMobile(){
+			if(this.jobUser.showMobile == 0){
+				this.jobUser.isShowMobile = true
+				this.showMobileText = "已授权";
+				return true;
+			}
+			this.jobUser.isShowMobile = false
+			this.showMobileText = "未授权";
+			return false;
+		}
+	}
 }
 </script>
 

@@ -100,7 +100,7 @@
 	  
 	  
 	  
-	    <view v-if="jobUser.sumId && jobUser.sumId>0" class="service-item" @click="navigateToServices('/pages/job/online/talk_list')" >
+	    <view v-if="jobUser.hasRelation" class="service-item" @click="navigateToServices('/pages/job/online/talk_list')" >
 			<view class="left">
 				<view class="service-icon bg-orange" > <uni-icons type="headphones" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet">留言回复</text>

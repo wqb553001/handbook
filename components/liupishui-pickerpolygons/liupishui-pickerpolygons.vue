@@ -76,8 +76,13 @@
 				isChangeSelectItem:false,
 				searchKey:'',
 				position:{
-					latitude:'36.811995',
-					longitude:'118.05539'
+					text: "选择位置",  	// 显示地址
+					address: "选择位置",	// 实际完整地址
+					latitude: 26.530868,
+					longitude: 106.688196,
+					province: "",
+					city: "贵阳市",
+					district: "南明区"
 				},
 				allAddr:{
 					province:'',
@@ -238,8 +243,13 @@
 						if(i===index){
 							temp.select = true;
 							this.isChangeSelectItem = true;
-							this.position.latitude = temp.location.lat;
-							this.position.longitude = temp.location.lng;						
+							this.position.text 		= temp.title; 			// 显示地址
+							this.position.address 	= temp.address;			// 实际完整地址
+							this.position.latitude 	= temp.location.lat;
+							this.position.longitude = temp.location.lng;
+							this.position.province 	= temp.province;  
+							this.position.city 		= temp.city;
+							this.position.district 	= temp.district;
 						}else{
 							temp.select = false;
 						}

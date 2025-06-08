@@ -12,7 +12,7 @@
 			background="linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%)" placeholderText="请输入关键词"
 			@midClick="midClick" @change="handleSearchChange" style="z-index: 999;"
 			:searchStyle="handleSearchStyle" :fontSize="scaledFontSize" 
-			:leftText="location.text" :leftTextFull="location.address" 
+			:leftText="location.text?location.text:'选择位置'" :leftTextFull="location.address?location.address:'选择位置'" 
 			>
 		</l-navbar>
 		
@@ -68,7 +68,18 @@
 								
 							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between;justify-content: space-between;  line-height:70rpx;">
 								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
-								<view style="margin-top: 10px;"><uni-rate :readonly="true" :max="10" :value="worker.multiScore" :size="13*fontScale"  /></view>
+								<view class="box"><!-- type = [info|primary|success|warning|error] 颜色类型 -->
+									<uni-badge class="uni-badge-left-margin" :text="worker.multiScore"  type="warning" 
+										:customStyle="{
+											fontSize: '24px',   // 文字大小
+											width: '40px',      // 宽度
+											height: '40px',     // 高度
+											lineHeight: '40px', // 行高（需与高度一致）
+											minWidth: '40px',   // 覆盖最小宽度
+											borderRadius: '20px !important' // 圆角（点状需设为50%）
+										 }" />
+									<uni-rate class="rate-wrap" :readonly="true" :max="10" :value="worker.multiScore" :size="13*fontScale"  />
+								</view>
 								<view v-if="worker.userId != this.userToken?.userId" class="text" style="display: flex; font-weight: bold; color: #2E8B57;" @click="makePhoneCall(worker.userId)">立即联系
 									<u-icon name="chat" color="#D3D3D3" size="36rpx" />
 								</view>
@@ -95,7 +106,7 @@
 
 <script>
 	import { dateUtils } from  '../../../common/js/util.js';
-	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
+	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js';
     import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
 
 	const SYS_ID = 2025040301;
@@ -142,8 +153,8 @@
 					contentnomore: '没有更多'
 				},
 				location:{
-					text: "四方河路宜家尚城",  	// 显示地址
-					address: "四方河路宜家尚城",	// 实际完整地址
+					text: "选择位置",  	// 显示地址
+					address: "选择位置",	// 实际完整地址
 					latitude: "",
 					longitude: "",
 					province: "",
@@ -201,14 +212,14 @@
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
-					_this.getStoreList();
 				},
 				fail:function(){
 				},
 				complete() {
-					_this.getBanner();		// 获取，标题展示数据
-					_this.getFromStore();			// 读取位置信息
-					_this.getList();		// 获取，内容列表数据
+					_this.getStoreList();		// 我的收藏
+					_this.getBanner();			// 获取，标题展示数据
+					_this.getLocalFromStore();	// 读取位置信息
+					_this.getList();			// 获取，内容列表数据
 				}
 			});
 			
@@ -249,15 +260,33 @@
 				});
 			},
 			
-			getFromStore(){
-				const map_Picker_Position = uni.getStorageSync(MAP_PICKER_POSITION);
-				if(map_Picker_Position){
-					this.location.latitude	= map_Picker_Position.position?.latitude;
-					this.location.longitude	= map_Picker_Position.position?.longitude;
-					this.location.text		= map_Picker_Position.position?.text;
-					this.location.text		= map_Picker_Position.position?.address;
-					this.searchlist = map_Picker_Position.searchlist;
-				}
+			getLocalFromStore(){
+				const _this = this
+				uni.getStorage({
+				  key: MAP_PICKER_POSITION,
+				  success: function(res) {
+					const rLocal = res.data
+				    console.log('获取到的数据为：', rLocal);
+					_this.location.latitude	= rLocal.position?.latitude;
+					_this.location.longitude= rLocal.position?.longitude;
+					_this.location.text		= rLocal.position?.text;
+					_this.location.address	= rLocal.position?.address;
+					_this.searchlist 		= rLocal.searchlist;
+				    // 在这里对获取到的数据进行处理
+				  },
+				  fail: function(err) {
+				    console.error('获取数据失败：', err);
+				    // 在这里处理获取数据失败的情况
+				  }
+				});
+				// const map_Picker_Position = uni.getStorageSync(MAP_PICKER_POSITION);
+				// if(map_Picker_Position){
+				// 	this.location.latitude	= map_Picker_Position.position?.latitude;
+				// 	this.location.longitude	= map_Picker_Position.position?.longitude;
+				// 	this.location.text		= map_Picker_Position.position?.text;
+				// 	this.location.text		= map_Picker_Position.position?.address;
+				// 	this.searchlist = map_Picker_Position.searchlist;
+				// }
 			},
 			
 			handleSearchChange(searchValue){
@@ -894,4 +923,16 @@
 	  left: unset !important;
 	}
 	
+	.box{
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: 0px; /* 保持原有的margin-top */
+	}
+	.rate-wrap {
+		// display: grid;
+		// grid-template-rows: repeat(2, auto); /* 定义两行 */
+		margin-top: -20px; /* 创建与margin-top相等但负值的margin-top来使uni-rate看起来浮动 */
+		margin-bottom: 5px; /* 保持原有的margin-top */
+	}
 </style>

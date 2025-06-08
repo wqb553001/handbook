@@ -12,7 +12,7 @@
 					<text v-else class="name">{{ item.username }}</text>
 					<text class="time">{{ item.updateTime }}</text>
 				</view>
-				<view class="txt">{{ item.content }}</view>
+				<view class="txt">{{ fileType(item.content) }}</view>
 			</view>
 		</view>
 	</view>
@@ -196,6 +196,41 @@
 				});
 				return items;
 				
+			},
+			fileType(content) {
+			    const extension = content.split('.').pop().toLowerCase();
+			    switch (extension) {
+			        case 'txt':
+			        case 'doc':
+			        case 'docx':
+			        case 'xls':
+			        case 'xlsx':
+			        case 'ppt':
+			        case 'pptx':
+			        case 'pdf':
+			            return '文档';
+			        case 'jpg':
+			        case 'jpeg':
+			        case 'png':
+			        case 'gif':
+			        case 'bmp':
+			            return '图片';
+			        case 'mp3':
+			        case 'wav':
+			        case 'aac':
+			            return '语音';
+			        case 'mp4':
+			        case 'avi':
+			        case 'mov':
+			            return '视频';
+			        case 'zip':
+			        case 'rar':
+			        case '7z':
+			            return '文件';
+			        default:
+			            return content;
+			    }
+			    return content;
 			},
 		}
 	}

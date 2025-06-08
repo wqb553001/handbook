@@ -5,14 +5,18 @@
 		<!-- <scroll-view class="scroll-view" scroll-y scroll-with-animation :scroll-top="top" @scrolltoupper="loadHistory"> -->
 		<scroll-view class="scroll-view" scroll-y scroll-with-animation :scroll-top="top" @scroll="handleScroll" :scroll-into-view="autoScrollId">
 			<view style="padding: 30rpx 30rpx 240rpx;">
-				<view class="message" :class="[item.userType==0?'self':'friend']" v-for="(item,index) in list" :key="index"
+				<!-- userType 对象：'self'-0-己方；'friend'-1-对方。-->
+				<view class="message" :class="[item.userType==0?'self':'friend']" v-for="(item, index) in list" :key="index"
 					@click="msgClick(item)" :id="'msg-' + index" >
 					<image :src="item.avatar" v-if="item.userType == 1" class="avatar" mode="widthFix"></image>
 					<view class="content" v-if="item.messageType === 2">
 						<image :src="item.content" mode="widthFix"></image>
 					</view>
-					<view class="time" v-if="item.messageType === -1" style="margin: auto  auto  15px  auto;" >
+					<view class="time" v-else-if="item.messageType === -1" style="margin: auto  auto  15px  auto;" >
 						{{ item.content }}
+					</view>
+					<view class="content" v-else-if="item.messageType === 1" style="color: black; background-color: #00FF00;">
+						<uni-icons type="sound" size="24"  class="sound" ></uni-icons>
 					</view>
 					<view class="content" v-else>
 						{{ item.content }}
@@ -23,7 +27,7 @@
 		</scroll-view>
 
 		<view class="tool">
-			<!--messageType 类型：0-文本-TEXT;1-语音-VOICE;2-图片-IMAGE;3-视频-VIDEO;4-文件-FILE -->
+			<!--messageType 类型：-1-时间；0-文本-TEXT;1-语音-VOICE;2-图片-IMAGE;3-视频-VIDEO;4-文件-FILE -->
 			<block v-if="messageType === 0">
 				
 				<!-- #ifdef APP-PLUS || MP-WEIXIN || MP-ALIPAY || MP-TOUTIAO || MP-QQ -->
@@ -58,7 +62,8 @@
 </template>
 
 <script>
-	import socket from '@/common/js/util/socket.js'
+	import socket from '@/common/js/util/socket.js'// 在Vue组件中使用
+	import uploadUtils from '@/common/js/util/uploadUtils.js';
 	
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
@@ -75,12 +80,14 @@
 		data() {
 			return {
 				userId: 0,
+				token: null,
 				userToken: null,
 				content: '',
 				list: [],
-				messageType: 0, // 类型：0-文本-TEXT;1-语音-VOICE;2-图片-IMAGE;3-视频-VIDEO;4-文件-FILE
+				messageType: 0, // 类型：-1-时间;0-文本-TEXT;1-语音-VOICE;2-图片-IMAGE;3-视频-VIDEO;4-文件-FILE
 				recordStart: false,
 				autoReplied: true,
+				isRecording: false,		// 指示当前是否正在录音
 				
 				
 				senderId: 0,
@@ -96,7 +103,7 @@
 				prevScrollHeight: 0,    // 上次滚动高度
 				
 				
-				listData: [],
+				// listData: [],
 				last_id: '',
 				hasHistory: false,
 				reload: false,	// 下拉加载更多-false; 上拉刷新-true
@@ -168,7 +175,7 @@
 		  	    setTimeout(() => this.scrollToBottom(), 50);
 		  	  });
 		    });		// 获取，内容列表数据
-			
+			this.getToken();
 		},
 		destroyed() {
 		},
@@ -180,11 +187,22 @@
 				console.log("关闭 socket ")
 				this.socketTaskNew.close()
 			}
+			if (this._innerAudioContext) {
+				this._innerAudioContext.stop();
+				this._innerAudioContext.destroy();
+				this._innerAudioContext = null;
+			}
+			if (recorderManager){
+				recorderManager.stop();
+			}
 		},
 		beforeUnmount(){
 			// this.socketTaskNew.close()
 		},
 		methods: {
+			async getToken(){
+				this.token = await uploadUtils.getUploadToken(this.userId);
+			},
 			// 修改后的滚动到底部方法
 			scrollToBottom() {
 				this.$nextTick(() => {
@@ -195,7 +213,7 @@
 				});
 			},
 			initData(){
-				this.listData 	= [];
+				this.list 	= [];
 				this.last_id 	= '';
 				this.status		= 'more'
 			},
@@ -513,27 +531,53 @@
 			chooseImage() {
 				uni.chooseImage({
 					// sourceType: 'album',
-					success: (res) => {
+					success: async (res) => {
+						
+						// 上传语音
+						const imgUrl = await uploadUtils.uploadImg(
+						  res.tempFilePaths[0],
+						  this.token,
+						  'job/talk/image/',
+						  this.userId
+						);
+						
 						this.list.push({
 							content: res.tempFilePaths[0],
 							userType: 0, 	// 'self',
 							messageType: 2, // 'image',
 							avatar: this._selfAvatar
 						})
-						this.scrollToBottom()
+						this.scrollToBottom();
+						
+						// 发送WebSocket消息
+						const message = JSON.stringify({
+							sysId: SYS_ID,
+							senderId: this.userId,
+							receiverId: this.receiverId,
+							content: imgUrl, // 这里发送服务器返回的语音文件路径
+							messageType: 2 ,// 图片消息类型
+						})
+						
+						this.socketTaskNew.send(message);
+						
 					}
 				})
 			},
 	
 			msgClick(data) {
-				if (data.messageType === 'voice') {
+				// if (data.messageType === 'voice') {
+				// console.log("点击了【消息】")
+				// debugger
+				if (data.messageType === 1) {
+					// console.log("消息属于【语音】")
+					// debugger
 					if (this._innerAudioContext) {
 						this._innerAudioContext.stop()
-						this._innerAudioContext.src = data.audioSrc
+						this._innerAudioContext.src = data.content
 						this._innerAudioContext.play()
 						return
 					}
-					this.play(data.audioSrc)
+					this.play(data.content)
 				}
 			},
 
@@ -567,6 +611,7 @@
 			},
 
 			touchstart() {
+				if(this.isRecording) return; 	// 判断状态是否为‘正在录音’，忽略新的按压事件
 				if (!recorderManager) {
 				  uni.showToast({
 				    title: '录音功能在当前环境下不支持',
@@ -574,7 +619,7 @@
 				  });
 				  return;
 				}
-				
+				this.isRecording = true; 		// 设置状态为正在录音
 				//开始录音
 				const _permission = 'scope.record'
 				uni.getSetting({
@@ -587,6 +632,7 @@
 							} else {
 								// 已授权
 								this._recordAuth = true
+								if(this.recordStart) return;	// 上一个录音未结束，暂不开启新录音
 								// 开始录音
 								recorderManager.start()
 								recorderManager.onStart(() => {
@@ -596,11 +642,12 @@
 								// 错误回调
 								recorderManager.onError((res) => {
 									console.log('recorder error', res)
-									uni.showToast({
-										icon: 'none',
-										title: '系统出错，请重试'
-									})
+									// uni.showToast({
+									// 	icon: 'none',
+									// 	title: '系统出错，请重试'
+									// })
 									this.recordStart = false
+									this.isRecording = false; // 出错时重置状态
 								})
 							}
 						} else {
@@ -637,28 +684,90 @@
 			},
 
 			touchend() {
+				if (!this.isRecording) return
 				if (!this._recordAuth || !this.recordStart) return
 				//停止录音
 				recorderManager.stop();
-				recorderManager.onStop((res) => {
-					console.log('结束录音', res)
+				recorderManager.onStop(async (res) => {
+					// console.log('结束录音', res)
 					const { duration, tempFilePath } = res
 					this.recordStart = false
 					const _this = this 
-					this.list.push({
-						content: `语音 ${Math.round(duration/1000)}''`,
-						audioSrc: tempFilePath,
+					const voiceMsg = {
+						// content: `语音 ${Math.round(duration/1000)}''`,
+						content: tempFilePath,
+						audioSrc: tempFilePath, // 先用临时路径
 						userType: 0, // 'self',
 						avatar: this._selfAvatar,
-						messageType: 1 // 'voice'
-					})
-					this.scrollToBottom()
-				})
+						messageType: 1, // 'voice'
+						// 添加一个状态标记，用于上传成功或失败
+						status: 'uploading',
+					}
+					this.list.push(voiceMsg);
+					// this.list.push({
+					// 	content: `语音 ${Math.round(duration/1000)}''`,
+					// 	audioSrc: tempFilePath,
+					// 	userType: 0, // 'self',
+					// 	avatar: this._selfAvatar,
+					// 	messageType: 1 // 'voice'
+					// })
+					this.scrollToBottom();
+					
+					try {
+						// 上传语音
+						const voiceUrl = await uploadUtils.uploadVoice(
+						  tempFilePath,
+						  this.token,
+						  'job/talk/voice/',
+						  this.userId
+						);
+						
+						// 上传成功，更新消息状态和audioSrc
+						voiceMsg.audioSrc = voiceUrl;
+						voiceMsg.status = 'success';
+						// 发送WebSocket消息
+						const message = JSON.stringify({
+							sysId: SYS_ID,
+							senderId: this.userId,
+							receiverId: this.receiverId,
+							content: voiceUrl, // 这里发送服务器返回的语音文件路径
+							messageType: 1 ,// 语音消息类型
+						})
+						
+						this.socketTaskNew.send(message);
+					} catch (error) {
+						console.error('上传失败', error)
+						voiceMsg.status = 'error';
+						// 可以给用户提示
+						uni.showToast({
+							title: '语音发送失败',
+							icon: 'none',
+						});
+					} finally {
+						this.isRecording = false;	// 释放正在录音的标识
+					}
+					
+				});
 			},
 
 			//播放声音
 			play(src) {
-				this._innerAudioContext = wx.createInnerAudioContext()
+				// console.log("路径为：" + src)
+				// console.log("类型为：" + (typeof src))
+				// 确保src是字符串且非空
+				if (!src || typeof src !== 'string') {
+					uni.showToast({ title: '语音文件无效', icon: 'none' });
+					return;
+				}
+				
+				// 如果已经有一个音频实例，先停止并销毁
+				if (this._innerAudioContext) {
+					this._innerAudioContext.stop();
+					this._innerAudioContext.destroy();
+					this._innerAudioContext = null;
+				}
+				
+				this._innerAudioContext = uni.createInnerAudioContext()
 				this._innerAudioContext.src = src
 				this._innerAudioContext.play()
 				this._innerAudioContext.onPlay(() => {
