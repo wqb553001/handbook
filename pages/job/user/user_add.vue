@@ -51,7 +51,60 @@
 					<uni-forms-item label="自我介绍">
 						<uni-easyinput type="textarea" v-model="baseFormData.introduction" placeholder="请输入自我介绍" />
 					</uni-forms-item>
-					<button type="primary" @click="submit">提交</button>
+					
+					
+					<uni-section title="扩展信息" type="line">
+						<view class="example">
+							<!-- 动态表单校验 -->
+							<uni-forms ref="dynamicForm" :rules="dynamicRules" :model="dynamicFormData" labelWidth="80px">
+								<!-- <uni-card> -->
+								<uni-card v-for="(item, index) in dynamicFormData.domains" :key="item.id"
+									:label="item.label+' '+index" required :rules="item.rules" :name="['domains', index, 'value']">
+									<!-- <view class="form-item"> -->
+									<view style="display: flex; justify-content:space-between">
+										<uni-badge class="uni-badge-left-margin" size="normal" :text="'板块'+index" type="primary" :customStyle="{ backgroundColor: '#45b97c', color: '#fff' }" />
+										<view style="display: flex;">
+											<view class="move-icon bg-green2" > <uni-icons type="arrow-up" 	 size="20"	@click="moveUpDownItem(index, 0)" color="#fff"></uni-icons> </view>
+											<view class="move-icon bg-green2" > <uni-icons type="arrow-down" size="20"	@click="moveUpDownItem(index, 1)" color="#fff"></uni-icons> </view>
+										</view>
+									</view>
+									
+									<uni-easyinput v-model="dynamicFormData.domains[index].title" placeholder="请输入标题" />
+									<uni-easyinput style="margin-top: 10px !important; margin-bottom: 10px !important; " type="textarea" v-model="dynamicFormData.domains[index].summary" placeholder="请输入简介" />
+									
+									<!-- 图片上传 -->
+									<uni-forms-item label="上传图片">
+										<uni-file-picker
+											v-model="dynamicFormData.domains[index].images"
+											limit="20"  
+											:image-styles="imageStyles"
+											mode="grid"
+											:sourceType="['camera','album']"
+											:del-icon="true"
+											:auto-upload="false"
+											file-mediatype="image"
+											@select="handleSelectUpload($event, index)"
+										></uni-file-picker>
+									</uni-forms-item>
+									
+									<button class="button" style="background-color: #ed1941; justify-content:center;" size="mini" type="default" @click="delDynamicItem(item.id)">删除</button>
+									<!-- </view> -->
+									
+								<!-- </uni-forms-item> -->
+								</uni-card>
+								<button class="button" style="background-color: #45b97c; justify-content:center;" size="mini" type="default" @click="addDynamicItem">新增板块</button>
+								
+								<view class="button-group" style="align-items: center; justify-content:center; " >
+								</view>
+								
+								<uni-forms-item label="样式" name="content" style="margin-top: 30rpx;">
+									<uni-easyinput type="textarea" v-model="dynamicFormData.content" placeholder="请输入html" />
+								</uni-forms-item>
+							</uni-forms>
+						</view>
+					</uni-section>
+					
+					<button style="background-color: #45b97c; " type="primary" @click="submit">提交</button>
 				</uni-forms>
 			</view>
 		<!-- </uni-section> -->
@@ -97,6 +150,11 @@
 					skillsName: '',					// 技能
 					otherSkills:'',				// 其他技能
 					tools: '',					// 工具/设备 名称
+				
+					// dynamicFormData: {
+					// 	content: '',
+					// 	domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[] }]
+					// },
 				},
 				// 技能
 				skillsOptions: [
@@ -139,6 +197,36 @@
 				},
 				hasOtherSkill: false,		// 其他技能
 				hasTools: false,			// 是否带工具
+				
+				dynamicFormData: {
+					content: '',
+					domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[] }]
+				},
+				dynamicRules: {
+					email: {
+						rules: [{
+							required: true,
+							errorMessage: '域名不能为空'
+						}, {
+							format: 'email',
+							errorMessage: '域名格式错误'
+						}]
+					}
+				},
+				
+				
+				images: [],
+				imageStyles: {
+				    width: 160,
+				    height: 160,
+					mode: 'aspectFill', 	// 图片填充模式
+					background: '#f8f8f8', 	// 加载时的背景色
+				    border: {
+				        color: '#eee',
+				        width: 1,
+				        style: 'solid'
+				    }
+				},
 				
 				countdown: 0,
 				isCounting: false,
@@ -222,23 +310,62 @@
 					setTimeout(() => {
 					  uni.navigateTo({ url: `/pages/job/index` });
 					}, 1000); // 1000毫秒等于1秒
+				},
+				complete() {
+					_this.initGetKills();
 				}
 			});
 			// console.log("传递参数：" + JSON.stringify(options))
-			if (typeof this.baseFormData.skills === 'string') {
-				try {
-					this.baseFormData.skills = JSON.parse(this.baseFormData.skills)
-				} catch {
-					this.baseFormData.skills = []
-				}
-			}
-			this.initGetKills();
 		},
 		onReady() {},
 		methods: {
+			moveUpDownItem(index, upDown){
+				console.log(upDown==0?"上移":"下移");
+				// 顶元素，上移无效
+				if(upDown==0 && index==0) return;
+				// 底元素，下移无效
+				if(upDown==1 && index==this.dynamicFormData.domains.length-1) return;
+				// 上移
+				if(upDown==0){
+					let temp = this.dynamicFormData.domains[index];
+					this.$set(this.dynamicFormData.domains, index, this.dynamicFormData.domains[index - 1]);
+					this.$set(this.dynamicFormData.domains, index - 1, temp);
+				}
+				// 下移
+				if(upDown==1){
+					let temp = this.dynamicFormData.domains[index];
+					this.$set(this.dynamicFormData.domains, index, this.dynamicFormData.domains[index + 1]);
+					this.$set(this.dynamicFormData.domains, index + 1, temp);
+				}
+				
+			},
+			addDynamicItem() {
+				this.dynamicFormData.domains.push({
+					label: '介绍',
+					title:'', summary:'', content:'',
+					rules: [{
+						'required': true,
+						errorMessage: '域名项必填'
+					}],
+					id: Date.now()
+				})
+			},
+			
+			delDynamicItem(id) {
+				let index = this.dynamicFormData.domains.findIndex(v => v.id === id)
+				this.dynamicFormData.domains.splice(index, 1)
+			},
+		
+			// 处理文件选择事件
+			handleSelectUpload(e, index) {
+				// console.log("选择文件事件:", e);
+				// 合并新旧文件（保留完整文件对象）
+				this.dynamicFormData.domains[index].images = [...this.dynamicFormData.domains[index].images, ...e.tempFiles];
+				this.$forceUpdate(); // 强制更新视图
+			},
+			
 			async submit() {
 				// console.log(JSON.stringify(this.baseFormData));
-				
 				if(this.baseFormData.hasTools == 10){
 					baseRules.push({ name: "tools", checkType: "notnull", errorMsg: "工具/设备 不能为空" });
 				}
@@ -251,21 +378,22 @@
 				}
 				
 				const submitForm = {
-					sysId: 			SYS_ID,
-					userId: 		this.baseFormData.userId,
-					introduction: 	this.baseFormData.introduction,
-					sex: 			this.baseFormData.sex,
-					birth: 			this.baseFormData.birth,
-					address:		this.baseFormData.address,				// 位置：地址
-					latitude:		this.baseFormData.latitude,				// 位置：纬度-坐标
-					longitude:		this.baseFormData.longitude,			// 位置：经度-坐标
-					province:		this.baseFormData.province,				// 省份
-					city:			this.baseFormData.city,					// 市
-					district:		this.baseFormData.district,				// 区
-					skills:			this.baseFormData.skills,				// 技能 
-					skillsName:		this.baseFormData.skillsName,			// 技能名称
-					otherSkills:	this.baseFormData.otherSkills,			// 其他技能
-					tools:			this.baseFormData.tools					// 工具/设备 名称
+					sysId: 				SYS_ID,
+					userId: 			this.baseFormData.userId,
+					introduction: 		this.baseFormData.introduction,
+					sex: 				this.baseFormData.sex,
+					birth: 				this.baseFormData.birth,
+					address:			this.baseFormData.address,				// 位置：地址
+					latitude:			this.baseFormData.latitude,				// 位置：纬度-坐标
+					longitude:			this.baseFormData.longitude,			// 位置：经度-坐标
+					province:			this.baseFormData.province,				// 省份
+					city:				this.baseFormData.city,					// 市
+					district:			this.baseFormData.district,				// 区
+					skills:				this.baseFormData.skills,				// 技能 
+					skillsName:			this.baseFormData.skillsName,			// 技能名称
+					otherSkills:		this.baseFormData.otherSkills,			// 其他技能
+					tools:				this.baseFormData.tools,				// 工具/设备 名称
+					dynamicFormData:	this.baseFormData.dynamicFormData,
 				}
 				this.updateUser(submitForm);
 				
@@ -366,10 +494,7 @@
 					// 根据 value 查找对应的 text；同时 排除 ‘其他’ 选项
 					const selectOption = this.skillsOptions.find(option => (option.value === value));
 					if(selectOption){
-						return {
-							value: selectOption.value,
-							text: selectOption.text ,
-						};
+						return { value: selectOption.value, text: selectOption.text };
 					}
 				});
 				
@@ -404,7 +529,7 @@
 				form.selfId = this.userToken.userId;
 				form.userId = this.userToken.userId;
 				uni.request({
-					url: process.env.UNI_BASE_URL+ '/api/job/updateUser',
+					url: process.env.UNI_BASE_URL + '/api/job/updateUser',
 					header: { 'Content-Type': 'application/json' },
 					method: 'POST',
 					data: JSON.stringify(form),
@@ -415,10 +540,6 @@
 						uni.showToast({ title: '更新失败，请稍后重试！', icon: 'none' });
 					}
 				});
-				
-				
-				// console.log("已保存 keyStr:", keyStr, "数据：", JSON.stringify(saveData));
-				// return 10;
 			},
 			
 			getJobUserByUserId(){
@@ -432,12 +553,17 @@
 						// console.log('userStream 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data;
-							// console.log("getUser返回值："+JSON.stringify(respData))
+							// console.log("user_add.getUser返回值："+JSON.stringify(respData))
 							if(respData) {
 								// console.log("转化前："+respData.skills)
 								this.baseFormData = respData
 								if(respData.birth) this.baseFormData.birth = respData.birth.substring(0, 7)
 								// console.log("转化后："+JSON.stringify(respData))
+								this.hasOtherSkill = this.baseFormData.skills.includes(-1);
+								if(respData.dynamicFormData) {
+									if(respData.dynamicFormData.content) this.dynamicFormData.content = respData.dynamicFormData
+									if(respData.dynamicFormData.domains) this.dynamicFormData.domains = respData.dynamicFormData
+								}
 							};
 						}
 					},
@@ -606,6 +732,18 @@
 	  z-index: 2;
 	}
 	
+	
+	.move-icon {
+	  width: 64rpx;
+	  height: 64rpx;
+	  margin-bottom: 10rpx;
+	  border-radius: 32rpx;
+	  margin-right: 24rpx;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	}
+	
 	/* 新增样式 */
 	uni-button{
 		margin-left: 5px;
@@ -672,4 +810,17 @@
 	    }
 		
 	}
+	
+	
+/* 背景色 */
+.bg-red { background: #ff4d4f; }
+.bg-blue { background: #1890ff; }
+.bg-green { background: #52c41a; }
+.bg-green2 { background: #45b97c; }
+.bg-purple { background: #722ed1; }
+.bg-orange { background: #fa8c16; }
+.bg-cyan { background: #13c2c2; }
+.bg-pink { background: #eb2f96; }
+.bg-gray { background: #666666; }
+
 </style>

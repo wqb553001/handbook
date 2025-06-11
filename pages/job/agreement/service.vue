@@ -4,7 +4,7 @@
     <view class="header">
       <text class="title">服务条款</text>
       <text class="subtitle">Service Agreement</text>
-      <text class="update-time">更新时间：2024-03-21</text>
+      <text class="update-time">更新时间：2025-06-09</text>
     </view>
     
     <!-- 内容区域 -->
@@ -13,7 +13,7 @@
       <view class="section">
         <view class="section-title">前言</view>
         <view class="section-content">
-          欢迎使用我们的快递服务。在使用我们的服务之前，请您仔细阅读以下全部内容。
+          欢迎使用我们的信息查询服务。在使用我们的服务之前，请您仔细阅读以下全部内容。
         </view>
       </view>
       
@@ -22,7 +22,7 @@
         <view class="section-title">1. 定义</view>
         <view class="section-content">
           <view class="item">
-            1.1 "服务"是指我们提供的快递、物流及相关服务。
+            1.1 "服务"是指我们提供的信息呈现、留言及相关服务。
           </view>
           <view class="item">
             1.2 "用户"是指使用我们服务的个人或组织。
@@ -35,13 +35,15 @@
         <view class="section-title">2. 服务内容</view>
         <view class="section-content">
           <view class="item">
-            2.1 快递服务范围包括但不限于：
-            <view class="sub-item">• 国内快递服务</view>
-            <view class="sub-item">• 国际快递服务</view>
-            <view class="sub-item">• 仓储物流服务</view>
+            2.1 信息查询服务范围包括但不限于：
+            <view class="sub-item">• 根据技能匹配筛选</view>
+            <view class="sub-item">• 根据定位匹配距离由近及远</view>
+            <view class="sub-item">• 好评、优质优先</view>
+            <view class="sub-item">• 留言沟通</view>
+            <view class="sub-item">• 评价反馈</view>
           </view>
           <view class="item">
-            2.2 服务时效：我们将尽最大努力在承诺的时间内完成配送。
+            2.2 服务质量提升：通过广大用户的反馈，我们将尽最大努力进一步指定与引导，培养与提升所有用户的素质和技能。
           </view>
         </view>
       </view>
@@ -52,9 +54,9 @@
         <view class="section-content">
           <view class="item">
             3.1 用户应当：
-            <view class="sub-item">• 提供真实、准确的收寄信息</view>
+            <view class="sub-item">• 提供真实、准确的工作地信息</view>
+            <view class="sub-item">• 客观真实地评价、反馈</view>
             <view class="sub-item">• 遵守相关法律法规</view>
-            <view class="sub-item">• 按约定支付服务费用</view>
           </view>
         </view>
       </view>
@@ -73,7 +75,7 @@
       <view class="section">
         <view class="section-title">5. 免责声明</view>
         <view class="section-content">
-          <view class="item">
+          <view class="item" style="padding-bottom: 60rpx; ">
             5.1 因不可抗力导致的服务延误或损失，我们不承担责任。
           </view>
         </view>

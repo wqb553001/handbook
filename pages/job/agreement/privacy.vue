@@ -4,7 +4,7 @@
     <view class="header">
       <text class="title">隐私政策</text>
       <text class="subtitle">Privacy Policy</text>
-      <text class="update-time">更新时间：2024-03-21</text>
+      <text class="update-time">更新时间：2025-06-09</text>
     </view>
     
     <!-- 内容区域 -->
@@ -63,7 +63,7 @@
             2.1 我们使用您的信息用于：
             <view class="sub-item">
               <text class="dot">•</text>
-              <text>提供快递物流服务</text>
+              <text>提供就近工作机会的匹配</text>
             </view>
             <view class="sub-item">
               <text class="dot">•</text>
@@ -100,12 +100,12 @@
       </view>
       
       <!-- 信息共享 -->
-      <view class="section">
+      <view class="section" >
         <view class="section-title">4. 信息共享</view>
         <view class="section-content">
           <view class="highlight-box">
             <text class="highlight-title">重要提示</text>
-            <text class="highlight-content">
+            <text class="highlight-content" style="padding-bottom: 60rpx; ">
               未经您的同意，我们不会与任何第三方分享您的个人信息，除非法律法规另有规定。
             </text>
           </view>
@@ -180,9 +180,9 @@ const handleDisagree = () => {
   
   .content {
     height: calc(100vh - 300rpx);
-    padding: 32rpx;
-    
+	
     .section {
+	  padding: 32rpx;
       margin-bottom: 48rpx;
       animation: fadeIn 0.5s ease-out;
       

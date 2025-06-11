@@ -4,7 +4,7 @@
     <view class="header">
       <text class="title">用户协议</text>
       <text class="subtitle">User Agreement</text>
-      <text class="update-time">更新时间：2024-03-21</text>
+      <text class="update-time">更新时间：2025-06-09</text>
     </view>
     
     <!-- 内容区域 -->
@@ -71,8 +71,8 @@
           <view class="rule-grid">
             <view class="rule-item">
               <text class="rule-icon">📦</text>
-              <text class="rule-title">快递服务</text>
-              <text class="rule-desc">提供快速、安全的快递服务</text>
+              <text class="rule-title">信息查询服务</text>
+              <text class="rule-desc">根据技能匹配筛选，定位匹配距离由近及远，好评、优质排在前面；留言沟通、评价反馈</text>
             </view>
             <view class="rule-item">
               <text class="rule-icon">💰</text>
@@ -81,13 +81,13 @@
             </view>
             <view class="rule-item">
               <text class="rule-icon">🔒</text>
-              <text class="rule-title">安全保障</text>
-              <text class="rule-desc">保障物品运输安全</text>
+              <text class="rule-title">信息安全</text>
+              <text class="rule-desc">数据加密存储、加密隐式传输</text>
             </view>
             <view class="rule-item">
               <text class="rule-icon">⏰</text>
-              <text class="rule-title">时效承诺</text>
-              <text class="rule-desc">承诺的时效内送达</text>
+              <text class="rule-title">服务质量提升</text>
+              <text class="rule-desc">通过广大用户的反馈，我们将尽最大努力进一步指定与引导，培养与提升所有用户的素质和技能。</text>
             </view>
           </view>
         </view>
@@ -109,7 +109,7 @@
         <view class="section-content">
           <view class="notice-box">
             <text class="notice-title">修改说明</text>
-            <text class="notice-content">
+            <text class="notice-content" style="padding-bottom: 60rpx; ">
               我们保留随时修改本协议的权利。协议修改后，我们会在应用内显著位置公布修改后的协议内容。
             </text>
           </view>

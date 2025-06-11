@@ -45,7 +45,9 @@
 						<view class="uni-row" style="width:100%" >
 							<view class="text" style="display: flex; padding-top: 10rpx;">
 								<view class="text uni-flex" style="width: 200rpx; height: 200rpx; padding-top: 10px;">
-									<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
+									<uni-badge class="uni-badge-left-margin" absolute="rightTop" :text="worker.multiScore" :offset="[6, 6]" size="normal" :customStyle="{background: headTipColor(worker.workStatus), color: '#fff' }" >
+										<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
+									</uni-badge>
 								</view>
 								<view class="uni-row" style="flex: 1; padding-top: 10rpx; ">
 									<view class="uni-flex uni-column" @click="toDetail(worker)"
@@ -66,20 +68,13 @@
 								</view>
 							</view>
 								
-							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between;justify-content: space-between;  line-height:70rpx;">
+							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between; justify-content: space-between;  line-height:70rpx; ">
 								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
-								<view class="box"><!-- type = [info|primary|success|warning|error] 颜色类型 -->
-									<uni-badge class="uni-badge-left-margin" :text="worker.multiScore"  type="warning" 
-										:customStyle="{
-											fontSize: '24px',   // 文字大小
-											width: '40px',      // 宽度
-											height: '40px',     // 高度
-											lineHeight: '40px', // 行高（需与高度一致）
-											minWidth: '40px',   // 覆盖最小宽度
-											borderRadius: '20px !important' // 圆角（点状需设为50%）
-										 }" />
-									<uni-rate class="rate-wrap" :readonly="true" :max="10" :value="worker.multiScore" :size="13*fontScale"  />
+								<view style="display: block;">
+									<uni-rate class="rate-wrap" :readonly="true" :max="5" :value="worker.multiScore>5?5:worker.multiScore" 		:size="13*fontScale"  />
+									<uni-rate class="rate-wrap" :readonly="true" :max="5" :value="worker.multiScore>5?worker.multiScore-5:0" 	:size="13*fontScale"  />
 								</view>
+								
 								<view v-if="worker.userId != this.userToken?.userId" class="text" style="display: flex; font-weight: bold; color: #2E8B57;" @click="makePhoneCall(worker.userId)">立即联系
 									<u-icon name="chat" color="#D3D3D3" size="36rpx" />
 								</view>
@@ -245,6 +240,11 @@
 			this.readHistoryRecord();
 		},
 		methods: {
+			headTipColor(workStatus){
+				if(workStatus==0) return '#62ed0d';		// 开放接单中
+				if(workStatus==10) return '#ffe600';	// 工作中
+				if(workStatus==20) return '#deab8a';	// 休假中
+			},
 			readHistoryRecord() {
 				this.historyRecord = [];
 				// 获取用户信息

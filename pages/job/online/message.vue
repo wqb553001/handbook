@@ -16,7 +16,7 @@
 						{{ item.content }}
 					</view>
 					<view class="content" v-else-if="item.messageType === 1" style="color: black; background-color: #00FF00;">
-						<uni-icons type="sound" size="24"  class="sound" ></uni-icons>
+						<uni-icons type="sound" size="24"  class="sound" > {{ 语音 + `${getMp3Duration(item.content)}s`}}</uni-icons>
 					</view>
 					<view class="content" v-else>
 						{{ item.content }}
@@ -796,6 +796,25 @@
 				})
 			  }
 			},
+			
+			getMp3Duration(url) {
+				console.log("开始计算语音时长")
+				return new Promise((resolve, reject) => {
+					const innerAudioContext = uni.createInnerAudioContext();
+					innerAudioContext.src = url;
+					
+					innerAudioContext.onCanplay(() => {
+						resolve(innerAudioContext.duration);
+						innerAudioContext.destroy(); // 销毁音频上下文以释放资源
+					});
+
+					innerAudioContext.onError((res) => {
+						reject(new Error(`Failed to load the audio file: ${res.errMsg}`));
+						innerAudioContext.destroy(); // 销毁音频上下文以释放资源
+					});
+				});
+			},
+			
 			
 		}
 	}
