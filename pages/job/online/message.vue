@@ -80,7 +80,7 @@
 		data() {
 			return {
 				userId: 0,
-				token: null,
+				uploadToken: null,
 				userToken: null,
 				content: '',
 				list: [],
@@ -201,7 +201,7 @@
 		},
 		methods: {
 			async getToken(){
-				this.token = await uploadUtils.getUploadToken(this.userId);
+				this.uploadToken = await uploadUtils.getUploadToken(this.userId);
 			},
 			// 修改后的滚动到底部方法
 			scrollToBottom() {
@@ -450,6 +450,7 @@
 				return items;
 				// return newItems;
 			},
+			
 			judgeObj(e){
 				// 默认【friend】
 				 e.userType = 1;
@@ -462,6 +463,7 @@
 				// newItems.unshift(e);
 				return e;
 			},
+			// 消息时间间隔操过5分钟，则增加时间的显示
 			isOver5Minutes(timeStrA, timeStrB) {
 			  // 1. 将时间字符串转换为时间戳（毫秒）
 			  const timestampA = Date.parse(timeStrA);
@@ -531,34 +533,40 @@
 			chooseImage() {
 				uni.chooseImage({
 					// sourceType: 'album',
+					sizeType: ['original', 'compressed'], // 可选择原图或压缩图
+					sourceType: ['album', 'camera'], 	  // 支持从相册和摄像头选择
 					success: async (res) => {
-						
-						// 上传语音
-						const imgUrl = await uploadUtils.uploadImg(
-						  res.tempFilePaths[0],
-						  this.token,
-						  'job/talk/image/',
-						  this.userId
-						);
-						
-						this.list.push({
-							content: res.tempFilePaths[0],
-							userType: 0, 	// 'self',
-							messageType: 2, // 'image',
-							avatar: this._selfAvatar
-						})
-						this.scrollToBottom();
-						
-						// 发送WebSocket消息
-						const message = JSON.stringify({
-							sysId: SYS_ID,
-							senderId: this.userId,
-							receiverId: this.receiverId,
-							content: imgUrl, // 这里发送服务器返回的语音文件路径
-							messageType: 2 ,// 图片消息类型
-						})
-						
-						this.socketTaskNew.send(message);
+						const filePaths = res.tempFilePaths;
+						debugger
+						for(let filePath of filePaths){
+							// 上传语音
+							const imgUrl = await uploadUtils.uploadImg(
+							  filePath,
+							  this.uploadToken,
+							  'job/talk/image/',
+							  this.userId
+							);
+							debugger
+							this.list.push({
+								content: filePath,
+								userType: 0, 	// 'self',
+								messageType: 2, // 'image',
+								avatar: this._selfAvatar
+							})
+							this.scrollToBottom();
+							
+							// 发送WebSocket消息
+							const message = JSON.stringify({
+								sysId: SYS_ID,
+								senderId: this.userId,
+								receiverId: this.receiverId,
+								content: imgUrl, // 这里发送服务器返回的语音文件路径
+								messageType: 2 ,// 图片消息类型
+							})
+							
+							this.socketTaskNew.send(message);
+							
+						}
 						
 					}
 				})
@@ -717,7 +725,7 @@
 						// 上传语音
 						const voiceUrl = await uploadUtils.uploadVoice(
 						  tempFilePath,
-						  this.token,
+						  this.uploadToken,
 						  'job/talk/voice/',
 						  this.userId
 						);

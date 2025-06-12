@@ -48,11 +48,16 @@
 </template>
 
 <script>
+	import uploadUtils from '@/common/js/util/uploadUtils.js';
 
 const SYS_ID = 2025040301
 export default {
+	onLoad(options) {
+		this.userId = options.userId
+	},
     data() {
         return {
+			userId: 0,
             formData: {
 				sysId: SYS_ID,
                 suggestType: '', // 补充缺失的字段
@@ -101,16 +106,19 @@ export default {
 			var contentHtml = `<p> ${this.formData.content} `
 			if(this.images){
 				const _this = this
-				const uploadToken = await this.getUploadToken();
+				const uploadToken = await uploadUtils.getUploadToken(this.userId);
 				// 获取所有图片本地路径
 				for (const file of this.images) {
 				// this.images.forEach(file => {
 					const path = file.url || file.path || file
 					console.log("path:"+JSON.stringify(path))
-					const imgPath = await _this.uploadImg(path, uploadToken);
+					// const imgPath = await _this.uploadImg(path, uploadToken);
+					const imgPath = await uploadUtils.uploadImg(path, uploadToken, 'job/suggest/', this.userId);
+					debugger
 					if(imgPath){
 						contentHtml += (`<img src="`+imgPath+`" alt="" data-href="" style=""/>`);
 					}
+					debugger
 				// });
 				}
 			}
@@ -216,7 +224,7 @@ export default {
 		
 		// 处理文件选择事件
 		handleSelect(e) {
-			// console.log("选择文件事件:", e);
+			console.log("选择文件事件:", e);
 			// 合并新旧文件（保留完整文件对象）
 			this.images = [...this.images, ...e.tempFiles];
 			this.$forceUpdate(); // 强制更新视图

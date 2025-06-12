@@ -125,7 +125,7 @@
 	    </view>
 	  
 	  	  
-		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest')" >
+		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest?userId='+userToken.userId)" >
 			<view class="left">
 				<view class="service-icon bg-pink" > <uni-icons type="chat" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet" >意见反馈</text>

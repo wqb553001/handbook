@@ -38,7 +38,7 @@
 					<template v-slot:title>
 						<uni-list  style="border-bottom: none; border: none !important;">
 							<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
-							@switchChange="handleSwitchChange" :switchObj="worker" :switchChecked="worker.isStore" />
+								@switchChange="handleSwitchChange" :switchObj="worker" :switchChecked="worker.isStore" />
 						</uni-list>
 					</template>
 					<view class="uni-flex uni-row" style="border: none; border-top: none;">

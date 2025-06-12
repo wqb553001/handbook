@@ -71,7 +71,7 @@
 	 * @property {String | PageURIString} 	to  			跳转目标页面
 	 * @property {Boolean} 	showBadge = [true|false] 		是否显示数字角标
 	 * @property {Boolean} 	showSwitch = [true|false] 		是否显示Switch
-	 * @property {Object} 	switchObj  				Switch的对象
+	 * @property {Object|String|Number} 	switchObj  				Switch的对象
 	 * @property {Boolean} 	switchChecked = [true|false] 	Switch是否被选中
 	 * @property {Boolean} 	showExtraIcon = [true|false] 	左侧是否显示扩展图标
 	 * @property {Object} 	extraIcon 						扩展图标参数，格式为 {color: '#4cd964',size: '22',type: 'spinner'}
@@ -135,7 +135,7 @@
 				default: false
 			},
 			switchObj: {
-				type: Object,
+				type: [Object, Number, String],
 				default () {
 					return {}
 				}

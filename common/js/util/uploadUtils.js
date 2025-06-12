@@ -1,4 +1,4 @@
-// common/js/util/uploadUtils.js
+// import uploadUtils from '@/common/js/util/uploadUtils.js';
 const SYS_ID = 2025040301;
 
 export default {
@@ -44,7 +44,6 @@ export default {
       
       // 生成唯一文件名
       const fileName = `${where}${userId}_${Date.now()}_${Math.random().toString(36).substr(2)}.${ext}`;
-
       const uploadRes = await uni.uploadFile({
         url: process.env.UNI_QINIUP_URL,
         filePath: filePath,
@@ -54,7 +53,6 @@ export default {
           key: fileName
         }
       });
-
       if (uploadRes.statusCode === 200) {
         const resData = JSON.parse(uploadRes.data);
         return process.env.UNI_CDN + resData.key;
@@ -66,6 +64,7 @@ export default {
         icon: 'none' 
       });
       console.error(`${fileType} upload error:`, err);
+	  debugger
       return null;
     }
   },
@@ -79,6 +78,7 @@ export default {
    * @returns {Promise<string|null>} 图片CDN地址
    */
   async uploadImg(imagePath, uploadToken, where, userId) {
+	console.log("【uploadImg】imagePath: ", imagePath, "; uploadToken: ", uploadToken, "; where: ", where, "; userId: ", userId)
     return this._uploadFile(imagePath, uploadToken, 'image', where, userId);
   },
 

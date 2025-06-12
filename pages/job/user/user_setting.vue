@@ -282,6 +282,7 @@ export default {
 						};
 						_this.jobUser = respData;
 						_this.handleOpen(_this.jobUser.showMobile == 0);
+						_this.allServices[6].path = `/pages/job/suggest/suggest?userId=${_this.jobUser.userId}`
 					}
 				},
 				fail: (result, code) => {

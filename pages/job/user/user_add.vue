@@ -14,42 +14,42 @@
 			<view class="example" >
 				<!-- 基础用法，不包含校验规则 -->
 				<uni-forms ref="baseForm" :model="baseFormData" label-width="6.5rem">
-					<input style="display: none;" v-model="baseFormData.userId" />
+					<input style="display: none;" v-model="baseFormData.jobUserDO.userId" />
 					<uni-forms-item label="角色" required>
-						<uni-data-checkbox v-model="baseFormData.rule" :localdata="rules" />
+						<uni-data-checkbox v-model="baseFormData.jobUserDO.rule" :localdata="rules" />
 					</uni-forms-item>
 					
 					<uni-forms-item label="性别" required>
-						<uni-data-checkbox v-model="baseFormData.sex" :localdata="sexs" />
+						<uni-data-checkbox v-model="baseFormData.jobUserDO.sex" :localdata="sexs" />
 					</uni-forms-item>
 					<uni-forms-item label="技能" required>
 						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" :map="{ value: 'value', text: 'text' }" />
-						<input style="display: none;" v-model="baseFormData.skillsName" />
-						<uni-easyinput v-if="hasOtherSkill" v-model="baseFormData.otherSkills" placeholder="多个用逗号分隔" />
+						<input style="display: none;" v-model="baseFormData.jobUserDO.skillsName" />
+						<uni-easyinput v-if="baseFormData.jobUserDO.skills.includes(-1)" v-model="baseFormData.jobUserDO.otherSkills" placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="出生年月">
-						<picker mode="date" fields="month"  start="1900-01-01" :value="baseFormData.birth" @change="dateChange">
-							<view class="selectDate">{{baseFormData.birth}}</view>
+						<picker mode="date" fields="month"  start="1900-01-01" :value="baseFormData.jobUserDO.birth" @change="dateChange">
+							<view class="selectDate">{{baseFormData.jobUserDO.birth}}</view>
 						</picker>
 					</uni-forms-item>
 					<uni-forms-item label="接单区域" required>
 						<view class="address-selector">
 						  <view class="selector" @click="goLocationMap">
-						    <uni-easyinput class="address-input" @longpress="longPressCopyText(baseFormData.address)" v-model="baseFormData.address" placeholder="请选择接单区域"></uni-easyinput>
+						    <uni-easyinput class="address-input" @longpress="longPressCopyText(baseFormData.jobUserDO.address)" v-model="baseFormData.jobUserDO.address" placeholder="请选择接单区域"></uni-easyinput>
 						    <uni-icons type="arrowright" size="18" class="arrow-icon"></uni-icons>
-							<input style="display: none;" v-model="baseFormData.latitude"   placeholder="纬度-接单区域坐标" />
-							<input style="display: none;" v-model="baseFormData.longitude"  placeholder="经度-接单区域坐标" />
+							<input style="display: none;" v-model="baseFormData.jobUserDO.latitude"   placeholder="纬度-接单区域坐标" />
+							<input style="display: none;" v-model="baseFormData.jobUserDO.longitude"  placeholder="经度-接单区域坐标" />
 						  </view>
 						</view>
 					</uni-forms-item>
 					
 					<uni-forms-item label="工具\设备">
-						<uni-data-checkbox v-model="tool" @change="hasTool" :localdata="toolsOptions" />
-						<uni-easyinput v-if="hasTools" v-model="baseFormData.tools" 
+						<uni-data-checkbox v-model="tool" @change="handleTool" :localdata="toolsOptions" />
+						<uni-easyinput v-if="baseFormData.jobUserDO.tools?true:false" v-model="baseFormData.jobUserDO.tools" 
 						placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="自我介绍">
-						<uni-easyinput type="textarea" v-model="baseFormData.introduction" placeholder="请输入自我介绍" />
+						<uni-easyinput type="textarea" v-model="baseFormData.jobUserDO.introduction" placeholder="请输入自我介绍" />
 					</uni-forms-item>
 					
 					
@@ -61,8 +61,14 @@
 								<uni-card v-for="(item, index) in dynamicFormData.domains" :key="item.id"
 									:label="item.label+' '+index" required :rules="item.rules" :name="['domains', index, 'value']">
 									<!-- <view class="form-item"> -->
-									<view style="display: flex; justify-content:space-between">
+									<view style="display: flex; justify-content:space-between; ">
 										<uni-badge class="uni-badge-left-margin" size="normal" :text="'板块'+index" type="primary" :customStyle="{ backgroundColor: '#45b97c', color: '#fff' }" />
+										<view style="display: flex; flex-direction: column; align-items: center;">
+											<view>关闭/开启</view>
+											<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true"
+												@switchChange="handleSwitchChange" :switchObj="index" :switchChecked="dynamicFormData.domains[index].enabled==0?true:false" />
+										</view>
+										
 										<view style="display: flex;">
 											<view class="move-icon bg-green2" > <uni-icons type="arrow-up" 	 size="20"	@click="moveUpDownItem(index, 0)" color="#fff"></uni-icons> </view>
 											<view class="move-icon bg-green2" > <uni-icons type="arrow-down" size="20"	@click="moveUpDownItem(index, 1)" color="#fff"></uni-icons> </view>
@@ -114,43 +120,51 @@
 
 <script>
 	import graceChecker from "@/common/js/graceChecker.js"
+    import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
+	import uploadUtils from '@/common/js/util/uploadUtils.js';
+	
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_SKILLS = "jobUserSkills"
 	const keyStr = "jobInfoMap";
 	const baseRules = [
-	    // { name: "username",	checkType: "notnull",	errorMsg: "姓名不能为空" },
+	    // { name: "rule",	checkType: "notnull",	errorMsg: "角色必选" },
+	    { name: "username",	checkType: "notnull",	errorMsg: "姓名不能为空" },
 	    // { name: "mobile", 	checkType: "mobile", 	errorMsg: "手机号格式不正确" },
-	 //    { name: "sex", 		checkType: "in", 		errorMsg: "请选择性别",		checkRule: "0,1,2"},
-		// { name: "skills", 	checkType: "notnull", 	errorMsg: "请至少选择一个" },
-	 //    { name: "latitude", checkType: "notnull", 	errorMsg: "位置必选" },
+	    // { name: "sex", 		checkType: "in", 		errorMsg: "请选择性别",		checkRule: "0,1,2"},
+	 	{ name: "skills", 	checkType: "notnull", 	errorMsg: "如何选项中没有，就选最后一个“其他”" },
+	    { name: "latitude", checkType: "notnull", 	errorMsg: "位置必选" },
 	    // { name: "homeLocation", checkType: "notnull", errorMsg: "位置必选" },
 	  ];
 	export default {
+        components: { uniListItem },
 		data() {
 			return {
+				uploadToken: '',
 				userToken:{},
 				// 基础表单数据
 				baseFormData: {
-					sysId: SYS_ID,
-					userId: 0,
-					username: '',
-					mobile: '',
-					rule:0,
-					introduction: '',
-					sex: 2,
-					birth: '1970-01',
-					address: '',				// 位置：地址
-					latitude: '1',				// 位置：纬度-坐标
-					longitude: '1',				// 位置：经度-坐标
-					province:'',				// 省份
-					city:'',					// 市
-					district:'',				// 区
-					skills: '',					// 技能
-					skillsName: '',					// 技能
-					otherSkills:'',				// 其他技能
-					tools: '',					// 工具/设备 名称
-				
+					jobUserDO:{
+						sysId: SYS_ID,
+						userId: 0,
+						username: '',
+						mobile: '',
+						rule:0,
+						introduction: '',
+						sex: 2,
+						birth: '1970-01',
+						address: '',				// 位置：地址
+						latitude: '1',				// 位置：纬度-坐标
+						longitude: '1',				// 位置：经度-坐标
+						province:'',				// 省份
+						city:'',					// 市
+						district:'',				// 区
+						skills: '',					// 技能
+						skillsName: '',					// 技能
+						otherSkills:'',				// 其他技能
+						tools: '',					// 工具/设备 名称
+					}
+					
 					// dynamicFormData: {
 					// 	content: '',
 					// 	domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[] }]
@@ -171,12 +185,17 @@
 				// 	[90,"教练",["教练","健身","游泳","拳击","跆拳道","截拳道"]],
 				// 	[-1,"其他",[]]
 				],
+				
 				toolsOptions: [
 					{value: 20, text: "不自带"	},
 					{value: 10, text: "自带"	},
 				],
 				tool: 20,
 				toolStyle: 'display: none;',
+				hasTools: false,			// 是否带工具
+				
+				hasOtherSkill: false,		// 其他技能
+				
 				// 性别
 				rules: [
 					{ text: '找工', 	value: 0 }, 
@@ -195,12 +214,10 @@
 						radius: '50%'
 					}
 				},
-				hasOtherSkill: false,		// 其他技能
-				hasTools: false,			// 是否带工具
 				
 				dynamicFormData: {
 					content: '',
-					domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[] }]
+					domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[], enabled: 0 }]
 				},
 				dynamicRules: {
 					email: {
@@ -228,7 +245,12 @@
 				    }
 				},
 				
-				countdown: 0,
+				showUploadSheet: false,  	// 弹出 选项
+				uploadActions: [
+					{ index: 0, name: '从相册选择' },
+					{ index: 1, name: '拍照' }
+				],
+				
 				isCounting: false,
 				codeValid: 0,
 				smsCodeDisabled: false,
@@ -243,28 +265,28 @@
 		},
 		computed: {
 			fullAddress(){
-				if(this.baseFormData.address && this.baseFormData.address.includes(this.baseFormData.district)) return this.baseFormData.address;
-				return this.baseFormData.district + this.baseFormData.address;
+				if(this.baseFormData.jobUserDO.address && this.baseFormData.jobUserDO.address.includes(this.baseFormData.jobUserDO.district)) return this.baseFormData.jobUserDO.address;
+				return this.baseFormData.jobUserDO.district + this.baseFormData.jobUserDO.address;
 			}
 			,
 			parsedSkills: {
 				get() {
 				  try {
-					return JSON.parse(this.baseFormData.skills||[]) ;
+					return JSON.parse(this.baseFormData.jobUserDO.skills||[]) ;
 				  } catch {
 					return [];
 				  }
 				},
 				set(newVal) {
 				  // console.log('新选中值：', newVal);
-				  this.baseFormData.skills = JSON.stringify(newVal)
+				  this.baseFormData.jobUserDO.skills = JSON.stringify(newVal)
 				  this.$set(this.baseFormData, 'skills', JSON.stringify(newVal))
 				  const validSkills = newVal.filter(v => v !== -1);
-				        this.baseFormData.skillsName = validSkills
+				        this.baseFormData.jobUserDO.skillsName = validSkills
 				          .map(v => this.skillsOptions.find(o => o.value === v)?.text || '')
 				          .filter(Boolean)
 				          .join(',');
-				  // console.log('设置值：', this.baseFormData.skills);
+				  // console.log('设置值：', this.baseFormData.jobUserDO.skills);
 				  this.hasOtherSkill = newVal.includes(-1)
 				  if (!this.hasOtherSkill) {
 				    this.$set(this.baseFormData, 'otherSkills', '')
@@ -276,14 +298,14 @@
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
 				// console.log("接收地址：" + JSON.stringify(data))
-				// this.baseFormData.address = data.title;
-				this.baseFormData.latitude 	= data.location.lat;	// 纬度
-				this.baseFormData.longitude = data.location.lng;	// 经度
-				this.baseFormData.province 	= data.province;
-				this.baseFormData.city 		= data.city;
-				this.baseFormData.district 	= data.district;
+				// this.baseFormData.jobUserDO.address = data.title;
+				this.baseFormData.jobUserDO.latitude 	= data.location.lat;	// 纬度
+				this.baseFormData.jobUserDO.longitude = data.location.lng;	// 经度
+				this.baseFormData.jobUserDO.province 	= data.province;
+				this.baseFormData.jobUserDO.city 		= data.city;
+				this.baseFormData.jobUserDO.district 	= data.district;
 				
-				this.baseFormData.address = (data.title && data.title.includes(data.district))? data.title : data.district+data.title;
+				this.baseFormData.jobUserDO.address = (data.title && data.title.includes(data.district))? data.title : data.district+data.title;
 				
 				// console.log("转化数据：" + JSON.stringify(data))
 				// console.log("跳转地址："+ url)
@@ -302,7 +324,7 @@
 				success: function(resp){
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-					_this.baseFormData.userId = _this.userToken.userId;
+					_this.baseFormData.jobUserDO.userId = _this.userToken.userId;
 					_this.getJobUserByUserId();
 				},
 				fail:function(){
@@ -313,6 +335,7 @@
 				},
 				complete() {
 					_this.initGetKills();
+					_this.getToken()
 				}
 			});
 			// console.log("传递参数：" + JSON.stringify(options))
@@ -339,10 +362,15 @@
 				}
 				
 			},
+			
 			addDynamicItem() {
+				if(this.dynamicFormData.domains.length>20){
+					uni.showToast({ title: '板块最多支持20个，请优化！', icon: 'none' });
+					return;
+				}
 				this.dynamicFormData.domains.push({
 					label: '介绍',
-					title:'', summary:'', content:'',
+					title:'', summary:'', content:'', enabled:0, images:[],
 					rules: [{
 						'required': true,
 						errorMessage: '域名项必填'
@@ -358,48 +386,78 @@
 		
 			// 处理文件选择事件
 			handleSelectUpload(e, index) {
-				// console.log("选择文件事件:", e);
+				console.log("选择文件事件:", e);
 				// 合并新旧文件（保留完整文件对象）
 				this.dynamicFormData.domains[index].images = [...this.dynamicFormData.domains[index].images, ...e.tempFiles];
 				this.$forceUpdate(); // 强制更新视图
 			},
 			
 			async submit() {
+				const uploadToken = this.uploadToken
+				const userToken = this.userToken
 				// console.log(JSON.stringify(this.baseFormData));
-				if(this.baseFormData.hasTools == 10){
+				if(this.baseFormData.jobUserDO.hasTools == 10){
 					baseRules.push({ name: "tools", checkType: "notnull", errorMsg: "工具/设备 不能为空" });
 				}
 				if(this.hasOtherSkill){
 					baseRules.push({ name: "otherSkills", checkType: "notnull", errorMsg: "选中【其他】后面输入框，不能为空" });
 				}
-				if (!graceChecker.check(this.baseFormData, baseRules)) {
+				if (!graceChecker.check(this.baseFormData.jobUserDO, baseRules)) {
 					uni.showToast({ title: graceChecker.error, icon: 'none' });
 					return;
 				}
 				
+				const _this = this
+				if(this.dynamicFormData.domains && this.dynamicFormData.domains?.length>0){
+					for(let num = this.dynamicFormData.domains.length-1; num>=0; num--){
+						let domain = this.dynamicFormData.domains[num];
+						
+						// 无数据板块，自动移除
+						if(domain.images==0 && !domain.title && !domain.summary && !domain.content){
+							this.dynamicFormData.domains.splice(num, 1);
+							continue;
+						}
+						
+						// 无图片，不必上传
+						if(domain.images.length==0) continue;
+						for(let i = 0; i<domain.images.length; i++){
+							let file = domain.images[i]
+							const path = file.url || file.path || file
+							const imgPath = await uploadUtils.uploadImg(path, uploadToken, 'job/userInfo/', userToken.userId);
+							// console.log("upload after path:"+imgPath)
+							if(imgPath){
+								domain.images[i] = imgPath;
+							}
+						}
+					}
+					// console.log("更新后板块信息："+JSON.stringify(this.dynamicFormData.domains))
+				}
+				
 				const submitForm = {
-					sysId: 				SYS_ID,
-					userId: 			this.baseFormData.userId,
-					introduction: 		this.baseFormData.introduction,
-					sex: 				this.baseFormData.sex,
-					birth: 				this.baseFormData.birth,
-					address:			this.baseFormData.address,				// 位置：地址
-					latitude:			this.baseFormData.latitude,				// 位置：纬度-坐标
-					longitude:			this.baseFormData.longitude,			// 位置：经度-坐标
-					province:			this.baseFormData.province,				// 省份
-					city:				this.baseFormData.city,					// 市
-					district:			this.baseFormData.district,				// 区
-					skills:				this.baseFormData.skills,				// 技能 
-					skillsName:			this.baseFormData.skillsName,			// 技能名称
-					otherSkills:		this.baseFormData.otherSkills,			// 其他技能
-					tools:				this.baseFormData.tools,				// 工具/设备 名称
-					dynamicFormData:	this.baseFormData.dynamicFormData,
+					jobUserDO:{
+						sysId: 				SYS_ID,
+						userId: 			this.baseFormData.jobUserDO.userId,
+						introduction: 		this.baseFormData.jobUserDO.introduction,
+						sex: 				this.baseFormData.jobUserDO.sex,
+						birth: 				this.baseFormData.jobUserDO.birth,
+						address:			this.baseFormData.jobUserDO.address,			// 位置：地址
+						latitude:			this.baseFormData.jobUserDO.latitude,			// 位置：纬度-坐标
+						longitude:			this.baseFormData.jobUserDO.longitude,			// 位置：经度-坐标
+						province:			this.baseFormData.jobUserDO.province,			// 省份
+						city:				this.baseFormData.jobUserDO.city,				// 市
+						district:			this.baseFormData.jobUserDO.district,			// 区
+						skills:				this.baseFormData.jobUserDO.skills,				// 技能 
+						skillsName:			this.baseFormData.jobUserDO.skillsName,			// 技能名称
+						otherSkills:		this.baseFormData.jobUserDO.otherSkills,		// 其他技能
+						tools:				this.baseFormData.jobUserDO.tools				// 工具/设备 名称
+					},
+					content:				this.dynamicFormData.content,
+					userMoreVOList:			this.dynamicFormData.domains,
 				}
 				this.updateUser(submitForm);
-				
-				if(!this.baseFormData?.headImgPath){
+				if(!this.baseFormData.jobUserDO?.headImgPath){
 					// console.log("保存成功，userId:", userId)
-					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.userId}&afterUrl=/pages/job/index`;
+					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.jobUserDO.userId}&afterUrl=/pages/job/index`;
 					uni.navigateTo({ url });
 				}
 				
@@ -407,6 +465,7 @@
 				uni.removeStorage({key: JOB_USER_SKILLS});
 				uni.navigateBack()
 			},
+			
 			getSkills(){
 				const _this = this;
 				uni.request({
@@ -429,7 +488,7 @@
 				});
 			},
 			
-			hasTool(e){
+			handleTool(e){
 				this.hasTools = false;
 				// console.log("工具选择："+ e.detail.value)
 				if(e.detail.value === 10) this.hasTools = true;
@@ -438,8 +497,8 @@
 			// 验证手机号格式
 			validateMobile() {
 				const reg = /^1[3-9]\d{9}$/;
-				this.canGetCode = reg.test(this.baseFormData.mobile);
-				// console.log("手机号："+this.baseFormData.mobile+"；验证结果："+this.canGetCode)
+				this.canGetCode = reg.test(this.baseFormData.jobUserDO.mobile);
+				// console.log("手机号："+this.baseFormData.jobUserDO.mobile+"；验证结果："+this.canGetCode)
 			},
 			
 			// 获取验证码
@@ -447,7 +506,7 @@
 				if (!this.canGetCode) return;
 				try {
 					const param = {
-							phone: this.baseFormData.mobile,
+							phone: this.baseFormData.jobUserDO.mobile,
 							opt: 'add jobUser',
 							sysId: SYS_ID
 					}
@@ -472,22 +531,23 @@
 			// 倒计时逻辑
 			countdown() {
 				this.isCounting = true;
-				this.countdown = 60;
+				this.countdownNum = 60;
 				const timer = setInterval(() => {
-					if(this.countdown <= 0) {
+					if(this.countdownNum <= 0) {
 						clearInterval(timer);
 						this.isCounting = false;
 						return;
 					}
-					this.countdown--;
+					this.countdownNum --;
 				}, 1000);
 			},
 			
 			dateChange(e) {
-				this.baseFormData.birth = e.detail.value;
-				// console.log("选中日期："+this.baseFormData.birth)
+				this.baseFormData.jobUserDO.birth = e.detail.value;
+				// console.log("选中日期："+this.baseFormData.jobUserDO.birth)
 				// 可以在这里处理选择后的逻辑，例如获取选择月份的第一天和最后一天
 			},
+			
 			skillsChange(e) {
 				if(e.detail.value == -1) return;
 				const selectOptions = e.detail.value.map(value => {
@@ -498,7 +558,7 @@
 					}
 				});
 				
-				this.baseFormData.skills = JSON.stringify(selectOptions);
+				this.baseFormData.jobUserDO.skills = JSON.stringify(selectOptions);
 			},
 			// 去到地图的地址选取页
 			goLocationMap(){
@@ -525,6 +585,7 @@
 			},
 			
 			updateUser(form){
+				form.sysId = SYS_ID;
 				form.token 	= this.userToken.token;
 				form.selfId = this.userToken.userId;
 				form.userId = this.userToken.userId;
@@ -545,24 +606,24 @@
 			getJobUserByUserId(){
 				const _this = this;
 				uni.request({
-					url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
+					url: process.env.UNI_BASE_URL + '/api/job/getUser',  // 用户数据
 					data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						// console.log('userStream 返回值' + JSON.stringify(result));
+						// console.log('user_add.getUser 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data;
-							// console.log("user_add.getUser返回值："+JSON.stringify(respData))
+							// console.log("user_add.getUser返回值2："+JSON.stringify(respData))
 							if(respData) {
 								// console.log("转化前："+respData.skills)
-								this.baseFormData = respData
-								if(respData.birth) this.baseFormData.birth = respData.birth.substring(0, 7)
+								this.baseFormData.jobUserDO = respData
 								// console.log("转化后："+JSON.stringify(respData))
-								this.hasOtherSkill = this.baseFormData.skills.includes(-1);
+								if(respData.birth) this.baseFormData.jobUserDO.birth = respData.birth.substring(0, 7)
+								this.tool = this.baseFormData.jobUserDO.tools?10:20;
 								if(respData.dynamicFormData) {
-									if(respData.dynamicFormData.content) this.dynamicFormData.content = respData.dynamicFormData
-									if(respData.dynamicFormData.domains) this.dynamicFormData.domains = respData.dynamicFormData
+									if(respData.dynamicFormData.content) this.dynamicFormData.content = respData.dynamicFormData.content
+									if(respData.dynamicFormData.domains) this.dynamicFormData.domains = respData.dynamicFormData.domains
 								}
 							};
 						}
@@ -589,9 +650,18 @@
 			    count: 1, // 默认9，这里我们只选一张图
 			    sizeType: ['original', 'compressed'], // 可选择原图或压缩图
 			    sourceType: ['album', 'camera'], 	  // 支持从相册和摄像头选择
-			    success: (res) => {
-			      const filePath = res.tempFilePaths; // 获取选择的第一张图片路径
-			      // 在这里可以对图片进行进一步处理，如上传、预览等
+			    success: async (res) => {
+					const filePath = res.tempFilePaths; // 获取选择的图片路径
+					// 在这里可以对图片进行进一步处理，如上传、预览等
+					for(let filePath of filePaths){
+						// 上传图片
+						const imgUrl = await uploadUtils.uploadImg(
+						  res.tempFilePaths[0],
+						  this.uploadToken,
+						  'job/userInfo/image/',
+						  this.userToken.userId
+						);
+					}
 			    },
 			    fail: (err) => {
 			      uni.showToast({
@@ -611,7 +681,7 @@
 			uploadFile(tempFilePaths){
 				uni.uploadFile({
 				    url: '服务器上传接口地址',
-				    filePath: tempFilePaths, // 选择的第一张图片路径
+				    filePath: tempFilePaths[0], // 选择的第一张图片路径
 				    name: 'file',
 				    success: (res) => {
 				        // console.log('上传成功：', res);
@@ -622,6 +692,9 @@
 				});
 			},
 			
+			async getToken(){
+				this.uploadToken = await uploadUtils.getUploadToken(this.userToken.userId);
+			},
 			// 长按复制
 			longPressCopyText(val){
 				if(val==''){
@@ -639,7 +712,39 @@
 					}
 				});
 			},
-			
+			handleSwitchChange(e){
+				const index = e.switchObj ;
+				const enabled = e.data?0:1 ;
+				this.dynamicFormData.domains[index].enabled = enabled ;
+				// console.log("this.dynamicFormData.domains[index].enabled: " + this.dynamicFormData.domains[index].enabled)
+			},
+		
+			onFontSizeChange(scale) {
+				// this.fontSizeScale = e.detail.value;
+				this.fontSizeScale = scale;
+				const scaleValue = this.fontSizeScale / 100;
+				this.fontScale = scaleValue
+				// console.log("字体大小设置为：" + this.fontSizeScale)
+				
+				// console.log("实时计算比例："+ this.fontScale)
+				
+				/* #ifdef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
+				// console.log("WEIXIN 实时计算样式："+ this.fontSet)
+				/* #endif */
+				
+				/* #ifndef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
+				// console.log("APP/H5 实时计算样式："+ this.fontSet)
+				/* #endif */
+				var _this = this
+				// 字体大小存入缓存记忆
+				uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
+			},
+			handleTitleStyle(baseFontSize=16) {
+				var fontSize = baseFontSize * (this.fontSizeScale / 100);
+				return 'padding: 0; color: #000000; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
+			},
 			
 		}
 	}
