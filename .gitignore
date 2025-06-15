@@ -6,7 +6,7 @@
 
 unpackage/
 node_modules/
-uni_modules/
+# uni_modules/
 /dev/
 /dist/
 

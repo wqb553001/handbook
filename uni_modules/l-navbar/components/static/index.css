@@ -1,0 +1,41 @@
+/* 
+返回:&#xe6ba; 
+搜索:&#xe6bb;
+下拉:&#xe6b9;
+首页:&#xe64f;
+*/
+
+@font-face {
+	font-family: "L_icon";
+	src: url('iconfont.woff2?t=1700841187069') format('woff2'),
+		url('iconfont.woff?t=1700841187069') format('woff'),
+		url('iconfont.ttf?t=1700841187069') format('truetype');
+}
+
+.L_icon {
+	font-family: "L_icon" !important;
+	font-size: 16px;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-local:before {
+	content: "\e624";
+}
+
+.icon-home:before {
+	content: "\e64f";
+}
+
+.icon-xiala:before {
+	content: "\e6b9";
+}
+
+.icon-search:before {
+	content: "\e6bb";
+}
+
+.icon-left:before {
+	content: "\e6ba";
+}
