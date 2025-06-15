@@ -4,11 +4,11 @@
 			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
 		</uni-card>
 		
-		<view class="slider-container" style="z-index: 9999;">
+		<!-- <view class="slider-container" style="z-index: 9999;">
 			<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
 			 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value></u-slider>
+		</view> -->
 		    <!-- <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text> -->
-		</view>
 		
 		<!-- <uni-section title="基础信息" type="line"> -->
 			<view class="example" >
@@ -93,17 +93,17 @@
 										></uni-file-picker>
 									</uni-forms-item>
 									
-									<button class="button" style="background-color: #ed1941; justify-content:center;" size="mini" type="default" @click="delDynamicItem(item.id)">删除</button>
+									<button class="button" style="background-color: #ed1941; justify-content:center;" type="default" @click="delDynamicItem(item.id)">删除</button>
 									<!-- </view> -->
 									
 								<!-- </uni-forms-item> -->
 								</uni-card>
-								<button class="button" style="background-color: #45b97c; justify-content:center;" size="mini" type="default" @click="addDynamicItem">新增板块</button>
+								<button class="button" style="background-color: #45b97c; justify-content:center;" type="default" @click="addDynamicItem">新增板块</button>
 								
 								<view class="button-group" style="align-items: center; justify-content:center; " >
 								</view>
 								
-								<uni-forms-item label="样式" name="content" style="margin-top: 30rpx;">
+								<uni-forms-item label="自定义" name="content" style="margin-top: 30rpx;">
 									<uni-easyinput type="textarea" v-model="dynamicFormData.content" placeholder="请输入html" />
 								</uni-forms-item>
 							</uni-forms>
@@ -217,7 +217,8 @@
 				
 				dynamicFormData: {
 					content: '',
-					domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[], enabled: 0 }]
+					domains: []
+					// domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[], enabled: 0 }]
 				},
 				dynamicRules: {
 					email: {
@@ -413,7 +414,7 @@
 						let domain = this.dynamicFormData.domains[num];
 						
 						// 无数据板块，自动移除
-						if(domain.images==0 && !domain.title && !domain.summary && !domain.content){
+						if(!domain || domain.images==0 && !domain.title && !domain.summary && !domain.content){
 							this.dynamicFormData.domains.splice(num, 1);
 							continue;
 						}
@@ -590,7 +591,7 @@
 				form.selfId = this.userToken.userId;
 				form.userId = this.userToken.userId;
 				uni.request({
-					url: process.env.UNI_BASE_URL + '/api/job/updateUser',
+					url: process.env.UNI_BASE_URL + '/api/job/updateUserMore',
 					header: { 'Content-Type': 'application/json' },
 					method: 'POST',
 					data: JSON.stringify(form),

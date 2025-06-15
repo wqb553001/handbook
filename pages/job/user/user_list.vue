@@ -22,7 +22,7 @@
 		
 		<view class="slider-container" style="z-index: 9999;">
 			<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
-			 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value></u-slider>
+			 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" @change="onFontSizeChange" show-value></u-slider>
 		    <!-- <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text> -->
 		</view>
 		
@@ -45,38 +45,39 @@
 						<view class="uni-row" style="width:100%" >
 							<view class="text" style="display: flex; padding-top: 10rpx;">
 								<view class="text uni-flex" style="width: 200rpx; height: 200rpx; padding-top: 10px;">
-									<uni-badge class="uni-badge-left-margin" absolute="rightTop" :text="worker.multiScore" :offset="[6, 6]" size="normal" :customStyle="{background: headTipColor(worker.workStatus), color: '#fff' }" >
-										<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
-									</uni-badge>
+									<!-- <uni-badge class="uni-badge-left-margin" absolute="rightTop" :text="worker.multiScore" :offset="[4, 4]" size="normal" :customStyle="{background: headTipColor(worker.workStatus), color: '#fff' }" >
+										
+									</uni-badge> -->
+									<image :src="worker.headImgPath" style="width: 150rpx; height: 150rpx;"></image>
 								</view>
 								<view class="uni-row" style="flex: 1; padding-top: 10rpx; ">
 									<view class="uni-flex uni-column" @click="toDetail(worker)"
 										style="min-height: 80rpx;  line-height:70rpx;" :style="fontSet">
-										{{ worker.introduction }}
+										{{ stringShowLenMap(worker.introduction, 10, false) || ' ' }}
 									</view>
-									
-									<view class="uni-flex uni-row" style="justify-content: space-between; padding-top: 10rpx;">
-										<view class="text" style="min-width: 160rpx;  line-height:70rpx;" :style="fontSet">
-											{{ worker.tools || ' ' }}
-										</view>
-										
-										<view class="text" style="color: #2E8B57; font-weight: bold;  line-height:70rpx;" @longpress="longPressCopyText(worker.address)">
-											<text :style="handleFontSize(16)" >{{ worker.address || ' ' }}</text>
-											<text :style="handleFontSize(10)" style="margin-left: 5rpx;">{{ ((worker.district)?worker.district:worker.city) || ' ' }}</text>
-										</view>
-									</view>
+							
+								</view>
+							</view>
+							<view class="uni-flex uni-row" style="justify-content: space-between; padding-top: 10rpx;">
+								<view class="text" style="min-width: 160rpx; line-height:70rpx;" :style="fontSet">
+									{{ stringShowLenMap(worker.tools, 20, false) || ' ' }}
+								</view>
+								
+								<view class="text" style="color: #2E8B57; min-width: 30%; font-weight: bold; flex-wrap: wrap; justify-content: space-between; line-height:70rpx; " @longpress="longPressCopyText(worker.address)">
+									<text :style="handleFontSize(16)" style="flex: 1; text-align: left; word-break: break-all;"  >{{ worker.address || ' ' }}</text>
+									<text :style="handleFontSize(10)" style="flex-shrink: 0; white-space: nowrap; text-align: right; margin-left: 5rpx; float: right; padding-right: 20rpx;">{{ ((worker.district)?worker.district:worker.city) || ' ' }}</text>
 								</view>
 							</view>
 								
 							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between; justify-content: space-between;  line-height:70rpx; ">
-								<view class="text" >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
+								<view class="text" style="color: #8c531b; font-weight: bold; " >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
 								<view style="display: block;">
 									<uni-rate class="rate-wrap" :readonly="true" :max="5" :value="worker.multiScore>5?5:worker.multiScore" 		:size="13*fontScale"  />
 									<uni-rate class="rate-wrap" :readonly="true" :max="5" :value="worker.multiScore>5?worker.multiScore-5:0" 	:size="13*fontScale"  />
 								</view>
 								
 								<view v-if="worker.userId != this.userToken?.userId" class="text" style="display: flex; font-weight: bold; color: #2E8B57;" @click="makePhoneCall(worker.userId)">立即联系
-									<u-icon name="chat" color="#D3D3D3" size="36rpx" />
+									<u-icon name="chat" :color="headTipColor(worker.workStatus)"  size="36rpx" />
 								</view>
 								
 							</view>
@@ -106,14 +107,17 @@
 
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
-	const JOB_USER_FONT_SET = "jobUserListFontSet";
+	const JOB_USER_FONT_SET = "job_User_List_Font_Set";
 	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	const keyStr = "jobInfoMap";
 	const MAP_PICKER_POSITION = "map_Picker_Position"
 	const PAGE_LIMIT = 10
-	const scaleAddressMap 	= {50:21, 60:17, 70:14, 80:12, 90:11, 100: 9,  110:8,  120:7,  130:6, 140:6, 150:5, 160:5, 170:4, 180:4, 190:4, 200:3}
-	const scaleTitleMap 	= {50:25, 60:23, 70:20, 80:17, 90:15, 100: 12, 110:11, 120:10, 130:9, 140:8, 150:8, 160:8, 170:7, 180:7, 190:6, 200:6}
+	const scaleAddressMap 		= {50:21, 60:17, 70:14, 80:12, 	90:11, 	100: 9,  110:8,  120:7,  130:6,  140:6,  150:5,	 160:5,  170:4,  180:4,  190:4, 200:3}
+	const scaleTitleMap 		= {50:25, 60:23, 70:20, 80:17, 	90:15, 	100: 12, 110:11, 120:10, 130:9,  140:8,  150:8,	 160:8,  170:7,  180:7,  190:6, 200:6}
+	const scaleIntroductionMap 	= {50:80, 60:68, 70:56,	80:46,	90:40,	100: 38, 110:34, 120:30, 130:28, 140:24, 150:23, 160:22, 170:19, 180:13, 190:9, 200:9}
+	const scaleToolsMap 		= {50:50, 60:43, 70:36,	80:30,	90:27,	100: 23, 110:20, 120:19, 130:18, 140:16, 150:14, 160:12, 170:10, 180:10, 190:9, 200:9}
+
 	export default {
         components: { uniListItem },
 		data() {
@@ -242,8 +246,8 @@
 		methods: {
 			headTipColor(workStatus){
 				if(workStatus==0) return '#62ed0d';		// 开放接单中
-				if(workStatus==10) return '#ffe600';	// 工作中
-				if(workStatus==20) return '#deab8a';	// 休假中
+				if(workStatus==10) return '#ed1941';	// 工作中 #ff6043  #ffe600
+				if(workStatus==20) return '#D3D3D3';	// 休假中 #deab8a  #D3D3D3
 			},
 			readHistoryRecord() {
 				this.historyRecord = [];
@@ -259,7 +263,7 @@
 					}
 				});
 			},
-			
+			// 读取缓存的位置信息
 			getLocalFromStore(){
 				const _this = this
 				uni.getStorage({
@@ -357,7 +361,7 @@
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						// console.log('user_list.userStream 返回值' + JSON.stringify(result));
+						console.log('user_list.userStream 返回值：' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data.rows;
 							let list = this.dataHandle(respData);
@@ -418,10 +422,11 @@
 					allSkills = (!allSkills)?e.otherSkills:(e.otherSkills!="")?(allSkills +'；'+ e.otherSkills):allSkills;
 					if(e.address) e.address = e.address.replace(e.district, '').replace(e.city, '');
 					// console.log("allSkills:"+allSkills)
-					e.allSkills 	= _this.truncateString(allSkills, 20);
+					// e.allSkills 	= _this.truncateString(allSkills, 20);
+					e.allSkills		= allSkills;
 					e.age 			= _this.calculateAge(e.birth);
-					e.tools 		= _this.truncateString(e.tools, 20);
-					e.introduction 	= _this.truncateString(e.introduction, 45);
+					// e.tools 		= _this.truncateString(e.tools, 20);
+					// e.introduction 	= _this.truncateString(e.introduction, 45);
 					e.isStore 		= this.storeUserIdMap.get(e.userId)?true:false
 					return e;
 				});
@@ -482,9 +487,9 @@
 				this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
 				// console.log("APP/H5 实时计算样式："+ this.fontSet)
 				/* #endif */
-				var _this = this
+				// var _this = this
 				// 字体大小存入缓存记忆
-				uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
+				uni.setStorage({key:JOB_USER_FONT_SET, data: this.fontSizeScale});
 			},
 			
 			calculateAge(birth){
@@ -632,11 +637,24 @@
 					icon: 'none'
 				})
 			},
+
 			stringShowLen(showString, isHead=true){
 				// console.log("输入值："+ showString)
 				var len = scaleTitleMap[this.fontSizeScale]
 				// console.log("地址显示字数"+ len)
 				if(showString.length < len+1) return showString;
+				if (typeof showString == 'string') {
+					showString = isHead ? '…' + showString.slice(-len-1) : showString.slice(0, len)+'…'
+				}
+				// console.log("输出值："+ showString)
+				return showString;
+			},
+			
+			stringShowLenMap(showString, mapNum, isHead=true){
+				// console.log("输入值："+ showString)
+				var len = mapNum==10?scaleIntroductionMap[this.fontSizeScale]:scaleToolsMap[this.fontSizeScale]
+				// console.log("地址显示字数："+ len)
+				if(showString?.length < len+1) return showString;
 				if (typeof showString == 'string') {
 					showString = isHead ? '…' + showString.slice(-len-1) : showString.slice(0, len)+'…'
 				}
@@ -751,7 +769,7 @@
 			},
 			handleTitleStyle(baseFontSize=16) {
 				var fontSize = baseFontSize * (this.fontSizeScale / 100);
-				return 'color: #000000; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
+				return 'font-weight: bold; fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
 			},
 			
 			handleFontSize(baseFontSize=16) {
@@ -833,7 +851,7 @@
 		width: 90%;
 		font-size: 32rpx;
 		font-weight: 400;
-		line-height: 42rpx;
+		line-height: 84rpx;
 		color: white;
 		z-index: 11;
 	}

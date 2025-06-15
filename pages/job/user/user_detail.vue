@@ -17,45 +17,48 @@
 			<view class="uni-flex uni-row" style="display: flex;">
 				<view class="uni-flex uni-column" style="-webkit-flex: 1; flex: 1; -webkit-justify-content: space-between; justify-content: space-between;">
 					<view class="uni-flex" style="display: flex; height: 1.37; white-space: nowrap;">
-						<view class="text" :style="fontScaleChange(1)" >{{jobUser.username}}</view>
-						<view class="text" :style="fontScaleChange(0.85)" >{{jobUser.sex==0?'男':jobUser.sex==1?'女':''}}</view>
-						<view class="text" :style="fontScaleChange(0.85)" style="padding: 0; " >{{calculateAge(jobUser.birth)}} 岁</view>
+						<view class="text" :style="fontScaleChange(1)" >{{jobUser.userReturnVO.username}}</view>
+						<view class="text" :style="fontScaleChange(0.85)" >{{jobUser.userReturnVO.sex==0?'男':jobUser.userReturnVO.sex==1?'女':''}}</view>
+						<view class="text" :style="fontScaleChange(0.85)" style="padding: 0; " >{{calculateAge(jobUser.userReturnVO.birth)}} 岁</view>
 					</view>
 					<view class="uni-flex uni-row" >
 						<view class="text" :style="fontScaleChange(0.85)" style="text-align: left; -webkit-flex: 1; flex: 1; text-indent: 2em;  line-height:1.37; margin: 20px 0px 5px 5px; ">
-							{{ jobUser.tools }}
+							{{ jobUser.userReturnVO.tools }}
 						</view>
 					</view>
 				</view>
 				<view class="text uni-flex" style="width: 200rpx; height: 200rpx; " @longpress="longPressEditHeadImage">
-					<image :src="jobUser.headImgPath" style="width: 200rpx; height: 200rpx;"></image>
+					<image :src="jobUser.userReturnVO.headImgPath" style="width: 200rpx; height: 200rpx;"></image>
 				</view>
 			</view>
 		</view>
 		
 		<view style="width:100%" >
 			<view class="text" style="text-align: left; padding-top: 50rpx;  line-height:1.37;" :style="fontScaleChange(0.85)" >
-				{{ jobUser.allSkills }} 
+				{{ jobUser.userReturnVO.allSkills }} 
 			</view>
 			
 			<view class="text" style="padding-top: 10rpx;">
 				<view class="uni-row" style="padding-top: 10rpx;">
 					<view class="uni-flex uni-column" style="min-height: 80rpx; line-height:1.37;" :style="fontScaleChange(0.85)" >
-						{{ jobUser.introduction }}
+						{{ jobUser.userReturnVO.introduction ||'' }}
 					</view>
 					
 					<view class="uni-flex uni-row" style="justify-content: space-between; margin-top: 30rpx;">						
 						<view class="text" style="text-align: left; color: #2E8B57; font-weight: bold;  line-height: 1.37; padding-left: 0; margin-left: -10px;" :style="fontScaleChange(1)"
-						 @longpress="longPressCopyText(jobUser.address)">
+						 @longpress="longPressCopyText(jobUser.userReturnVO.address)">
 							<uni-icons type="location" color="#D3D3D3" size="30" />
-							{{ jobUser.address || ' ' }}
+							{{ jobUser.userReturnVO.address || ' ' }}
 						</view>
 					</view>
 				</view>
 			</view>
 		</view>
 		
-		<view v-if="!isMyself && jobUser.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;">
+		<view v-if="showDistance">
+			<text>直线距离：{{calculateDistance(location.latitude, location.longitude, jobUser.userReturnVO.latitude, jobUser.userReturnVO.longitude)}} 公里</text>
+		</view>
+		<view v-if="!isMyself && jobUser.userReturnVO.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;">
 			<text style="font: inherit; color: #777;" :style="fontScaleChange(1.2)">评分:</text>
 			<view class="text" style="text-align: left; -webkit-flex: 1;flex: 1; margin-top: 10px;margin-bottom: 10px;">
 				<uni-rate :max="10" v-model="talk.score" />
@@ -67,20 +70,59 @@
 			<button type="primary" @click="submit">提交</button>
 		</view>
 
-
+	</view>
+	
+	<view  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
+		<view :style="fontScaleChange(1.1)"  class="section-title" >{{more.title}}</view>
+		<view :style="fontScaleChange(0.85)" class="section-summary" >{{more.summary}}</view>
+		<pc-flow :data="more.contents" :all-images="more.contents" @image-click="openPreview(more.contents, $event.positionIndex)">
+			<template #default="{row, rowIndex}" >
+			</template>
+		</pc-flow>
+	</view>
+	
+	<!-- 垂直排列，略缩图显示大图 -->
+<!-- 	<view>
+		<uni-list  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
+		    <uni-list-item direction="column" :note="more.summary">
+		        <template v-slot:header>
+		            <view class="uni-title">{{more.title}}</view>
+		            <view class="uni-thumb uni-content list-picture" v-for="(imgs, rowIndex) in more.contents" :key="rowIndex" >
+						<image :src="imgs" mode="aspectFill" @click="openPreview(more.contents, rowIndex, index)"></image>
+					</view>
+		        </template>
+		    </uni-list-item>
+		</uni-list>
+	</view> -->
+	
+	<view>
+		<!-- 在模板末尾添加预览组件 -->
+		<image-preview
+		  v-if="previewVisible"
+		  ref="imagePreview"
+		  :imageUrl="previewList[previewIndex]"
+		  :imageList="previewList"
+		  :initialIndex="previewIndex"
+		  @close="closePreview"
+		/>
 	</view>
 </template>
 
 <script>
 	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
+	import ImagePreview from '@/components/image-preview/index.vue';//注意路径是否正确
 	
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_FONT_SET = "jobUserDetailFontSet"
 	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
+	const MAP_PICKER_POSITION = "map_Picker_Position"
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	
 	export default {
+		components: {
+			ImagePreview
+		},
 		data() {
 			return {
 				detailId: 0,
@@ -88,15 +130,27 @@
 				fontScale: 1.0,
 				fontSizeScale: 100,
 				jobUser: {
-					userId:0,
-					username:"",
-					sex:0,
-					tools:'',
-					headImgPath:'',
-					introduction:'',
-					allSkills:'',
-					address:''
+					userReturnVO: {
+						userId:0,
+						username:"",
+						sex:0,
+						tools:'',
+						headImgPath:'',
+						introduction:'',
+						allSkills:'',
+						address:'', 
+					},
+					moreReturnDOList:[]
+					
 				},
+				
+				// 位置数据
+				location:{
+					latitude: "",
+					longitude: ""
+				},
+				showDistance: true,
+				
 				// 基础表单数据
 				talk: {
 					userId: 0,
@@ -110,16 +164,23 @@
 				isStore: true,
 				readHistoryRecord: true,
 				historyRecord: [],
+				
+				previewVisible: false,     // 控制预览显示
+				previewList: [],           // 预览图片列表
+				previewIndex: 0,           // 当前预览图片索引
+				
 			}
 		},
-		computed: {},
+		computed: {
+		},
 		onLoad(e) {
+			this.detailId = e.detailId
 			const _this = this
 			uni.getStorage({
 				key: JOB_TOKEN,
 				success: function(resp){
 					_this.userToken = resp.data
-					if(_this.userToken.userId == e.detailId){
+					if(_this.userToken.userId == _this.detailId){
 						_this.isMyself = true
 					}
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
@@ -127,12 +188,12 @@
 				fail:function(){
 				},
 				complete() {
+					_this.getLocalFromStore();	// 读取位置信息
 					// 加载用户信息
-					_this.getJobUserByUserId(e.detailId);
+					_this.getJobUserByUserId(_this.detailId);
 				}
 			});
 			// console.log("参数："+ e.detailId)
-			this.detailId = e.detailId
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
 			    // console.log("接收地址：" + JSON.stringify(data))
@@ -145,7 +206,9 @@
 					district 	: data.district,
 					address : (data.title && data.title.includes(data.district))? data.title : data.district+data.title
 				}
-				this.jobUser.address = form.address
+				this.location.latitude	= data.location.lat;
+				this.location.longitude	= data.location.lng;
+				this.jobUser.userReturnVO.address = form.address
 				this.updateUser(form)
 			});
 		},
@@ -162,7 +225,7 @@
 				if(this.userToken?.userId) data.selfId = this.userToken?.userId;
 				if(this.userToken?.token) data.token = this.userToken?.token;
 				uni.request({
-					url: process.env.UNI_BASE_URL+'/api/job/getUser',  // 用户数据
+					url: process.env.UNI_BASE_URL+'/api/job/getUserDetail',  // 用户数据
 					data: data,
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -170,21 +233,22 @@
 						// console.log('user_detail.getUser 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data;
-							// console.log("getUser返回值："+JSON.stringify(respData))
+							// console.log("user_detail.getUser返回值："+JSON.stringify(respData))
 							if(respData) {
-								// console.log("转化前："+respData.skills)
-								respData.allSkills = respData.skillsName
+								// console.log("转化前："+respData.userReturnVO.skills)
+								respData.userReturnVO.allSkills = respData.userReturnVO.skillsName
 								// respData.allSkills = JSON.parse(respData.skills)
 								//   .filter(item => Object.keys(item) != -1)
 								//   .map(item => Object.values(item))
 								//   .join(',');
 								
-								if(respData.otherSkills){
-									respData.allSkills = respData.allSkills==''||!respData.allSkills?respData.otherSkills:respData.allSkills +","+ respData.otherSkills
+								if(respData.userReturnVO.otherSkills){
+									respData.userReturnVO.allSkills = respData.userReturnVO.allSkills==''||!respData.userReturnVO.allSkills?respData.userReturnVO.otherSkills:respData.userReturnVO.allSkills +","+ respData.userReturnVO.otherSkills
 								}
-								// console.log("转化后："+respData.allSkills)
+								// console.log("转化后："+respData.userReturnVO.allSkills)
 							};
 							_this.jobUser = respData;
+							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
 						}
 					},
 					fail: (result, code) => {
@@ -192,9 +256,23 @@
 					}
 				});
 			},
-			onClickItem(e) {
-				console.log(e);
-				this.current = e.currentIndex
+			// 读取缓存的位置信息
+			getLocalFromStore(){
+				const _this = this
+				uni.getStorage({
+				  key: MAP_PICKER_POSITION,
+				  success: function(res) {
+					const rLocal = res.data
+				    // console.log('获取到的数据为：', rLocal);
+					_this.location.latitude	= rLocal.position?.latitude;
+					_this.location.longitude= rLocal.position?.longitude;
+				    // 在这里对获取到的数据进行处理
+				  },
+				  fail: function(err) {
+				    console.error('获取数据失败：', err);
+				    // 在这里处理获取数据失败的情况
+				  }
+				});
 			},
 			
 			onFontSizeChange(scale) {
@@ -237,7 +315,7 @@
 			submit() {
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/saveScore',  // 数据源的数据是 有序的
-					data: {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: this.jobUser.userId, score: this.talk.score, talk: this.talk.talk, orderId: 0},
+					data: {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, userId: this.userToken.userId, score: this.talk.score, talk: this.talk.talk, orderId: 0},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
@@ -286,6 +364,96 @@
 				});
 				
 			},
+			
+			// 处理图片点击事件
+			handleImageClick(event) {
+				this.previewList = event.allImages;
+				this.previewVisible = true;
+				
+				this.$nextTick(() => {
+					if (this.$refs.imagePreview) {
+						this.$refs.imagePreview.currentIndex = event.index;
+						this.$refs.imagePreview.showPreview = true;
+					}
+				});
+			},
+			// 打开图片预览
+			openPreview(contents, index) {
+			  // console.log("点击了图片：", index, "；图片地址：", JSON.stringify(contents))
+			  // console.log("预览图片URL:", this.previewList[this.previewIndex])
+			  this.previewList = contents;
+			  this.previewIndex = index;
+			  this.previewVisible = true;
+			  
+			  // 4. 设置预览组件的当前索引
+			  this.$nextTick(() => {
+				if (this.$refs.imagePreview) {
+					// this.$refs.imagePreview.currentIndex = index;
+					// 调用组件的内部方法设置索引
+					this.$refs.imagePreview.setCurrentIndex(index);
+					this.$refs.imagePreview.showPreview = true;
+				} else {
+					console.error("未找到预览组件实例");
+				}
+			  });
+			},
+			// 关闭预览
+			closePreview() {
+			  this.previewVisible = false;
+			},
+			
+			contentArray(content) {
+				return content.split(',');
+			},
+			blackClick(item){
+				// 点击事件  item为{img:'图片地址',sname:'山海恋'}
+				console.log("板块信息："+JSON.stringify(item));
+			},
+			// 根据地理坐标，计算直线距离
+			calculateDistance(lat1, lon1, lat2, lon2) {
+				// console.log(" lat1:",lat1,";lon1 :", lon1,"; lat2:", lat2,";lon2 :", lon2)
+				// 地球半径，单位为公里
+				const R = 6371.0;
+				if (lat1&&lon1&&lat2&&lon2) {
+					// console.log("可以计算距离")
+					this.showDistance = true;
+				}else{
+					// console.log("无法计算距离");
+					return 0;
+				}
+				// if (!lat1 || !lon1 || !lat2 || !lon2) {
+				//   console.log("无法计算距离");
+				//   this.showDistance = false;
+				//   return 0; // 或者返回其他适当的值或抛出异常
+				// }
+				
+				// 将经纬度从度数转换为弧度
+				const lat1Rad = this.degToRad(lat1);
+				const lon1Rad = this.degToRad(lon1);
+				const lat2Rad = this.degToRad(lat2);
+				const lon2Rad = this.degToRad(lon2);
+				
+				// 计算纬度和经度的差值
+				const deltaLat = lat2Rad - lat1Rad;
+				const deltaLon = lon2Rad - lon1Rad;
+				
+				// 使用Haversine公式计算距离
+				const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+						  Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+						  Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
+				const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+				
+				let distance = R * c; // 距离单位为公里
+				console.log("精确直线距离：", distance)
+				// 距离单位为公里，四舍五入保留两位小数
+				distance = Math.round(distance * 100) / 100;
+				return distance;
+			},
+			// 辅助函数：将角度转换为弧度
+			degToRad(degrees) {
+			    return degrees * (Math.PI / 180);
+			},
+			// 长按复制
 			longPressCopyText(val){
 				if(this.isMyself){
 					uni.navigateTo({
@@ -308,7 +476,7 @@
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
 				
 				if(this.isMyself){
-					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.headImgPath}`;
+					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.userReturnVO.headImgPath}`;
 					uni.navigateTo({ url });
 					return ;
 				}
@@ -438,5 +606,37 @@
 	.flex-pc {
 		display: flex;
 		justify-content: center;
+	}
+	
+	// 图片预览
+	.main-image {
+	  width: 100%;
+	  height: 400px;
+	  border-radius: 8px;
+	  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+	}
+	
+	/* 添加标题样式 */
+	.section-title {
+		// font-size: 32rpx;
+		font-weight: bold;
+		color: #333;
+		margin: 30rpx 20rpx 5rpx;
+		padding-bottom: 10rpx;
+		// border-bottom: 1px solid #eee;
+	}
+	
+	/* 添加标题样式 */
+	.section-summary {
+		// font-size: 32rpx; #777  #333
+		font-weight: bold;
+		color: #777;
+		margin: 10rpx 20rpx 15rpx;
+		padding-bottom: 10rpx;
+		border-bottom: 1px solid #eee;
+	}
+	/* 调整图片流样式 */
+	.pc_flow {
+		margin-bottom: 40rpx;
 	}
 </style>
