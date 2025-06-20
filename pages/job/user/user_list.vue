@@ -69,16 +69,17 @@
 								</view>
 							</view>
 								
-							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between; justify-content: space-between;  line-height:70rpx; ">
+							<view class="uni-flex uni-row"  :style="fontSet" style="-webkit-justify-content: space-between; justify-content: space-between;  line-height:70rpx; display: flex;">
 								<view class="text" style="color: #8c531b; font-weight: bold; " >{{ worker.username +(worker.sex==0?' 先生':worker.sex==1?' 女士':'') }}</view>
 								<view style="display: block;">
-									<uni-rate class="rate-wrap" :readonly="true" :max="5" :value="worker.multiScore>5?5:worker.multiScore" 		:size="13*fontScale"  />
-									<uni-rate class="rate-wrap" :readonly="true" :max="5" :value="worker.multiScore>5?worker.multiScore-5:0" 	:size="13*fontScale"  />
+									<uni-rate :readonly="true" :max="5" :value="worker.multiScore>5?5:worker.multiScore" 	:size="13*fontScale"  />
+									<uni-rate :readonly="true" :max="5" :value="worker.multiScore>5?worker.multiScore-5:0" 	:size="13*fontScale"  />
 								</view>
 								
 								<view v-if="worker.userId != this.userToken?.userId" class="text" style="display: flex; font-weight: bold; color: #2E8B57;" @click="makePhoneCall(worker.userId)">立即联系
 									<u-icon name="chat" :color="headTipColor(worker.workStatus)"  size="36rpx" />
 								</view>
+								<view v-else style="margin-right: 10rpx;"><uni-icons type="contact" size="34" color="#FFCC33"></uni-icons></view>
 								
 							</view>
 						</view>
@@ -270,7 +271,7 @@
 				  key: MAP_PICKER_POSITION,
 				  success: function(res) {
 					const rLocal = res.data
-				    console.log('获取到的数据为：', rLocal);
+				    // console.log('获取到的数据为：', rLocal);
 					_this.location.latitude	= rLocal.position?.latitude;
 					_this.location.longitude= rLocal.position?.longitude;
 					_this.location.text		= rLocal.position?.text;
@@ -361,7 +362,7 @@
 					data: JSON.stringify(data),
 					method: 'POST',
 					success: result => {
-						console.log('user_list.userStream 返回值：' + JSON.stringify(result));
+						// console.log('user_list.userStream 返回值：' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data.rows;
 							let list = this.dataHandle(respData);
@@ -946,11 +947,5 @@
 		flex-direction: column;
 		align-items: center;
 		margin-bottom: 0px; /* 保持原有的margin-top */
-	}
-	.rate-wrap {
-		// display: grid;
-		// grid-template-rows: repeat(2, auto); /* 定义两行 */
-		margin-top: -20px; /* 创建与margin-top相等但负值的margin-top来使uni-rate看起来浮动 */
-		margin-bottom: 5px; /* 保持原有的margin-top */
 	}
 </style>

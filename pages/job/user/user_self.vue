@@ -266,8 +266,8 @@
 							}
 							
 						}
-						uni.showToast({ title: '地址更新失败！请稍后重试！' , icon: 'error' });
-						// console.log("更新地址异常："+ respData.message)
+						// uni.showToast({ title: '地址更新失败！请稍后重试！' , icon: 'error' });
+						console.error("user_self.updateUser 更新地址异常："+ respData.message)
 					},
 					fail: (result, code) => {
 						console.log('fail' + JSON.stringify(result));

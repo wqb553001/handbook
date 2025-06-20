@@ -267,7 +267,7 @@ export default {
 					// console.log('userStream 返回值' + JSON.stringify(result));
 					if (result.statusCode == 200 && result.data.code == 0) {
 						const respData = result.data.data;
-						console.log("user_setting.getUser返回值："+JSON.stringify(respData))
+						// console.log("user_setting.getUser返回值："+JSON.stringify(respData))
 						if(respData) {
 							// console.log("转化前："+respData.skills)
 							respData.allSkills = respData.skillsName
@@ -337,7 +337,7 @@ export default {
 				uni.showToast({ title: '先登录，才能有效收藏！', icon: 'none' });
 				return;
 			}
-			console.log("用户:", JSON.stringify(e.switchObj), "改变值:", e.data);
+			// console.log("用户:", JSON.stringify(e.switchObj), "改变值:", e.data);
 			const obj = e.switchObj ;
 			const isOpen = e.data ;
 			this.handleOpen(isOpen);
@@ -427,16 +427,16 @@ export default {
 		}
     },
 	computed:{
-		isShowMobile(){
-			if(this.jobUser.showMobile == 0){
-				this.jobUser.isShowMobile = true
-				this.showMobileText = "已授权";
-				return true;
-			}
-			this.jobUser.isShowMobile = false
-			this.showMobileText = "未授权";
-			return false;
-		}
+		// isShowMobile(){
+		// 	if(this.jobUser.showMobile == 0){
+		// 		this.jobUser.isShowMobile = true
+		// 		this.showMobileText = "已授权";
+		// 		return true;
+		// 	}
+		// 	this.jobUser.isShowMobile = false
+		// 	this.showMobileText = "未授权";
+		// 	return false;
+		// }
 	},
 	
 	watch: {

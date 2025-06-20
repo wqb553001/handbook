@@ -387,7 +387,7 @@
 		
 			// 处理文件选择事件
 			handleSelectUpload(e, index) {
-				console.log("选择文件事件:", e);
+				// console.log("选择文件事件:", e);
 				// 合并新旧文件（保留完整文件对象）
 				this.dynamicFormData.domains[index].images = [...this.dynamicFormData.domains[index].images, ...e.tempFiles];
 				this.$forceUpdate(); // 强制更新视图
@@ -575,7 +575,7 @@
 				uni.getStorage({
 					key: JOB_USER_SKILLS,
 					success: function(resp){
-						console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
+						// console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
 						_this.skillsOptions = resp.data
 						// console.log("初始从缓存中取值，设置字体比例：" + _this.skillsOptions)
 					},

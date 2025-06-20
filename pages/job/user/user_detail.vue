@@ -58,6 +58,7 @@
 		<view v-if="showDistance">
 			<text>直线距离：{{calculateDistance(location.latitude, location.longitude, jobUser.userReturnVO.latitude, jobUser.userReturnVO.longitude)}} 公里</text>
 		</view>
+		
 		<view v-if="!isMyself && jobUser.userReturnVO.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;">
 			<text style="font: inherit; color: #777;" :style="fontScaleChange(1.2)">评分:</text>
 			<view class="text" style="text-align: left; -webkit-flex: 1;flex: 1; margin-top: 10px;margin-bottom: 10px;">
@@ -355,8 +356,8 @@
 							}
 							
 						}
-						uni.showToast({ title: '地址更新失败！请稍后重试！' , icon: 'error' });
-						// console.log("更新地址异常："+ respData.message)
+						// uni.showToast({ title: '地址更新失败！请稍后重试！' , icon: 'error' });
+						console.error("user_detail.updateUser 更新地址异常："+ respData.message)
 					},
 					fail: (result, code) => {
 						console.log('fail' + JSON.stringify(result));
