@@ -69,7 +69,6 @@ export default {
 				success: (res) => {
 					if (res.confirm) {
 						uni.removeStorageSync(JOB_TOKEN);
-						this.reload();
 						// 跳转 登录页
 						uni.navigateTo({ url: '/pages/job/index' });
 					}

@@ -1,5 +1,14 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		//,
+		// {
+		// 	"path" : "pages/job/user/user_help",
+		// 	"style" : 
+		// 	{
+		// 		"navigationBarTitleText" : "帮助中心", 
+		// 		"enablePullDownRefresh" : false
+		// 	}
+		// },
 		{
 			"path" : "pages/job/user/user_list",
 			"style" : 
@@ -213,6 +222,15 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "",  // 重命名
+				"enablePullDownRefresh" : false
+			}
+		}
+		,
+		{
+			"path" : "pages/job/user/user_help",
+			"style" : 
+			{
+				"navigationBarTitleText" : "帮助中心", 
 				"enablePullDownRefresh" : false
 			}
 		}

@@ -212,11 +212,11 @@
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
+					_this.getStoreList();		// 我的收藏
 				},
 				fail:function(){
 				},
 				complete() {
-					_this.getStoreList();		// 我的收藏
 					_this.getBanner();			// 获取，标题展示数据
 					_this.getLocalFromStore();	// 读取位置信息
 					_this.getList();			// 获取，内容列表数据
@@ -586,7 +586,7 @@
 			},
 			
 			handleSwitchChange(e){
-				if(!this.userToken){
+				if(!this.userToken || !this.userToken?.userId){
 					uni.showToast({ title: '先登录，才能有效收藏！', icon: 'none' });
 					return;
 				}
@@ -597,7 +597,7 @@
 				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
 				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken)
 			},
-			
+			// 我的收藏
 			async getStoreList(){
 				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
 				// console.log("取值："+JSON.stringify(store))
@@ -741,7 +741,7 @@
 			sendMessage(content){
 				var params = {
 					sysId: SYS_ID, 
-					callPhone: this.userToken.userId,
+					callPhone: this.userToken?.userId,
 					subject: 'job 反馈',
 					suggestType: 3,		// 类型(1-咨询;2-投诉;3-建议(默认);4-举报;5-求助;6-意见;7-表扬)
 					email: 'wangqingbo0829@163.com',

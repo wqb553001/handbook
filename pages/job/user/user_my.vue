@@ -114,7 +114,7 @@
 			</view>
 	    </view>
 	  
-	    <view class="service-item" @click="" >
+	    <view class="service-item" @click="navigateTo(`/pages/job/user/user_help`)" >
 			<view class="left">
 				<view class="service-icon bg-cyan" > <uni-icons type="help" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet" >帮助中心</text>

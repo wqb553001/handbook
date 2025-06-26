@@ -25,7 +25,7 @@
 					<uni-forms-item label="技能" required>
 						<uni-data-checkbox v-model="parsedSkills" multiple :localdata="skillsOptions" :map="{ value: 'value', text: 'text' }" />
 						<input style="display: none;" v-model="baseFormData.jobUserDO.skillsName" />
-						<uni-easyinput v-if="baseFormData.jobUserDO.skills.includes(-1)" v-model="baseFormData.jobUserDO.otherSkills" placeholder="多个用逗号分隔" />
+						<uni-easyinput v-if="baseFormData.jobUserDO.skills?.includes(-1)" v-model="baseFormData.jobUserDO.otherSkills" placeholder="多个用逗号分隔" />
 					</uni-forms-item>
 					<uni-forms-item label="出生年月">
 						<picker mode="date" fields="month"  start="1900-01-01" :value="baseFormData.jobUserDO.birth" @change="dateChange">
@@ -481,6 +481,7 @@
 							// console.log("getToolSource返回值："+JSON.stringify(respData))
 							// _this.skillsHandle(respData);
 							this.skillsOptions = JSON.parse(respData);
+							console.log("this.skillsOptions："+JSON.stringify(this.skillsOptions))
 						}
 					},
 					fail: (result, code) => {
@@ -561,6 +562,13 @@
 				
 				this.baseFormData.jobUserDO.skills = JSON.stringify(selectOptions);
 			},
+			
+			hasOtherSkills(e){
+				console.log("输入 技能集合:", JSON.stringify(e))
+				if(!e) return false;
+				return e.includes(-1);
+			},
+			
 			// 去到地图的地址选取页
 			goLocationMap(){
 				uni.navigateTo({
@@ -577,7 +585,7 @@
 					success: function(resp){
 						// console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
 						_this.skillsOptions = resp.data
-						// console.log("初始从缓存中取值，设置字体比例：" + _this.skillsOptions)
+						console.log("初始从缓存中取值，技能：" + _this.skillsOptions)
 					},
 					fail:function(){
 						_this.getSkills();
