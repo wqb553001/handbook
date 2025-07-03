@@ -16,15 +16,13 @@
 			
 			<view class="uni-flex uni-row" style="display: flex;">
 				<view class="uni-flex uni-column" style="-webkit-flex: 1; flex: 1; -webkit-justify-content: space-between; justify-content: space-between;">
-					<view class="uni-flex" style="display: flex; height: 1.37; white-space: nowrap;">
-						<view class="text" :style="fontScaleChange(1)" >{{jobUser.userReturnVO.username}}</view>
-						<view class="text" :style="fontScaleChange(0.85)" >{{jobUser.userReturnVO.sex==0?'男':jobUser.userReturnVO.sex==1?'女':''}}</view>
-						<view class="text" :style="fontScaleChange(0.85)" style="padding: 0; " >{{calculateAge(jobUser.userReturnVO.birth)}} 岁</view>
+					<view class="uni-flex" style="display: flex; white-space: nowrap; align-items: center;">
+						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; font-weight: bold; " :style="fontScaleChange(1)" >{{jobUser.userReturnVO.username}}</view>
+						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; vertical-align: middle" :style="fontScaleChange(0.85)" >{{jobUser.userReturnVO.sex==0?'男':jobUser.userReturnVO.sex==1?'女':''}}</view>
+						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; vertical-align: middle" :style="fontScaleChange(0.85)" >{{calculateAge(jobUser.userReturnVO.birth)}} 岁</view>
 					</view>
-					<view class="uni-flex uni-row" >
-						<view class="text" :style="fontScaleChange(0.85)" style="text-align: left; -webkit-flex: 1; flex: 1; text-indent: 2em;  line-height:1.37; margin: 20px 0px 5px 5px; ">
-							{{ jobUser.userReturnVO.tools }}
-						</view>
+					<view class="text" :style="fontScaleChange(0.85)" style="text-align: left; -webkit-flex: 1; flex: 1; line-height:1.37; margin: 20px 0px 5px 0; ">
+						【自带工具】：{{ jobUser.userReturnVO.tools|| '无' }}
 					</view>
 				</view>
 				<view class="text uni-flex" style="width: 200rpx; height: 200rpx; " @longpress="longPressEditHeadImage">
@@ -35,28 +33,35 @@
 		
 		<view style="width:100%" >
 			<view class="text" style="text-align: left; padding-top: 50rpx;  line-height:1.37;" :style="fontScaleChange(0.85)" >
-				{{ jobUser.userReturnVO.allSkills }} 
+				【技能】：{{ jobUser.userReturnVO.allSkills }} 
 			</view>
 			
-			<view class="text" style="padding-top: 10rpx;">
-				<view class="uni-row" style="padding-top: 10rpx;">
-					<view class="uni-flex uni-column" style="min-height: 80rpx; line-height:1.37;" :style="fontScaleChange(0.85)" >
-						{{ jobUser.userReturnVO.introduction ||'' }}
+			
+			<view class="text" style="padding-top: 10rpx; text-align: left;">
+				<view style="padding-top: 10rpx;">
+					<view style="min-height: 80rpx; line-height:1.37;" :style="fontScaleChange(0.85)" >
+						【简介】：{{ jobUser.userReturnVO.introduction ||'' }}
 					</view>
 					
-					<view class="uni-flex uni-row" style="justify-content: space-between; margin-top: 30rpx;">						
-						<view class="text" style="text-align: left; color: #2E8B57; font-weight: bold;  line-height: 1.37; padding-left: 0; margin-left: -10px;" :style="fontScaleChange(1)"
-						 @longpress="longPressCopyText(jobUser.userReturnVO.address)">
-							<uni-icons type="location" color="#D3D3D3" size="30" />
-							{{ jobUser.userReturnVO.address || ' ' }}
+					<view style="justify-content: space-between; margin-top: 30rpx; ">
+						<view style="display: flex; justify-content: space-between; align-items: flex-end">
+							<view class="text" style="text-align: left; color: #2E8B57; font-weight: bold;  line-height: 1.37; padding-left: 0; " :style="fontScaleChange(1)"
+								@longpress="longPressCopyText(jobUser.userReturnVO.address)">
+								<uni-icons type="location" color="#D3D3D3" size="30" />
+								{{ jobUser.userReturnVO.address || ' ' }}
+							</view>		
+							<view v-if="showDistance" style="margin-left: 20rpx; ">
+								<view :style="fontScaleChange(0.85)">
+									<text>直线距离：</text>
+									<text style="white-space: nowrap;">{{calculateDistance(location.latitude, location.longitude, jobUser.userReturnVO.latitude, jobUser.userReturnVO.longitude)}}</text>
+									<text>公里</text>
+								 </view>
+							</view>
 						</view>
+						
 					</view>
 				</view>
 			</view>
-		</view>
-		
-		<view v-if="showDistance">
-			<text>直线距离：{{calculateDistance(location.latitude, location.longitude, jobUser.userReturnVO.latitude, jobUser.userReturnVO.longitude)}} 公里</text>
 		</view>
 		
 		<view v-if="!isMyself && jobUser.userReturnVO.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;">
@@ -587,8 +592,8 @@
 	}
 
 	.text {
-		margin: 15rpx 10rpx;
-		padding: 0 20rpx;
+		// margin: 15rpx 15rpx 10rpx 0;
+		// padding: 0 20rpx;
 		// background-color: #ebebeb;
 		// height: 70rpx;
 		min-height: 70rpx; // 改为最小高度
