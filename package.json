@@ -1,93 +1,92 @@
 {
-  "name": "uni-app-easy",
-  "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
-  "dependencies": {
-    "@dcloudio/uni-ui": "^1.5.7",
-    "axios": "^1.3.5",
-    "decimal.js": "^10.5.0",
-    "miniprogram-ci": "^2.0.10",
-    "uview": "^0.1.0",
-    "uview-plus": "^3.4.6",
-    "uview-ui": "^2.0.38",
-    "vue-cropperjs": "^4.2.0"
-  },
-  "devDependencies": {
-    "sass": "^1.86.0",
-    "sass-loader": "^13.3.3"
-  },
-  "uni-app": {
-  	"scripts": {			
-	  "dev-h5": {
-	    "title": "H5—— Dev 开发版",
-	    "BROWSER": "chrome",
-	    "env": {
-	    	"UNI_PLATFORM": "h5",
-	    	"UNI_BASE_URL": "http://localhost:18281",
-	    	"UNI_WS_URL": "wss://localhost:18283/ws",
-			"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
-			"UNI_CDN": "http://cdn.xny.world/"
-	    },
-	    "define": {
-	    	"DEV-H5": true
-	    }
-	  },
-	  "prod-h5": {
-	      "title": "H5—— Prod 正式版",
-	      "BROWSER": "chrome",
-	      "env": {
-	      	"UNI_PLATFORM": "h5",
-	      	"UNI_BASE_URL": "https://xny.world:8443",
-	      	"UNI_WS_URL": "wss://xny.world:18283/ws",
-			"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
-		    "UNI_CDN": "http://cdn.xny.world/"
-	      },
-	      "define": {
-	      	"PROD-H5": true
-	      }
-	  },
-  	  "prewx": {
-  		"title": "微信小程序—— Dev 开发版",
-  		"env": {
-  		  "ENV_TYPE": "dev",
-  		  "UNI_PLATFORM": "mp-weixin",
-  		  "UNI_BASE_URL": "http://localhost:18281",
-  		  "UNI_WS_URL": "wss://localhost:18283/ws",
-		  "UNI_QINIUP_URL": "https://up-z2.qiniup.com",
-		  "UNI_CDN": "http://cdn.xny.world/"
-  		},
-		"define": {
-			"MP-DINGTALK": true
-		}
-  	  },
-  	  "prodwx": {
-  		"title": "微信小程序—— Prod 正式版",
-  		"env": {
-  		  "ENV_TYPE": "prod",
-  		  "UNI_PLATFORM": "mp-weixin",
-  		  "UNI_BASE_URL": "https://xny.world:8443",
-  		  "UNI_WS_URL": "wss://xny.world:18283/ws",
-		  "UNI_QINIUP_URL": "https://up-z2.qiniup.com",
-		  "UNI_CDN": "http://cdn.xny.world/"
-  		},
-		"define": {
-			"MP-DINGTALK": true
-		}
-  	  }
-  	}
-  },
-  "scripts": {
-	    "build:dev": "cp manifest.dev.json manifest.json && uniapp-cli build -p android",
-	    "build:test": "cp manifest.test.json manifest.json && uniapp-cli build -p android",
-	    "build:prod": "cp manifest.prod.json manifest.json && uniapp-cli build -p android --release",
-	    
-	    "build:ios-dev": "cp manifest.dev.json manifest.json && uniapp-cli build -p ios",
-	    "build:ios-test": "cp manifest.test.json manifest.json && uniapp-cli build -p ios",
-	    "build:ios-prod": "cp manifest.prod.json manifest.json && uniapp-cli build -p ios --release",
-		"test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+		"name": "uni-app-easy",
+		"version": "1.0.0",
+		"description": "",
+		"main": "main.js",
+		"dependencies": {
+				"@dcloudio/uni-ui": "^1.5.7",
+				"axios": "^1.3.5",
+				"decimal.js": "^10.5.0",
+				"miniprogram-ci": "^2.0.10",
+				"uview": "^0.1.0",
+				"uview-plus": "^3.4.6",
+				"uview-ui": "^2.0.38",
+				"vue-cropperjs": "^4.2.0"
+		},
+		"devDependencies": {
+				"sass": "^1.86.0",
+				"sass-loader": "^13.3.3"
+		},
+		"uni-app": {
+				"scripts": {
+						"dev-h5": {
+								"title": "H5—— Dev 开发版",
+								"BROWSER": "chrome",
+								"env": {
+										"UNI_PLATFORM": "h5",
+										"UNI_BASE_URL": "http://localhost:18281",
+										"UNI_WS_URL": "wss://localhost:18283/ws",
+										"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
+										"UNI_CDN": "http://cdn.xny.world/"
+								},
+								"define": {
+										"DEV-H5": true
+								}
+						},
+						"prod-h5": {
+								"title": "H5—— Prod 正式版",
+								"BROWSER": "chrome",
+								"env": {
+										"UNI_PLATFORM": "h5",
+										"UNI_BASE_URL": "https://xny.world:8443",
+										"UNI_WS_URL": "wss://xny.world:18283/ws",
+										"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
+										"UNI_CDN": "http://cdn.xny.world/"
+								},
+								"define": {
+										"PROD-H5": true
+								}
+						},
+						"prewx": {
+								"title": "微信小程序—— Dev 开发版",
+								"env": {
+										"ENV_TYPE": "dev",
+										"UNI_PLATFORM": "mp-weixin",
+										"UNI_BASE_URL": "http://localhost:18281",
+										"UNI_WS_URL": "wss://localhost:18283/ws",
+										"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
+										"UNI_CDN": "http://cdn.xny.world/"
+								},
+								"define": {
+										"MP-DINGTALK": true
+								}
+						},
+						"prodwx": {
+								"title": "微信小程序—— Prod 正式版",
+								"env": {
+										"ENV_TYPE": "prod",
+										"UNI_PLATFORM": "mp-weixin",
+										"UNI_BASE_URL": "https://xny.world:8443",
+										"UNI_WS_URL": "wss://xny.world:18283/ws",
+										"UNI_QINIUP_URL": "https://up-z2.qiniup.com",
+										"UNI_CDN": "http://cdn.xny.world/"
+								},
+								"define": {
+										"MP-DINGTALK": true
+								}
+						}
+				}
+		},
+		"scripts": {
+				"build:dev": "cp manifest.dev.json manifest.json && uniapp-cli build -p android",
+				"build:test": "cp manifest.test.json manifest.json && uniapp-cli build -p android",
+				"build:prod": "cp manifest.prod.json manifest.json && uniapp-cli build -p android --release",
+				"build:ios-dev": "cp manifest.dev.json manifest.json && uniapp-cli build -p ios",
+				"build:ios-test": "cp manifest.test.json manifest.json && uniapp-cli build -p ios",
+				"build:ios-prod": "cp manifest.prod.json manifest.json && uniapp-cli build -p ios --release",
+				"test": "echo \"Error: no test specified\" && exit 1"
+		},
+		"keywords": [],
+		"author": "",
+		"license": "ISC"
 }
