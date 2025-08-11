@@ -78,14 +78,20 @@
 
 	</view>
 	
+	<uni-card class="detail-uni-card" v-if="jobUser?.moreReturnDOList?.length>0" :is-shadow="false" is-full style="text-align: center; display: block; margin-top: 40rpx; background-color: #f0f8ff;" custom-style="background-color: #f0f8ff;">
+		<text class="uni-h1" >详情展示</text>
+	</uni-card>
+	
 	<view  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
 		<view :style="fontScaleChange(1.1)"  class="section-title" >{{more.title}}</view>
 		<view :style="fontScaleChange(0.85)" class="section-summary" >{{more.summary}}</view>
-		<pc-flow :data="more.contents" :all-images="more.contents" @image-click="openPreview(more.contents, $event.positionIndex)">
-			<template #default="{row, rowIndex}" >
+		<pc-flow :data="more.images" :limitation="true" :all-images="more.images" @image-click="openPreview(more.images, $event.positionIndex)">
+			<template #default="{row, rowIndex}" width="160rpx;" height="160rpx;" >
 			</template>
 		</pc-flow>
 	</view>
+	
+	<view :style="fontScaleChange(1)" v-html="jobUser.content"></view>
 	
 	<!-- 垂直排列，略缩图显示大图 -->
 <!-- 	<view>
@@ -93,8 +99,8 @@
 		    <uni-list-item direction="column" :note="more.summary">
 		        <template v-slot:header>
 		            <view class="uni-title">{{more.title}}</view>
-		            <view class="uni-thumb uni-content list-picture" v-for="(imgs, rowIndex) in more.contents" :key="rowIndex" >
-						<image :src="imgs" mode="aspectFill" @click="openPreview(more.contents, rowIndex, index)"></image>
+		            <view class="uni-thumb uni-content list-picture" v-for="(imgs, rowIndex) in more.images" :key="rowIndex" >
+						<image :src="imgs" mode="aspectFill" @click="openPreview(more.images, rowIndex, index)"></image>
 					</view>
 		        </template>
 		    </uni-list-item>
@@ -384,10 +390,10 @@
 				});
 			},
 			// 打开图片预览
-			openPreview(contents, index) {
-			  // console.log("点击了图片：", index, "；图片地址：", JSON.stringify(contents))
+			openPreview(images, index) {
+			  // console.log("点击了图片：", index, "；图片地址：", JSON.stringify(images))
 			  // console.log("预览图片URL:", this.previewList[this.previewIndex])
-			  this.previewList = contents;
+			  this.previewList = images;
 			  this.previewIndex = index;
 			  this.previewVisible = true;
 			  
@@ -406,10 +412,6 @@
 			// 关闭预览
 			closePreview() {
 			  this.previewVisible = false;
-			},
-			
-			contentArray(content) {
-				return content.split(',');
 			},
 			blackClick(item){
 				// 点击事件  item为{img:'图片地址',sname:'山海恋'}
@@ -450,7 +452,7 @@
 				const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 				
 				let distance = R * c; // 距离单位为公里
-				console.log("精确直线距离：", distance)
+				// console.log("精确直线距离：", distance)
 				// 距离单位为公里，四舍五入保留两位小数
 				distance = Math.round(distance * 100) / 100;
 				return distance;
@@ -644,5 +646,14 @@
 	/* 调整图片流样式 */
 	.pc_flow {
 		margin-bottom: 40rpx;
+	}
+	
+	.detail-uni-card{
+		.uni-card.uni-card--full.uni-card--border{
+			background-color: #f0f8ff;
+		}
+		.uni-h1{
+			font-weight: bold;
+		}
 	}
 </style>

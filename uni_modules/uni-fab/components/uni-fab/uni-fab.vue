@@ -34,7 +34,7 @@
 		  'uni-fab__circle--leftTop': leftTop,
 		  'uni-fab__circle--rightTop': rightTop,
 		  'uni-fab__content--other-platform': !isAndroidNvue
-		}" class="uni-fab__circle uni-fab__plus" :style="{ 'background-color': styles.buttonColor, 'bottom': nvueBottom }" @click="_onClick">
+		}" class="uni-fab__circle uni-fab__plus" :style="{ 'background-color': '#5ECCBBB3', 'bottom': nvueBottom }" @click="_onClick">
 			<uni-icons class="fab-circle-icon" :type="styles.icon" :color="styles.iconColor" size="32"
 				:class="{'uni-fab__plus--active': isShow && content.length > 0}"></uni-icons>
 			<!-- <view class="fab-circle-v"  :class="{'uni-fab__plus--active': isShow && content.length > 0}"></view>
@@ -113,7 +113,10 @@
 				styles: {
 					color: '#3c3e49',
 					selectedColor: '#007AFF',
+					// selectedColor: 'rgba(0, 122, 255, 0.7)',
+					// backgroundColor: '#fff',
 					backgroundColor: '#fff',
+					// buttonColor: '#B3007AFF',  // #007affb3   // #2E8B57  // rgb(46,139,87) // #2E8B57B3  // #ABDCE4  // #5ECCBB
 					buttonColor: '#007AFF',
 					iconColor: '#fff',
 					icon: 'plusempty'
@@ -228,7 +231,21 @@
 				} else {
 					return this.isShow && this.direction === paramA ? this.contentWidth : this.contentWidthMin
 				}
-			}
+			},
+			convertToHexRGBA(rgba) {
+			    // 格式检查
+			    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+			    if (!match) return '#007AFF'; // 默认色
+			    
+			    // 提取颜色值
+			    const r = parseInt(match[1]);
+			    const g = parseInt(match[2]);
+			    const b = parseInt(match[3]);
+			    let a = match[4] ? Math.round(parseFloat(match[4]) * 255) : 255;
+			    
+			    // 转换为十六进制
+			    return `#${a.toString(16).padStart(2, '0')}${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+			},
 		}
 	}
 </script>

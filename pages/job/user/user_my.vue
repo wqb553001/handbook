@@ -62,8 +62,8 @@
         <!-- 功能区域 -->
        <view class="feature-section">
             <view class="section-title" :style="fontSet" style="display: flex; justify-content: space-between;">
-				<text>我的服务</text>
-				<view @longpress="longpressCopyCode(jobUser.selfCode)" >
+				<text style="white-space: nowrap;">我的服务</text>
+				<view @longpress="longpressCopyCode(jobUser.selfCode)" style="text-align: right;" >
 					<text style="color: #FFCC33;" >我的邀请码：</text>
 					<text @longpress="longpressCopyCode(jobUser.selfCode)" style="color: #ff6043;">{{jobUser.selfCode}}</text>
 				</view>
@@ -127,13 +127,24 @@
 	  	  
 		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest?userId='+userToken.userId)" >
 			<view class="left">
-				<view class="service-icon bg-pink" > <uni-icons type="chat" size="20" color="#fff"></uni-icons> </view>
+				<view class="service-icon bg-pink" > <uni-icons type="email" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet" >意见反馈</text>
 			</view>
 			<view class="right">
 				<uni-icons type="right" :style="fontSet" size="14" color="#999"></uni-icons>
 			</view>
 		</view>
+	  
+	  	  
+<!-- 		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest?userId='+userToken.userId)" >
+			<view class="left">
+				<view class="service-icon bg-green" > <uni-icons type="chat" size="20" color="#fff"></uni-icons> </view>
+				<text class="service-name" :style="fontSet" >在线咨询</text>
+			</view>
+			<view class="right">
+				<uni-icons type="right" :style="fontSet" size="14" color="#999"></uni-icons>
+			</view>
+		</view> -->
 	  	  
 	  	  	  
 	  	<view class="service-item" @click="navigateToServices('/pages/job/user/user_setting')" >

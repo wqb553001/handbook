@@ -56,9 +56,9 @@
 					<uni-section title="扩展信息" type="line">
 						<view class="example">
 							<!-- 动态表单校验 -->
-							<uni-forms ref="dynamicForm" :rules="dynamicRules" :model="dynamicFormData" labelWidth="80px">
+							<uni-forms ref="dynamicForm" :rules="dynamicRules" :model="baseFormData.moreReturnDOList" labelWidth="80px">
 								<!-- <uni-card> -->
-								<uni-card v-for="(item, index) in dynamicFormData.domains" :key="item.id"
+								<uni-card v-for="(item, index) in baseFormData.moreReturnDOList" :key="item.id"
 									:label="item.label+' '+index" required :rules="item.rules" :name="['domains', index, 'value']">
 									<!-- <view class="form-item"> -->
 									<view style="display: flex; justify-content:space-between; ">
@@ -66,7 +66,7 @@
 										<view style="display: flex; flex-direction: column; align-items: center;">
 											<view>关闭/开启</view>
 											<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true"
-												@switchChange="handleSwitchChange" :switchObj="index" :switchChecked="dynamicFormData.domains[index].enabled==0?true:false" />
+												@switchChange="handleSwitchChange" :switchObj="index" :switchChecked="item.enabled==0?true:false" />
 										</view>
 										
 										<view style="display: flex;">
@@ -75,13 +75,13 @@
 										</view>
 									</view>
 									
-									<uni-easyinput v-model="dynamicFormData.domains[index].title" placeholder="请输入标题" />
-									<uni-easyinput style="margin-top: 10px !important; margin-bottom: 10px !important; " type="textarea" v-model="dynamicFormData.domains[index].summary" placeholder="请输入简介" />
+									<uni-easyinput v-model="item.title" placeholder="请输入标题" />
+									<uni-easyinput style="margin-top: 10px !important; margin-bottom: 10px !important; " type="textarea" v-model="item.summary" placeholder="请输入简介" />
 									
 									<!-- 图片上传 -->
 									<uni-forms-item label="上传图片">
 										<uni-file-picker
-											v-model="dynamicFormData.domains[index].images"
+											v-model="item.images"
 											limit="20"  
 											:image-styles="imageStyles"
 											mode="grid"
@@ -89,7 +89,7 @@
 											:del-icon="true"
 											:auto-upload="false"
 											file-mediatype="image"
-											@select="handleSelectUpload($event, index)"
+											@select="handleSelectUpload($event, item)"
 										></uni-file-picker>
 									</uni-forms-item>
 									
@@ -104,7 +104,7 @@
 								</view>
 								
 								<uni-forms-item label="自定义" name="content" style="margin-top: 30rpx;">
-									<uni-easyinput type="textarea" v-model="dynamicFormData.content" placeholder="请输入html" />
+									<uni-easyinput type="textarea" v-model="baseFormData.content" placeholder="请输入html" />
 								</uni-forms-item>
 							</uni-forms>
 						</view>
@@ -144,6 +144,7 @@
 				userToken:{},
 				// 基础表单数据
 				baseFormData: {
+					content:'',
 					jobUserDO:{
 						sysId: SYS_ID,
 						userId: 0,
@@ -163,7 +164,8 @@
 						skillsName: '',					// 技能
 						otherSkills:'',				// 其他技能
 						tools: '',					// 工具/设备 名称
-					}
+					},
+					moreReturnDOList:[]
 					
 					// dynamicFormData: {
 					// 	content: '',
@@ -213,12 +215,6 @@
 					border: {
 						radius: '50%'
 					}
-				},
-				
-				dynamicFormData: {
-					content: '',
-					domains: []
-					// domains: [{id:0, label: '介绍', title:'', summary:'', content:'', images:[], enabled: 0 }]
 				},
 				dynamicRules: {
 					email: {
@@ -348,28 +344,28 @@
 				// 顶元素，上移无效
 				if(upDown==0 && index==0) return;
 				// 底元素，下移无效
-				if(upDown==1 && index==this.dynamicFormData.domains.length-1) return;
+				if(upDown==1 && index==this.baseFormData.moreReturnDOList.length-1) return;
 				// 上移
 				if(upDown==0){
-					let temp = this.dynamicFormData.domains[index];
-					this.$set(this.dynamicFormData.domains, index, this.dynamicFormData.domains[index - 1]);
-					this.$set(this.dynamicFormData.domains, index - 1, temp);
+					let temp = this.baseFormData.moreReturnDOList[index];
+					this.$set(this.baseFormData.moreReturnDOList, index, this.baseFormData.moreReturnDOList[index - 1]);
+					this.$set(this.baseFormData.moreReturnDOList, index - 1, temp);
 				}
 				// 下移
 				if(upDown==1){
-					let temp = this.dynamicFormData.domains[index];
-					this.$set(this.dynamicFormData.domains, index, this.dynamicFormData.domains[index + 1]);
-					this.$set(this.dynamicFormData.domains, index + 1, temp);
+					let temp = this.baseFormData.moreReturnDOList[index];
+					this.$set(this.baseFormData.moreReturnDOList, index, this.baseFormData.moreReturnDOList[index + 1]);
+					this.$set(this.baseFormData.moreReturnDOList, index + 1, temp);
 				}
 				
 			},
 			
 			addDynamicItem() {
-				if(this.dynamicFormData.domains.length>20){
+				if(this.baseFormData.moreReturnDOList.length>20){
 					uni.showToast({ title: '板块最多支持20个，请优化！', icon: 'none' });
 					return;
 				}
-				this.dynamicFormData.domains.push({
+				this.baseFormData.moreReturnDOList.push({
 					label: '介绍',
 					title:'', summary:'', content:'', enabled:0, images:[],
 					rules: [{
@@ -381,15 +377,64 @@
 			},
 			
 			delDynamicItem(id) {
-				let index = this.dynamicFormData.domains.findIndex(v => v.id === id)
-				this.dynamicFormData.domains.splice(index, 1)
+				let index = this.baseFormData.moreReturnDOList.findIndex(v => v.id === id)
+				this.baseFormData.moreReturnDOList.splice(index, 1)
 			},
 		
 			// 处理文件选择事件
-			handleSelectUpload(e, index) {
+			async handleSelectUpload(e, item) {
 				// console.log("选择文件事件:", e);
 				// 合并新旧文件（保留完整文件对象）
-				this.dynamicFormData.domains[index].images = [...this.dynamicFormData.domains[index].images, ...e.tempFiles];
+				// console.log("e.tempFiles:", e.tempFiles)
+				// console.log("item.images:", item.images)
+				
+				// this.$forceUpdate(); // 强制更新视图
+				// return;
+				
+				const MAX_SIZE = 5 * 1024 * 1024; // 5MB限制
+				
+				// 获取当前所有文件（包括新选择的）
+				let allFiles = [...e.tempFiles];
+				// console.log("allFiles.before:", allFiles)
+				// 逐个检查并移除过大文件
+				for (let i = allFiles.length - 1; i >= 0; i--) {
+					const file = allFiles[i];
+					let fileSize = 0;
+					
+					try {
+						// 先尝试从file对象中获取size
+						if (file.size && typeof file.size === 'number') {
+							fileSize = file.size;
+						} else {
+							// 如果没有size属性，则通过API获取
+							const fileInfo = await uni.getFileInfo({ filePath: file.path || file.tempFilePath });
+							fileSize = fileInfo.size;
+						}
+						
+						// 检查文件是否超过大小限制
+						if (fileSize > MAX_SIZE) {
+							// 提示用户
+							uni.showToast({
+								// title: `文件 ${file.name || '未命名'} 超过5MB限制`,
+								title: `自动移除，超过5MB限制的文件： ${file.name || '未命名'}`,
+								icon: 'none',
+								duration: 5000
+							});
+							
+							// 从文件列表中移除
+							allFiles.splice(i, 1);
+						}
+					} catch (error) {
+						console.error('文件大小检查失败:', error);
+						// 移除出错的文件
+						allFiles.splice(i, 1);
+					}
+				}
+				// 更新文件列表（已移除所有过大文件）
+				// item.images = allFiles;
+				
+				item.images = [...item.images, ...allFiles];
+				// console.log("allFiles.after:", item.images)
 				this.$forceUpdate(); // 强制更新视图
 			},
 			
@@ -409,13 +454,13 @@
 				}
 				
 				const _this = this
-				if(this.dynamicFormData.domains && this.dynamicFormData.domains?.length>0){
-					for(let num = this.dynamicFormData.domains.length-1; num>=0; num--){
-						let domain = this.dynamicFormData.domains[num];
+				if(this.baseFormData.moreReturnDOList && this.baseFormData.moreReturnDOList?.length>0){
+					for(let num = this.baseFormData.moreReturnDOList.length-1; num>=0; num--){
+						let domain = this.baseFormData.moreReturnDOList[num];
 						
 						// 无数据板块，自动移除
 						if(!domain || domain.images==0 && !domain.title && !domain.summary && !domain.content){
-							this.dynamicFormData.domains.splice(num, 1);
+							this.baseFormData.moreReturnDOList.splice(num, 1);
 							continue;
 						}
 						
@@ -424,6 +469,9 @@
 						for(let i = 0; i<domain.images.length; i++){
 							let file = domain.images[i]
 							const path = file.url || file.path || file
+							domain.images[i] = path;
+							if(path.includes("http://cdn.xny.world")) continue; 
+							// debugger
 							const imgPath = await uploadUtils.uploadImg(path, uploadToken, 'job/userInfo/', userToken.userId);
 							// console.log("upload after path:"+imgPath)
 							if(imgPath){
@@ -431,31 +479,10 @@
 							}
 						}
 					}
-					// console.log("更新后板块信息："+JSON.stringify(this.dynamicFormData.domains))
+					// console.log("更新后板块信息："+JSON.stringify(this.dynamicFormData.images))
 				}
 				
-				const submitForm = {
-					jobUserDO:{
-						sysId: 				SYS_ID,
-						userId: 			this.baseFormData.jobUserDO.userId,
-						introduction: 		this.baseFormData.jobUserDO.introduction,
-						sex: 				this.baseFormData.jobUserDO.sex,
-						birth: 				this.baseFormData.jobUserDO.birth,
-						address:			this.baseFormData.jobUserDO.address,			// 位置：地址
-						latitude:			this.baseFormData.jobUserDO.latitude,			// 位置：纬度-坐标
-						longitude:			this.baseFormData.jobUserDO.longitude,			// 位置：经度-坐标
-						province:			this.baseFormData.jobUserDO.province,			// 省份
-						city:				this.baseFormData.jobUserDO.city,				// 市
-						district:			this.baseFormData.jobUserDO.district,			// 区
-						skills:				this.baseFormData.jobUserDO.skills,				// 技能 
-						skillsName:			this.baseFormData.jobUserDO.skillsName,			// 技能名称
-						otherSkills:		this.baseFormData.jobUserDO.otherSkills,		// 其他技能
-						tools:				this.baseFormData.jobUserDO.tools				// 工具/设备 名称
-					},
-					content:				this.dynamicFormData.content,
-					userMoreVOList:			this.dynamicFormData.domains,
-				}
-				this.updateUser(submitForm);
+				this.updateUser(this.baseFormData);
 				if(!this.baseFormData.jobUserDO?.headImgPath){
 					// console.log("保存成功，userId:", userId)
 					const url = `/pages/job/head_img/head_img?userId=${this.baseFormData.jobUserDO.userId}&afterUrl=/pages/job/index`;
@@ -481,7 +508,7 @@
 							// console.log("getToolSource返回值："+JSON.stringify(respData))
 							// _this.skillsHandle(respData);
 							this.skillsOptions = JSON.parse(respData);
-							console.log("this.skillsOptions："+JSON.stringify(this.skillsOptions))
+							// console.log("this.skillsOptions："+JSON.stringify(this.skillsOptions))
 						}
 					},
 					fail: (result, code) => {
@@ -564,7 +591,7 @@
 			},
 			
 			hasOtherSkills(e){
-				console.log("输入 技能集合:", JSON.stringify(e))
+				// console.log("输入 技能集合:", JSON.stringify(e))
 				if(!e) return false;
 				return e.includes(-1);
 			},
@@ -585,7 +612,7 @@
 					success: function(resp){
 						// console.log("key:", JOB_USER_SKILLS, "返回内存原值：", JSON.stringify(resp))
 						_this.skillsOptions = resp.data
-						console.log("初始从缓存中取值，技能：" + _this.skillsOptions)
+						// console.log("初始从缓存中取值，技能：" + _this.skillsOptions)
 					},
 					fail:function(){
 						_this.getSkills();
@@ -598,6 +625,7 @@
 				form.token 	= this.userToken.token;
 				form.selfId = this.userToken.userId;
 				form.userId = this.userToken.userId;
+				console.log("提交数据："+JSON.stringify(form))
 				uni.request({
 					url: process.env.UNI_BASE_URL + '/api/job/updateUserMore',
 					header: { 'Content-Type': 'application/json' },
@@ -615,25 +643,31 @@
 			getJobUserByUserId(){
 				const _this = this;
 				uni.request({
-					url: process.env.UNI_BASE_URL + '/api/job/getUser',  // 用户数据
+					url: process.env.UNI_BASE_URL + '/api/job/getUserDetail',  // 用户数据 getUserDetail  getUser
 					data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						// console.log('user_add.getUser 返回值' + JSON.stringify(result));
+						// console.log('user_add.getUserDetail 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data;
-							// console.log("user_add.getUser返回值2："+JSON.stringify(respData))
+							// console.log("user_add.getUserDetail返回值2："+JSON.stringify(respData))
 							if(respData) {
 								// console.log("转化前："+respData.skills)
-								this.baseFormData.jobUserDO = respData
+								this.baseFormData.jobUserDO = respData.userReturnVO
 								// console.log("转化后："+JSON.stringify(respData))
 								if(respData.birth) this.baseFormData.jobUserDO.birth = respData.birth.substring(0, 7)
 								this.tool = this.baseFormData.jobUserDO.tools?10:20;
-								if(respData.dynamicFormData) {
-									if(respData.dynamicFormData.content) this.dynamicFormData.content = respData.dynamicFormData.content
-									if(respData.dynamicFormData.domains) this.dynamicFormData.domains = respData.dynamicFormData.domains
+								if(respData.content) this.baseFormData.content = respData.content
+								if(respData.moreReturnDOList) {
+									if(respData.moreReturnDOList) {
+										this.baseFormData.moreReturnDOList = respData.moreReturnDOList
+										if(respData.moreReturnDOList){
+											this.baseFormData.moreReturnDOList = this.transformImagesToObjectArray(respData.moreReturnDOList)
+										}
+									}
 								}
+								// console.log("获得值："+JSON.stringify(this.baseFormData))
 							};
 						}
 					},
@@ -642,7 +676,13 @@
 					}
 				});
 			},
-			
+			// 对象数组内images字符串数组 转 对象数组
+			transformImagesToObjectArray(data) {
+			  return data.map(item => ({
+				  ...item,
+				  images: item?.images?.map(url => ({ url }))
+				}));
+			},
 			setStore(map, saveData){
 				map.set(saveData.mobile, saveData)
 				const mapObj = Object.fromEntries(map);
@@ -655,21 +695,36 @@
 			
 			// 选择或者拍照
 			chooseImage() {
+			  console.log("选择图片")
 			  uni.chooseImage({
 			    count: 1, // 默认9，这里我们只选一张图
 			    sizeType: ['original', 'compressed'], // 可选择原图或压缩图
 			    sourceType: ['album', 'camera'], 	  // 支持从相册和摄像头选择
 			    success: async (res) => {
-					const filePath = res.tempFilePaths; // 获取选择的图片路径
+					const filePaths = res.tempFilePaths; // 获取选择的图片路径
+					console.log("循环上传图片")
 					// 在这里可以对图片进行进一步处理，如上传、预览等
-					for(let filePath of filePaths){
-						// 上传图片
-						const imgUrl = await uploadUtils.uploadImg(
-						  res.tempFilePaths[0],
-						  this.uploadToken,
-						  'job/userInfo/image/',
-						  this.userToken.userId
-						);
+					
+					for (let i = filePaths.length - 1; i >= 0; i--) {
+					// for(let filePath of filePaths){
+						const filePath = filePaths[i];
+						try {
+							
+							// 上传图片
+							const imgUrl = await uploadUtils.uploadImg(
+							  filePath,
+							  this.uploadToken,
+							  'job/userInfo/image/',
+							  this.userToken.userId
+							);
+							if(!imgUrl){
+								// 上传失败：从文件列表中移除
+								filePaths.splice(i, 1);
+							}
+						} catch (error) {
+						  console.error('文件处理失败:', error);
+						  filePaths.splice(i, 1); // 移除出错的文件
+						}
 					}
 			    },
 			    fail: (err) => {
@@ -684,20 +739,6 @@
 			preShow(tempFilePaths){
 				uni.previewImage({
 				    urls: tempFilePaths // 需要预览的图片路径数组
-				});
-			},
-			
-			uploadFile(tempFilePaths){
-				uni.uploadFile({
-				    url: '服务器上传接口地址',
-				    filePath: tempFilePaths[0], // 选择的第一张图片路径
-				    name: 'file',
-				    success: (res) => {
-				        // console.log('上传成功：', res);
-				    },
-				    fail: (err) => {
-				        console.log('上传失败：', err);
-				    }
 				});
 			},
 			
@@ -724,8 +765,7 @@
 			handleSwitchChange(e){
 				const index = e.switchObj ;
 				const enabled = e.data?0:1 ;
-				this.dynamicFormData.domains[index].enabled = enabled ;
-				// console.log("this.dynamicFormData.domains[index].enabled: " + this.dynamicFormData.domains[index].enabled)
+				this.baseFormData.moreReturnDOList[index].enabled = enabled ;
 			},
 		
 			onFontSizeChange(scale) {

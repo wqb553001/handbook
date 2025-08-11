@@ -1,5 +1,6 @@
 // import uploadUtils from '@/common/js/util/uploadUtils.js';
 const SYS_ID = 2025040301;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB限制
 
 export default {
   /**
@@ -36,8 +37,22 @@ export default {
    * @param {number} userId - 用户ID
    * @returns {Promise<string|null>} 文件CDN地址
    */
-  async _uploadFile(filePath, uploadToken, fileType, where, userId) {
+  async _uploadFile(filePath, uploadToken, fileType, where, userId, maxFileSize=MAX_FILE_SIZE) {
     try {
+	  // 新增：检查文件大小
+		const fileInfo = await uni.getFileInfo({ filePath });
+		console.log("fileInfo.size: "+ fileInfo.size)
+		console.log("maxFileSize: "+ maxFileSize)
+		console.log("fileInfo.size > maxFileSize: "+ (fileInfo.size > maxFileSize))
+		if (fileInfo.size > maxFileSize) {
+		  const typeName = fileType === 'image' ? '图片' : '语音';
+		  uni.showToast({
+			title: `${typeName}大小超过5MB限制`,
+			icon: 'none'
+		  });
+		  return null;
+		}
+		
       // 根据文件类型生成不同路径
       // const prefix = fileType === 'image' ? 'job/suggest/' : 'job/voice/';
       const ext = fileType === 'image' ? 'jpg' : 'mp3';
@@ -77,9 +92,9 @@ export default {
    * @param {number} userId - 用户ID
    * @returns {Promise<string|null>} 图片CDN地址
    */
-  async uploadImg(imagePath, uploadToken, where, userId) {
+  async uploadImg(imagePath, uploadToken, where, userId, maxFileSize=MAX_FILE_SIZE) {
 	console.log("【uploadImg】imagePath: ", imagePath, "; uploadToken: ", uploadToken, "; where: ", where, "; userId: ", userId)
-    return this._uploadFile(imagePath, uploadToken, 'image', where, userId);
+    return this._uploadFile(imagePath, uploadToken, 'image', where, userId, maxFileSize);
   },
 
   /**

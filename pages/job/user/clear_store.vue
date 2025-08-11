@@ -9,7 +9,7 @@
 		  <button type="primary" @click='clearStore(0, "浏览记录", 	"JOB_OPT_HISTORY_RECORD")'>浏览记录缓存</button>
 		  <button type="primary" @click='clearStore(0, "字体", 		"jobUserMySet"			)'>字体大小缓存</button>
 		  <button type="primary" @click='clearStore(0, "技能", 		"jobUserSkills"			)'>技能选项缓存</button>
-		  <button type="primary" @click='logout()'>退出登录</button>
+		  <button type="primary" @click='logout()' style="background-color: #FF4D4F;">退出登录</button>
 		  <!-- <button type="primary" @click='clearAllStore()'>所有缓存</button> -->
 		</view>
 

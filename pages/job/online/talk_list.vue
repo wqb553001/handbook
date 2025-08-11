@@ -218,7 +218,7 @@
 			        case 'mp3':
 			        case 'wav':
 			        case 'aac':
-			            return '语音';
+			            return '♩♪♫♬';	// 语音
 			        case 'mp4':
 			        case 'avi':
 			        case 'mov':
