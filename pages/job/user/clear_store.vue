@@ -27,7 +27,9 @@ const JOB_USER_SKILLS = "jobUserSkills"
 const MAP_PICKER_POSITION = "map_Picker_Position"
 
 export default {
-    data() {},
+    data() {
+		userToken:{}
+	},
     methods: {
 		clearStore(type, obj, storeKey){
 			// uni.removeStorage({key: ''})
@@ -61,6 +63,7 @@ export default {
 		
 		logout(){
 			const obj = "登录"
+			const _this = this
 			uni.showModal({
 				title: '提示',
 				content: `确定需要清除${obj}缓存？`,
@@ -68,7 +71,39 @@ export default {
 				cancelText: '退出',
 				success: (res) => {
 					if (res.confirm) {
-						uni.removeStorageSync(JOB_TOKEN);
+						uni.removeStorage({key:JOB_TOKEN});
+						
+						_this.userToken.userId = null
+						_this.userToken.token = null
+						_this.userToken.level = null
+						// 清空登录信息
+						uni.setStorage({
+							key:JOB_TOKEN,
+							data: _this.userToken
+						});
+						// uni.getStorage({
+						// 	key: JOB_TOKEN,
+						// 	success: async function(resp){
+						// 		_this.userToken = resp.data
+						// 		// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+						// 		// if(_this.userToken?.userId) {
+						// 		// 	_this.userToken.userId=null;
+						// 		// 	_this.userToken.token=null;
+						// 		// }
+								
+						// 		// 清空登录信息
+						// 		uni.setStorage({
+						// 			key:JOB_TOKEN,
+						// 			data: {}
+						// 		});
+						// 	},
+						// 	fail:function(){
+						// 	},
+						// 	complete() {
+						// 	}
+						// });
+						
+						
 						// 跳转 登录页
 						uni.navigateTo({ url: '/pages/job/index' });
 					}

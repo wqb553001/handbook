@@ -36,7 +36,7 @@
 			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
 				<uni-card style="padding:0px" >
 					<template v-slot:title>
-						<uni-list  style="border-bottom: none; border: none !important;">
+						<uni-list v-if="worker.userId != userToken.userId"  style="border-bottom: none; border: none !important;">
 							<uniListItem :titleStyle="handleTitleStyle(18)" :border="false" :show-switch="true" :title="stringShowLen(worker.allSkills, false)"
 								@switchChange="handleSwitchChange" :switchObj="worker" :switchChecked="worker.isStore" />
 						</uni-list>
@@ -160,7 +160,7 @@
 				currentPage: 1,	// 当前页码
 				reload: false,	// 上拉加载更多-false; 下拉刷新-true
 				status: 'more', // 加载状态  more：上拉加载更多；loading：加载中；nomore：没有更多
-				
+				isFirstLoad: true,// 首次加载
 				adpid: '',
 				contentText: {
 					contentdown: '上拉加载更多',
@@ -227,16 +227,20 @@
 				success: async function(resp){
 					_this.userToken = resp.data
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN});
+					// if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN});
 					// await _this.fetchDeviceInfo();
 					// _this.deviceInfo = await _this.fetchAllInfo();
-					_this.getStoreList();		// 我的收藏
 				},
 				fail:function(){
+					// const res = uni.getSystemInfoSync();
+					// _this.userToken.userId = res.deviceId
+					// uni.setStorage({ key:JOB_TOKEN, data: _this.userToken });
+					_this.writeTempUserId();
 				},
 				complete() {
 					_this.getBanner();			// 获取，标题展示数据
 					_this.getLocalFromStore();	// 读取位置信息
+					_this.getStoreList();		// 我的收藏
 					_this.getList();			// 获取，内容列表数据
 				}
 			});
@@ -308,7 +312,7 @@
 				    // 在这里对获取到的数据进行处理
 				  },
 				  fail: function(err) {
-				    console.error('获取数据失败：', err);
+				    console.error('job-list.getLocalFromStore()获取位置数据失败：', err);
 				    // 在这里处理获取数据失败的情况
 				  }
 				});
@@ -372,7 +376,7 @@
 			// 获取，内容列表数据
 			async getList() {
 				if(this.status == 'nomore') return;
-				let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, local: this.location}
+				let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, local: this.location, isFirstLoad: false, deviceId: this.userToken.deviceId}
 				if(this.searchValue){
 					data.likeAllSkills =  "%"+this.searchValue+"%"
 				}
@@ -383,15 +387,22 @@
 					data.offset = this.offset;				// 有序取数，下一批数据的指针
 					data.time = new Date().getTime() + '';	// 添加请求时间戳，作用：防止 重复取数
 					data.limit = PAGE_LIMIT;
-				}else{
-					// 首次请求
+				}
+				
+				/**
+				 * 【首次请求】
+				 * 		记录设备信息
+				 **/ 
+				if(this.isFirstLoad){
 					data = await this.fetchDeviceInfo(data);
+					data.isFirstLoad = true
 					var equipment = JSON.stringify(data);
-					console.log("设备信息："+equipment)
+					// console.log("设备信息："+equipment)
 					// console.log("位置信息："+JSON.stringify(this.locationInfo))
-					
+					// 已在前面处理过，不再重复截取
 					// data.equipment = equipment.length>255?equipment.substring(0, 255):equipment;
 				}
+				
 				console.log('Base URL:', this.apiBaseUrl)
 				// console.log('user_list.userStream 请求参数：' + JSON.stringify(data))
 				// console.log('step0--------');
@@ -413,6 +424,7 @@
 								this.status = 'nomore';	// 没有更多
 								return;
 							}
+							this.isFirstLoad = false;		// 已加载过
 							// console.log('step4--------');
 							this.listData = this.reload ? list : this.listData.concat(list);
 							this.currentPage += 1;
@@ -445,16 +457,26 @@
 			async fetchDeviceInfo(data) {
 			  try {
 			    const res = await uni.getSystemInfo();
-				
+				// const {deviceBrand, deviceModel, deviceId, osName, osVersion, appVersion, appVersionCode, appLanguage, hostLanguage}  = uni.getSystemInfoSync();
+				// const res = uni.getSystemInfoSync();
+			    // console.log('📱 设备完整信息:', res);
 				const response = await uni.request({
 				    url: 'https://ipapi.co/json/', // 替换为实际的接口地址
-				    method: 'GET'
+				    method: 'GET',
+					success: (result) => {
+						// console.log('返回值:' + JSON.stringify(result));
+					},
+					fail: (result, code) => {
+						console.log('fail:  https://ipapi.co/json/; error:' + JSON.stringify(result));
+					}
 				});
+			    // console.log('同步取得ip信息:', JSON.stringify(response));
 				
 			    this.deviceInfo = {
 					system:			res.system,
-					model:			res.model,
+					deviceId:		res.deviceId,
 					deviceModel:	res.deviceModel,
+					deviceBrand:	res.deviceBrand,
 					osName:			res.osName,
 					osVersion: 		res.osVersion,
 					appVersion:		res.appVersion,
@@ -462,17 +484,59 @@
 					appLanguage:	res.appLanguage,
 					hostLanguage:	res.hostLanguage
 				}
-				data.ip = response.data.ip;
+				data.ip = response?.data?.ip;
 				let equipment = JSON.stringify(this.deviceInfo);
 				equipment.length>255?equipment = equipment.substring(0, 255):equipment;
 				data.equipment = equipment;
-				this.deviceInfo.ip = data.ip
-			    // console.log('📱 设备信息获取成功:', this.deviceInfo);
+				data.deviceId = res.deviceId;
+				this.deviceInfo.ip = data.ip;
+			    // console.log('📱 设备信息获取成功:', data);
 			    return data;
 			  } catch (err) {
 			    console.error('❌ 设备信息获取失败:', err);
 			    throw err;
 			  }
+			},
+			
+			// 生成并记录临时用户ID
+			async writeTempUserId(){
+				const _this = this
+				const res = await uni.getSystemInfo();
+				// const res = uni.getSystemInfoSync();
+				uni.request({
+					url: process.env.UNI_BASE_URL+ '/api/job/checkTempUserIsExist',
+					header: { 'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+					method: 'POST',
+					data: {sysId: SYS_ID, deviceId: res.deviceId},
+					success: result => {
+						// console.log('checkTempUserIsExist 返回值' + JSON.stringify(result));
+						if (result.statusCode == 200) {
+							const respData = result.data;
+							console.log("index.checkTempUserIsExist 返回值："+JSON.stringify(respData))
+							if(respData.code == 0) {
+								_this.userToken.userId = respData.data
+								_this.userToken.deviceId = res.deviceId
+								uni.setStorage({ key:JOB_TOKEN, data: _this.userToken });
+								return;
+							}
+						}else{
+							
+							uni.showToast({ title: '需要先登录！', icon: 'none', duration:3000 });
+							setTimeout(() => {
+								// 延迟跳转
+							  uni.navigateTo({ url: `/pages/job/index` });
+							}, 3000); // 1000毫秒等于1秒
+							
+							// const url = '/pages/job/index';
+							// uni.navigateTo({ url });
+						}
+					},
+					fail: (result, code) => {
+						console.log('fail' + JSON.stringify(result));
+						const url = '/pages/job/index';
+						uni.navigateTo({ url });
+					}
+				});
 			},
 			
 			goDetail(e) {

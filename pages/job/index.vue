@@ -122,22 +122,6 @@
 						
 						<view class="input-group">
 						    <view class="input-label">
-								<!-- <text class="required">·</text> -->
-						        <text style="margin-left: 20rpx;">邀请码</text>
-						    </view>
-						    <view class="input-box code-box">
-						        <input 
-						            type="number"
-						            v-model="form.fromCode"
-						            maxlength="10"
-						            placeholder="请输入邀请码"
-						            placeholder-class="placeholder"
-						        />
-						    </view>
-						</view>
-						
-						<view class="input-group">
-						    <view class="input-label">
 						        <text class="required">*</text>
 						        <text>手机号</text>
 						    </view>
@@ -222,6 +206,22 @@
 						    </view>
 						</view>
 						
+						<view class="input-group">
+						    <view class="input-label">
+								<!-- <text class="required">·</text> -->
+						        <text style="margin-left: 20rpx;">邀请码</text>
+						    </view>
+						    <view class="input-box code-box">
+						        <input 
+						            type="number"
+						            v-model="form.fromCode"
+						            maxlength="10"
+						            placeholder="请输入邀请码（可不填）"
+						            placeholder-class="placeholder"
+						        />
+						    </view>
+						</view>
+						
 					</block>
                     
                 </view>
@@ -276,6 +276,7 @@ export default {
 			userToken:{},
             isMobileLogin: false,
             isRegister: false,
+			deviceId: null,
             form: {
 				sysId: SYS_ID,
                 username: '',
@@ -289,6 +290,7 @@ export default {
             agreePrivacy: false,	// 同意隐私授权
             timer: null,
 			codeValid: 0,			// 短信验证  1：通过；-1：未通过
+			retryTimes: 5,		// 
         }
     },
     beforeDestroy() {
@@ -297,7 +299,7 @@ export default {
             this.timer = null
         }
     },
-	onLoad(){
+	mounted(){
 		const _this = this
 		uni.getStorage({
 			key: JOB_TOKEN,
@@ -307,11 +309,13 @@ export default {
 				// uni.navigateTo({ url: `/pages/job/user/user_list` });
 				
 				// uni.reLaunch({url:'/pages/job/user/user_list'});
-				wx.switchTab({
-				  url: '/pages/job/user/user_list' // 需要跳转的 tabbar 页面路径
-				});
+				// wx.switchTab({
+				//   url: '/pages/job/user/user_list' // 需要跳转的 tabbar 页面路径
+				// });
+				
 			},
 			fail:function(){
+				_this.writeTempUserId()
 			}
 		});
 	},
@@ -382,6 +386,47 @@ export default {
 			
         },
 		
+		// 生成并记录临时用户ID
+		writeTempUserId(){
+			const _this = this
+			// const res = uni.getSystemInfoSync();
+			_this.deviceId = uni.getSystemInfoSync().deviceId
+			uni.request({
+				url: process.env.UNI_BASE_URL+ '/api/job/checkTempUserIsExist',
+				header: { 'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+				method: 'POST',
+				data: {sysId: SYS_ID, deviceId: _this.deviceId},
+				success: result => {
+					// console.log('checkTempUserIsExist 返回值' + JSON.stringify(result));
+					if (result.statusCode == 200) {
+						const respData = result.data;
+						// console.log("index.checkTempUserIsExist 返回值："+JSON.stringify(respData))
+						if(respData.code == 0) {
+							_this.userToken.userId = respData.data
+							_this.userToken.deviceId = _this.deviceId
+							uni.setStorage({ key:JOB_TOKEN, data: _this.userToken });
+							return;
+						}
+					}else{
+						uni.showToast({ title: '需要先登录！', icon: 'none', duration:3000 });
+						if(_this.retryTimes>0){
+							setTimeout(() => {
+								// 延迟跳转
+								_this.writeTempUserId()
+								_this.retryTimes --
+							}, 3000); // 1000毫秒等于1秒
+						}
+						
+						uni.showToast({ title: '非常感谢！特别抱歉，当前后台系统网络不稳定，请30分钟后再试！', icon: 'error', duration:3000 });
+						// const url = '/pages/job/index';
+						// uni.navigateTo({ url });
+					}
+				},
+				fail: (result, code) => {
+					console.log('fail' + JSON.stringify(result));
+				}
+			});
+		},
 		
 		// 倒计时逻辑
 		startCountdown() {
@@ -399,6 +444,7 @@ export default {
 		
         
         async handleSubmit(isRegister) {
+			const _this = this
             if (!this.agreePrivacy) {
                 uni.showToast({ title: '请先同意用户协议和隐私政策', icon: 'none' })
                 return
@@ -421,7 +467,7 @@ export default {
 					uni.showToast({ title: '请填写完整信息', icon: 'none' })
 					return
 				}
-                // console.log('登录信息：', JSON.stringify(this.form))
+                console.log('登录信息：', JSON.stringify(this.form))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/login',  // job登录
 					data: this.form,
@@ -433,6 +479,7 @@ export default {
 							let retData = result.data
 							if(retData.code == 0){
 								let ret = retData.data;
+								ret.deviceId = _this.userToken.deviceId
 								uni.setStorage({ key:JOB_TOKEN, data: ret });
 								// console.log("登录成功")
 								
@@ -474,8 +521,11 @@ export default {
 		saveUser(userData){
 			try {
 				const _this = this
-				// console.log("注册信息："+ JSON.stringify(userData))
 				userData.opt = 'job user Register';
+				userData.userId = _this.userToken.userId;
+				// _this.deviceId = uni.getSystemInfoSync().deviceId
+				userData.deviceId = _this.userToken.deviceId;
+				console.log("注册信息："+ JSON.stringify(userData))
 				uni.request({
 					url: process.env.UNI_BASE_URL+ '/api/job/saveUser',
 					header: { 'Content-Type': 'application/json' },
@@ -952,7 +1002,7 @@ export default {
 	        
 	        .switch-btn {
 	            font-size: 35rpx;
-	            color: #a18cd1;
+	            color: #ef4444;  // #ef4444  // #a18cd1
 	            margin-left: 10rpx;
 	        }
 	    }

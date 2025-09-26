@@ -189,9 +189,7 @@
 			this.getHeadImg();
 			
 			console.log("准备构建 websocket: "+ process.env.UNI_WS_URL)
-			this.socketTaskNew = new socket(
-				process.env.UNI_WS_URL, this.userId
-			);
+			this.socketTaskNew = new socket(process.env.UNI_WS_URL, this.userId);
 			console.log("构建了 wss")
 			this.watchSocket();
 			this.initData();
@@ -202,7 +200,15 @@
 		    });		// 获取，内容列表数据
 			this.getToken();
 		},
-		destroyed() {
+		watch: {
+			'socketTaskNew.is_authenticated': function(newVal) {
+				console.log("认证状态变化:", newVal);
+				// 更新UI显示
+			},
+			'socketTaskNew.is_open_socket': function(newVal) {
+				console.log("连接状态变化:", newVal);
+				// 更新UI显示
+			}
 		},
 		unMounted(){
 			
@@ -325,7 +331,7 @@
 						data: JSON.stringify(data),
 						method: 'POST',
 						success: result => {
-							console.log('message.listTalk 返回值' + JSON.stringify(result));
+							// console.log('message.listTalk 返回值' + JSON.stringify(result));
 							if (result.statusCode == 200 && result.data.code == 0) {
 								const respData = result.data.data.rows;
 								// 保存新数据条数
@@ -546,7 +552,7 @@
 				
 				const message = JSON.stringify({sysId: SYS_ID, senderId: this.userId, receiverId: this.receiverId, content: this.content, messageType:0})
 				this.socketTaskNew.send(message)
-				console.log("发送了信息："+message)
+				// console.log("发送了信息："+message)
 				this.content = '';
 				this.scrollToBottom();
 			},

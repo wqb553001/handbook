@@ -4,56 +4,89 @@
 			<text class="uni-h6">uni-forms 组件一般由输入框、选择器、单选框、多选框等控件组成，用以收集、校验、提交数据。</text>
 		</uni-card> -->
 		
-		<uni-card :is-shadow="false" is-full style="text-align: center; display: block; ">
-			<text class="uni-h6" >无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
-		</uni-card>
+
 		<view class="uni-padding-wrap uni-common-mt">
-		
+		<view class="profile-card">
+			<view class="profile-info">
+			<!-- <uni-card :is-shadow="false" is-full style="text-align: center; display: block; ">
+				
+			</uni-card> -->
+			<view>
+				<text class="uni-h6" style="line-height: 35px;"  :style="fontScaleChange(0.8)">无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
+			</view>
+			
+			<view class="headRight">
+				<view class="member-tag">
+					<uni-icons type="star" v-for="(item, index) in jobUser.jobUserDO.multiScore" :key="index" :size="18*fontScale" color="#FFD700"></uni-icons>
+					<text :style="fontSet">{{score(jobUser.jobUserDO.multiScore)}}</text>
+				</view>
+			</view>
+			</view>
+			
 			<view class="slider-container">
 				<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
 				 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value> </u-slider>
 			</view>
 			
+			
+			<view class="profile-stats">
+			    <view class="stat-item">
+			        <text class="num" :style="fontSet">1280</text>
+					<uni-icons type="hand-up-filled" :size="23*fontScale" color="#FFCC33" ></uni-icons>
+			        <text class="label" :style="fontSet">获赞</text>
+			    </view>
+			    <view class="stat-item">
+			        <text class="num" :style="fontSet">128</text>
+					<uni-icons type="star-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+			        <text class="label" :style="fontSet">收藏</text>
+			    </view>
+			    <view class="stat-item">
+			        <text class="num" :style="fontSet">59</text>
+					<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+			        <text class="label" :style="fontSet">分享</text>
+			    </view>
+			</view>
+			</view>
 			<view class="uni-flex uni-row" style="display: flex;">
 				<view class="uni-flex uni-column" style="-webkit-flex: 1; flex: 1; -webkit-justify-content: space-between; justify-content: space-between;">
 					<view class="uni-flex" style="display: flex; white-space: nowrap; align-items: center;">
-						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; font-weight: bold; " :style="fontScaleChange(1)" >{{jobUser.userReturnVO.username}}</view>
-						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; vertical-align: middle" :style="fontScaleChange(0.85)" >{{jobUser.userReturnVO.sex==0?'男':jobUser.userReturnVO.sex==1?'女':''}}</view>
-						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; vertical-align: middle" :style="fontScaleChange(0.85)" >{{calculateAge(jobUser.userReturnVO.birth)}} 岁</view>
+						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; font-weight: bold; " :style="fontScaleChange(1)" >{{jobUser.jobUserDO.username}}</view>
+						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; vertical-align: middle" :style="fontScaleChange(0.85)" >{{jobUser.jobUserDO.sex==0?'男':jobUser.jobUserDO.sex==1?'女':''}}</view>
+						<view class="text" style="padding: 0 20rpx; display: flex; align-items: center; vertical-align: middle" :style="fontScaleChange(0.85)" >{{calculateAge(jobUser.jobUserDO.birth)}} 岁</view>
 					</view>
 					<view class="text" :style="fontScaleChange(0.85)" style="text-align: left; -webkit-flex: 1; flex: 1; line-height:1.37; margin: 20px 0px 5px 0; ">
-						【自带工具】：{{ jobUser.userReturnVO.tools|| '无' }}
+						【自带工具】：{{ jobUser.jobUserDO.tools|| '无' }}
 					</view>
 				</view>
-				<view class="text uni-flex" style="width: 200rpx; height: 200rpx; " @longpress="longPressEditHeadImage">
-					<image :src="jobUser.userReturnVO.headImgPath" style="width: 200rpx; height: 200rpx;"></image>
+				<view class="text uni-flex" style="width: 200rpx; height: 200rpx; margin-right: 10rpx;" @longpress="longPressEditHeadImage">
+					<image :src="jobUser.jobUserDO.headImgPath" style="width: 200rpx; height: 200rpx;"></image>
 				</view>
 			</view>
 		</view>
 		
 		<view style="width:100%" >
-			<view class="text" style="text-align: left; padding-top: 50rpx;  line-height:1.37;" :style="fontScaleChange(0.85)" >
-				【技能】：{{ jobUser.userReturnVO.allSkills }} 
+			<view class="text" style="text-align: left; padding-top: 50rpx;  line-height:1.37; margin-left: 10rpx;" :style="fontScaleChange(0.85)" >
+				【技能】：{{ jobUser.jobUserDO.allSkills }} 
 			</view>
 			
 			
 			<view class="text" style="padding-top: 10rpx; text-align: left;">
 				<view style="padding-top: 10rpx;">
-					<view style="min-height: 80rpx; line-height:1.37;" :style="fontScaleChange(0.85)" >
-						【简介】：{{ jobUser.userReturnVO.introduction ||'' }}
+					<view style="min-height: 80rpx; line-height:1.37; margin-left: 10rpx; margin-right: 10rpx;" :style="fontScaleChange(0.85)" >
+						【简介】：{{ jobUser.jobUserDO.introduction || jobUser.jobUserDO.detail }}
 					</view>
 					
 					<view style="justify-content: space-between; margin-top: 30rpx; ">
 						<view style="display: flex; justify-content: space-between; align-items: flex-end">
 							<view class="text" style="text-align: left; color: #2E8B57; font-weight: bold;  line-height: 1.37; padding-left: 0; " :style="fontScaleChange(1)"
-								@longpress="longPressCopyText(jobUser.userReturnVO.address)">
+								@longpress="longPressCopyText(jobUser.jobUserDO.address)">
 								<uni-icons type="location" color="#D3D3D3" size="30" />
-								{{ jobUser.userReturnVO.address || ' ' }}
+								{{ jobUser.jobUserDO.address || ' ' }}
 							</view>		
-							<view v-if="showDistance" style="margin-left: 20rpx; ">
+							<view v-if="showDistance" style="margin-left: 20rpx; margin-right: 10rpx;">
 								<view :style="fontScaleChange(0.85)">
 									<text>直线距离：</text>
-									<text style="white-space: nowrap;">{{calculateDistance(location.latitude, location.longitude, jobUser.userReturnVO.latitude, jobUser.userReturnVO.longitude)}}</text>
+									<text style="white-space: nowrap;">{{calculateDistance(location.latitude, location.longitude, jobUser.jobUserDO.latitude, jobUser.jobUserDO.longitude)}}</text>
 									<text>公里</text>
 								 </view>
 							</view>
@@ -64,7 +97,7 @@
 			</view>
 		</view>
 		
-		<view v-if="!isMyself && jobUser.userReturnVO.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;">
+		<view v-if="!isMyself && jobUser.jobUserDO.isScore" style="margin-top: 80px;padding: 15px; background-color: #fff;"><!--  v-if="!isMyself && jobUser.jobUserDO.isScore" -->
 			<text style="font: inherit; color: #777;" :style="fontScaleChange(1.2)">评分:</text>
 			<view class="text" style="text-align: left; -webkit-flex: 1;flex: 1; margin-top: 10px;margin-bottom: 10px;">
 				<uni-rate :max="10" v-model="talk.score" />
@@ -118,6 +151,24 @@
 		  @close="closePreview"
 		/>
 	</view>
+	<view class="am-panel am-panel-default">
+	<view style="display: grid;">
+		<view v-for="(comment, index) in commentPageList" :key="index" style="box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); padding: 10px 0;"><!-- v-for="(comment,index) in commentPageList" :key="index"  电话、手机号、QQ、微信 等，方便与您取得联系~-->
+			<hr>
+			<view style="float: left; display: block; margin-bottom: 15px;">
+				<span>&nbsp;&nbsp;</span><span>{{comment.content}}</span>
+			</view>
+			
+			<view style="float: right; display: flex; ">
+				<span :class="'want-yes-'+ comment.id">{{comment.agree}}&nbsp;</span><a href="#" title="赞同" @click.prevent.stop="voteComment(comment, 1)"><uni-icons type="hand-up-filled" :size="13*fontScale" color="#FFCC33" >赞同</uni-icons></a>&nbsp;&nbsp;
+				<span :class="'want-no-'+ comment.id">{{comment.disagree}}&nbsp;</span><a href="#" title="不赞同" @click.prevent.stop="voteComment(comment, -1)"><uni-icons type="hand-down-filled" :size="13*fontScale" color="#FFCC33" >不赞同</uni-icons></a>&nbsp;
+				<label style="font-weight: normal; padding-right: 5px;">{{comment.updateTime}}</label> 
+				<view>{{comment.nickname}}</view>
+			</view>
+		</view>
+	</view>
+	</view>
+	
 </template>
 
 <script>
@@ -131,6 +182,14 @@
 	const MAP_PICKER_POSITION = "map_Picker_Position"
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
 	
+	const workerScoreMap = 
+		{
+			"-5":"",	"-4":"",	"-3":"",		"-2":"",		"-1":"",
+			"0":"",		"1":"",		"2":"",			"3":"",			"4":"",			"5":"",
+			"6":"",		"7":"",		"8":"劳模",		"9":"工匠",		"10":"",
+			"11":"",	"12":"",	"13":"",		"13":"",
+		}
+		
 	export default {
 		components: {
 			ImagePreview
@@ -142,7 +201,7 @@
 				fontScale: 1.0,
 				fontSizeScale: 100,
 				jobUser: {
-					userReturnVO: {
+					jobUserDO: {
 						userId:0,
 						username:"",
 						sex:0,
@@ -155,7 +214,13 @@
 					moreReturnDOList:[]
 					
 				},
-				
+				commentPageList: [
+				// 	{content:"内容1内容1内容1内容1内容1内容1内容1内容1内容1内容1内容1", agree:2,disagree:1,updateTime:'2025-8-28 23:47:55', nickname:"游客1395"},
+				// 	{content:"内容2内容2内容2内容2内容2内容2", agree:4,disagree:2,updateTime:'2025-8-28 23:47:55', nickname:"游客1010"},
+
+				// 	{content:"内容1内容1内容1内容1内容1内容1内容1内容1内容1内容1内容1", agree:2,disagree:1,updateTime:'2025-8-28 23:47:55', nickname:"游客1395"},
+				// 	{content:"内容2内容2内容2内容2内容2内容2", agree:4,disagree:2,updateTime:'2025-8-28 23:47:55', nickname:"游客1010"}
+				],
 				// 位置数据
 				location:{
 					latitude: "",
@@ -220,7 +285,7 @@
 				}
 				this.location.latitude	= data.location.lat;
 				this.location.longitude	= data.location.lng;
-				this.jobUser.userReturnVO.address = form.address
+				this.jobUser.jobUserDO.address = form.address
 				this.updateUser(form)
 			});
 		},
@@ -247,17 +312,19 @@
 							const respData = result.data.data;
 							// console.log("user_detail.getUser返回值："+JSON.stringify(respData))
 							if(respData) {
-								// console.log("转化前："+respData.userReturnVO.skills)
-								respData.userReturnVO.allSkills = respData.userReturnVO.skillsName
+								// console.log("转化前："+respData.jobUserDO.skills)
+								respData.jobUserDO.allSkills = respData.jobUserDO.skillsName || '';
 								// respData.allSkills = JSON.parse(respData.skills)
 								//   .filter(item => Object.keys(item) != -1)
 								//   .map(item => Object.values(item))
 								//   .join(',');
-								
-								if(respData.userReturnVO.otherSkills){
-									respData.userReturnVO.allSkills = respData.userReturnVO.allSkills==''||!respData.userReturnVO.allSkills?respData.userReturnVO.otherSkills:respData.userReturnVO.allSkills +","+ respData.userReturnVO.otherSkills
+								let otherSkills = respData.jobUserDO.otherSkills;
+								if(otherSkills){
+									const otherSkillsName = Object.values(JSON.parse(otherSkills)).join("，")
+									respData.jobUserDO.allSkills += respData.jobUserDO.allSkills ? '；' + otherSkillsName : otherSkillsName;
 								}
-								// console.log("转化后："+respData.userReturnVO.allSkills)
+								respData.jobUserDO.allSkills += "。"
+								// console.log("转化后："+respData.jobUserDO.allSkills)
 							};
 							_this.jobUser = respData;
 							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
@@ -292,6 +359,16 @@
 				this.fontSizeScale = scale;
 				const scaleValue = this.fontSizeScale / 100;
 				this.fontScale = scaleValue
+				
+				/* #ifdef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
+				// console.log("WEIXIN 实时计算样式："+ this.fontSet)
+				/* #endif */
+				
+				/* #ifndef MP-WEIXIN */
+				this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
+				// console.log("APP/H5 实时计算样式："+ this.fontSet)
+				/* #endif */
 				
 				var _this = this
 				// 字体大小存入缓存记忆
@@ -461,6 +538,9 @@
 			degToRad(degrees) {
 			    return degrees * (Math.PI / 180);
 			},
+			score(score){
+				return workerScoreMap[score]
+			},
 			// 长按复制
 			longPressCopyText(val){
 				if(this.isMyself){
@@ -484,7 +564,7 @@
 				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
 				
 				if(this.isMyself){
-					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.userReturnVO.headImgPath}`;
+					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.jobUserDO.headImgPath}`;
 					uni.navigateTo({ url });
 					return ;
 				}
@@ -648,6 +728,75 @@
 		margin-bottom: 40rpx;
 	}
 	
+	.profile-info {
+		background: linear-gradient(180deg, #ff6043 51%, rgba(255, 96, 67, 0) 99%);
+	    position: relative;
+	    // padding: 40rpx;
+	    padding: 40rpx 10rpx 40rpx 40rpx;
+	    // display: flex;
+	    align-items: center;
+	    z-index: 1;
+		width: 100%;
+		box-sizing: border-box;
+		align-items: flex-start; /* 修改为顶部对齐 */
+	.headRight{
+		flex: 0 0 50%;
+		display: flex;
+		position: relative; /* 关键修改：添加定位上下文 */
+		flex-direction: row; /* 改为纵向布局 */
+		align-items: center; /* 右侧对齐 */
+		padding-left: 20rpx; /* 添加间距 */
+		box-sizing: border-box;
+		margin-top: 16rpx; /* 添加顶部间距 */
+		.member-tag {
+		  display: flex;
+		  flex-wrap: wrap;
+		  max-width: 80%;
+		  align-items: center;
+		  background: rgba(255,255,255,0.2);
+		  padding: 4rpx 16rpx;
+		  border-radius: 24rpx;
+		  // width: fit-content;
+		  margin-right: auto; /* 新增：自动占据左侧空间 */
+		  gap: 4rpx; /* 图标间距 */
+		  text {
+			font-size: 24rpx;
+			margin-left: 8rpx;
+		  }
+		}
+	}
+	}
+		
+	.profile-stats {
+		display: flex;
+		padding: 30rpx 0;
+		background: #FFFFFF;
+	}
+
+	.stat-item {
+		flex: 1;
+		text-align: center;
+		border-right: 1rpx solid #EEEEEE;
+	}
+
+	.stat-item:last-child {
+		border-right: none;
+	}
+
+	.num {
+		font-size: 36rpx;
+		color: #333333;
+		font-weight: bold;
+		display: block;
+	}
+
+	.label {
+		font-size: 24rpx;
+		color: #999999;
+		margin-top: 6rpx;
+		display: block;
+	}
+	
 	.detail-uni-card{
 		.uni-card.uni-card--full.uni-card--border{
 			background-color: #f0f8ff;
@@ -655,5 +804,18 @@
 		.uni-h1{
 			font-weight: bold;
 		}
+	}
+	
+	.am-panel {
+	  margin-bottom: 20px;
+	  background-color: #fff;
+	  border: 1px solid transparent;
+	  border-radius: 0;
+	  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+	          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+	}
+	
+	.am-panel-default {
+	  border-color: #ddd;
 	}
 </style>

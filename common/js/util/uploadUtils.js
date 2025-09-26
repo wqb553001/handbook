@@ -18,7 +18,15 @@ export default {
           key: `jobUserId=${userId}`
         }
       });
-      return tokenRes.data.upToken;
+	  
+	  if (tokenRes.statusCode === 200 && tokenRes.data.code ===0) {
+	    return tokenRes.data.upToken;
+	  }
+      uni.showToast({
+        title: tokenRes.data.msg, 
+        icon: 'error' 
+      });
+	  return null;
     } catch (err) {
       uni.showToast({ 
         title: '获取上传凭证失败，请联系管理员！', 

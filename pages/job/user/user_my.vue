@@ -1,75 +1,92 @@
 <template>
     <view class="template-d">
         <!-- 顶部个人信息卡片 -->
-        <view class="profile-card">
-            <view class="profile-header">
+		
+        <!-- <view class="profile-card">
+            <view class="profile-header"> -->
                 <!-- <image class="bg-image" src="/static/logo.png" mode="aspectFill" /> -->
-                <view class="profile-info">
+                <!-- <view class="profile-info">
 					<view class="headLeft">
-						<view class="headImg" @longpress="longPressEditHeadImage">
-							<image class="avatar" :src="jobUser.headImgPath" mode="aspectFill" />
+						<view class="headImg" @longpress="navigateToLogined(`/pages/job/head_img/head_img?userId=${userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${userToken.userId}&headPath=${jobUser.headImgPath}`)">
+							<image class="avatar" :src="jobUser.headImgPath" mode="aspectFill" /> -->
 							<!-- <image v-show="!isLogined" class="avatar" :src="jobUser.headImgPath" mode="aspectFill" /> -->
 							<!-- <uni-icons v-if="!isLogined" type="contact" class="avatar" size="14" color="#FFD700"></uni-icons> -->
-						</view>
+						<!-- </view>
 						
 						<view class="info-text">
 							<view style="display: flex;" :style="fontSet" >
-								<text v-if="isLogined" class="nickname" :style="fontSet">{{  jobUser.username  }}</text>
-								<text v-else class="nickname" :style="fontSet" @click="navigateTo(`/pages/job/index`)">登录</text>
-								<text v-if="isLogined" class="mobile" :style="fontSet" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
-							</view>
+								<text class="nickname" :style="fontSet">{{  jobUser.username  }}</text>
+								<text class="mobile" :style="fontSet" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
+							</view> -->
 							
 							<!-- <text class="signature" :style="fontSet">{{ jobUser.skillsName }}</text> -->
-						</view>
+						<!-- </view>
 					</view>
 					<view class="headRight">
-						<view class="member-tag">
+						<view v-if="isLogined" class="member-tag">
 							<uni-icons type="star" v-for="(item, index) in jobUser.multiScore" :key="index" :size="18*fontScale" color="#FFD700"></uni-icons>
 							<text :style="fontSet">{{score(jobUser.multiScore)}}</text>
 						</view>
-						<view class="setting-icon">
-							<uni-icons type="gear" :size="23*fontScale" color="#fff" @click="isLogined?navigateTo('/pages/job/user/user_setting'):''"></uni-icons>
+						<view v-if="isLogined" class="setting-icon">
+							<uni-icons type="gear" :size="23*fontScale" color="#fff" @click="navigateToLogined('/pages/job/user/user_setting')"></uni-icons>
 						</view>
+							
+						<view v-if="!isLogined">
+							<text class="nickname" :style="fontSet" @click="navigateToGo(`/pages/job/index`)">登录/注册</text>
+						</view>
+						
 					</view>
 					
                 </view>
-            </view>
+            </view> -->
 		
-			<view class="slider-container" style="z-index: 9999;">
+			<!-- <view class="slider-container" style="z-index: 9999;">
 				<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
-				 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value></u-slider>
+				 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value></u-slider> -->
 				<!-- <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text> -->
-			</view>
-            <view class="profile-stats">
+			<!-- </view>
+            <view v-if="isLogined" class="profile-stats">
                 <view class="stat-item">
                     <text class="num" :style="fontSet">1280</text>
-					<uni-icons type="hand-up-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+					<uni-icons type="hand-up-filled" :size="23*fontScale" color="#FFCC33" ></uni-icons>
                     <text class="label" :style="fontSet">获赞</text>
                 </view>
                 <view class="stat-item">
-                    <text class="num" :style="fontSet">328</text>
+                    <text class="num" :style="fontSet">128</text>
 					<uni-icons type="star-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
                     <text class="label" :style="fontSet">收藏</text>
                 </view>
                 <view class="stat-item">
-                    <text class="num" :style="fontSet">999</text>
+                    <text class="num" :style="fontSet">59</text>
 					<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
                     <text class="label" :style="fontSet">分享</text>
                 </view>
             </view>
-        </view>
-
+        </view> -->
+		<profile-card
+		      :is-logined="isLogined"
+		      :job-user="jobUser"
+		      :font-set="fontSet"
+		      :font-scale="fontScale"
+		      :font-size-scale="fontSizeScale"
+		      :stats="stats"
+		      :score-text="scoreText"
+		      @longpress-avatar="longPressEditHeadImage"
+		      @navigate-to-go="navigateToGo"
+		      @navigate-to-logined="navigateToLogined"
+		      @font-size-change="onFontSizeChange"
+		></profile-card>
         <!-- 功能区域 -->
        <view class="feature-section">
             <view class="section-title" :style="fontSet" style="display: flex; justify-content: space-between;">
 				<text style="white-space: nowrap;">我的服务</text>
-				<view @longpress="longpressCopyCode(jobUser.selfCode)" style="text-align: right;" >
+				<view v-if="isLogined" @longpress="longpressCopyCode(jobUser.selfCode)" style="text-align: right;" >
 					<text style="color: #FFCC33;" >我的邀请码：</text>
 					<text @longpress="longpressCopyCode(jobUser.selfCode)" style="color: #ff6043;">{{jobUser.selfCode}}</text>
 				</view>
 			</view>
             <view class="feature-grid">
-                <view class="feature-item" v-for="(item, index) in features.slice(0, 2)" :key="index" @click="isLogined?handleFeature(item):''">
+                <view class="feature-item" v-for="(item, index) in features.slice(0, 2)" :key="index" @click="handleFeature(item)"><!-- @click="isLogined?handleFeature(item):''" -->
                     <view class="feature-icon" :style="{ backgroundColor: item.bgColor }"> <uni-icons :type="item.icon"  :size="23*fontScale" :color="item.iconColor"></uni-icons> </view>
                     <text class="feature-name" :style="fontSet">{{item.name}}</text>
                 </view>
@@ -79,7 +96,7 @@
 
     <!-- 快捷功能区 -->
     <view class="quick-actions">
-      <view class="action-item" v-for="(item, index) in allServices.slice(0, 0)" :key="index" @click="isLogined?navigateTo(item.path):''" >
+      <view class="action-item" v-for="(item, index) in allServices.slice(0, 0)" :key="index" @click="navigateToLogined(item.path)" >
         <view class="action-icon" :style="fontSet" :class="item.class"> <uni-icons :type="item.icon"  :size="23*fontScale" color="#fff"></uni-icons> </view>
         <text class="action-name" :style="fontSet">{{ item.name }}</text>
       </view>
@@ -100,7 +117,7 @@
 	  
 	  
 	  
-	    <view v-if="jobUser.hasRelation" class="service-item" @click="navigateToServices('/pages/job/online/talk_list')" >
+	    <view v-if="jobUser.hasRelation" class="service-item" @click="navigateToGo('/pages/job/online/talk_list')" >
 			<view class="left">
 				<view class="service-icon bg-orange" > <uni-icons type="headphones" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet">留言回复</text>
@@ -114,7 +131,7 @@
 			</view>
 	    </view>
 	  
-	    <view class="service-item" @click="navigateTo(`/pages/job/user/user_help`)" >
+	    <view class="service-item" @click="navigateToGo(`/pages/job/user/user_help`)" >
 			<view class="left">
 				<view class="service-icon bg-cyan" > <uni-icons type="help" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet" >帮助中心</text>
@@ -125,7 +142,7 @@
 	    </view>
 	  
 	  	  
-		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest?userId='+userToken.userId)" >
+		<view class="service-item" @click="navigateToGo('/pages/job/suggest/suggest?userId='+userToken.userId)" >
 			<view class="left">
 				<view class="service-icon bg-pink" > <uni-icons type="email" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet" >意见反馈</text>
@@ -136,7 +153,7 @@
 		</view>
 	  
 	  	  
-<!-- 		<view class="service-item" @click="navigateToServices('/pages/job/suggest/suggest?userId='+userToken.userId)" >
+<!-- 		<view class="service-item" @click="navigateToLogined('/pages/job/suggest/suggest?userId='+userToken.userId)" >
 			<view class="left">
 				<view class="service-icon bg-green" > <uni-icons type="chat" size="20" color="#fff"></uni-icons> </view>
 				<text class="service-name" :style="fontSet" >在线咨询</text>
@@ -147,7 +164,7 @@
 		</view> -->
 	  	  
 	  	  	  
-	  	<view class="service-item" @click="navigateToServices('/pages/job/user/user_setting')" >
+	  	<view class="service-item" @click="navigateToLogined('/pages/job/user/user_setting')" >
 	  	  	<view class="left">
 	  	  		<view class="service-icon bg-gray" > <uni-icons type="gear" size="20" color="#fff"></uni-icons> </view>
 	  	  		<text class="service-name" :style="fontSet" >设置</text>
@@ -178,7 +195,7 @@
 </template>
 
 <script>
-	
+import ProfileCard from '@/components/ProfileCard/ProfileCard.vue';
 const SYS_ID = 2025040301;
 const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
@@ -191,6 +208,9 @@ const workerScoreMap =
 	}
 
 export default {
+	components:{
+		ProfileCard
+	},
 	onLoad() {
 	},
 	onShow() {
@@ -206,7 +226,7 @@ export default {
 	},
     data() {
         return {
-			isLogined: true,
+			isLogined: false,
 			talkPath: '/pages/job/online/talk_list',
 			
 			userToken:{},
@@ -245,12 +265,22 @@ export default {
 			fontScale: 1.0,
 			fontSizeScale: 100, // 默认100%比例
 			baseFontSize: 16,   // 基础字体大小（根据设计稿调整）
+			stats: {
+				likes: 1280,
+				favorites: 128,
+				shares: 59
+			  },
         }
     },
     methods: {
-		navigateToServices(path){
+		navigateToLogined(path){
+			uni.showToast({ title: '需要先登录！', icon: 'none' });
 			if(!this.isLogined) return;
 			uni.navigateTo({url: path});
+		},
+		
+		navigateToGo(path) {
+		  uni.navigateTo({ url: path })
 		},
 		
 		getToken(){
@@ -261,14 +291,17 @@ export default {
 				success: function(resp){
 					_this.userToken = resp.data
 					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
-					_this.isLogined = false
-					// 加载用户信息
-					_this.getJobUserByUserId();
-					if(_this.userToken?.userId > 0) _this.isLogined = true
+					// _this.isLogined = false
+					if(_this.userToken?.token) _this.isLogined = true
 					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 				},
 				fail:function(){
 					 _this.isLogined = false
+					 _this.writeTempUserId()
+				},
+				complete: () => {
+					// 加载用户信息
+					_this.getJobUserByUserId();
 				}
 			});
 		},
@@ -304,6 +337,48 @@ export default {
 				},
 				fail: (result, code) => {
 					console.log('fail' + JSON.stringify(result));
+				}
+			});
+		},
+		
+		// 生成并记录临时用户ID
+		async writeTempUserId(){
+			const _this = this
+			const res = await uni.getSystemInfo();
+			// const res = uni.getSystemInfoSync();
+			uni.request({
+				url: process.env.UNI_BASE_URL+ '/api/job/checkTempUserIsExist',
+				header: { 'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+				method: 'POST',
+				data: {sysId: SYS_ID, deviceId: res.deviceId},
+				success: result => {
+					// console.log('saveUserTemp 返回值' + JSON.stringify(result));
+					if (result.statusCode == 200) {
+						const respData = result.data;
+						console.log("index.saveUserTemp 返回值："+JSON.stringify(respData))
+						if(respData.code == 0) {
+							_this.userToken.userId = null
+							_this.userToken.token = null
+							_this.userToken.userId = respData.data
+							uni.setStorage({ key:JOB_TOKEN, data: _this.userToken });
+							return;
+						}
+					}else{
+						
+						uni.showToast({ title: '需要先登录！', icon: 'none', duration:3000 });
+						setTimeout(() => {
+							// 延迟跳转
+						  uni.navigateTo({ url: `/pages/job/index` });
+						}, 3000); // 1000毫秒等于1秒
+						
+						// const url = '/pages/job/index';
+						// uni.navigateTo({ url });
+					}
+				},
+				fail: (result, code) => {
+					console.log('fail' + JSON.stringify(result));
+					const url = '/pages/job/index';
+					uni.navigateTo({ url });
 				}
 			});
 		},
@@ -381,14 +456,13 @@ export default {
 		},
 		
 		longPressEditHeadImage(){
-			if(!this.userToken?.userId) return ;
+			if(!this.userToken?.token) {
+				uni.showToast({ title: '需要先登录！', icon: 'none', duration:3000 });
+				return ;
+			}
 			const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.userToken.userId}&headPath=${this.jobUser.headImgPath}`;
 			uni.navigateTo({ url });
 			return ;
-		},
-		
-		navigateTo(path) {
-		  uni.navigateTo({ url: path })
 		},
         handleFeature(item) {
             uni.navigateTo({
@@ -424,7 +498,19 @@ export default {
 			});
 			// console.log("异步复制……")
 		},
-    }
+    },
+	computed: {
+		scoreText() {
+		  // 计算分数文本的逻辑
+		  const workerScoreMap = {
+			"-5":"", "-4":"", "-3":"", "-2":"", "-1":"",
+			"0":"", "1":"", "2":"", "3":"", "4":"", "5":"",
+			"6":"", "7":"", "8":"劳模", "9":"工匠", "10":"",
+			"11":"", "12":"", "13":"", "13":"",
+		  };
+		  return workerScoreMap[this.jobUser.multiScore] || '';
+		}
+	},
 }
 </script>
 

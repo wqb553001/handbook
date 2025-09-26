@@ -53,7 +53,7 @@ export class JobStoreManager {
 	// console.log("操作2："+opt)
     const formattedDate = this.formatDate(new Date())
     const optRecord = {
-      title: `${opt}了${username}`,
+      title: `${opt}了  ${username}`,
       time: formattedDate,
       image: headImgPath,
       url: url

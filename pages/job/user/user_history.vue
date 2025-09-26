@@ -1,64 +1,18 @@
 <template>
     <view class="template-d">
         <!-- 顶部个人信息卡片 -->
-        <view class="profile-card">
-            <view class="profile-header">
-                <!-- <image class="bg-image" src="/static/logo.png" mode="aspectFill" /> -->
-                <view class="profile-info">
-					<view class="headLeft">
-						<view class="headImg">
-							<image class="avatar" :src="jobUser.headImgPath" mode="aspectFill" />
-							<!-- <image v-show="!isLogined" class="avatar" :src="jobUser.headImgPath" mode="aspectFill" /> -->
-							<!-- <uni-icons v-if="!isLogined" type="contact" class="avatar" size="14" color="#FFD700"></uni-icons> -->
-						</view>
-						
-						<view class="info-text">
-							<view style="display: flex;">
-								<text v-if="isLogined" class="nickname">{{  jobUser.username  }}</text>
-								<text v-else class="nickname" @click="navigateTo(`/pages/job/index`)">登录</text>
-								<text v-if="isLogined" class="mobile" style="align-items: flex-end;">{{  jobUser.mobile?.slice(-4)  }}</text>
-							</view>
-							
-							<text class="signature">{{ jobUser.skillsName }}</text>
-						</view>
-					</view>
-					<view class="headRight">
-						<view class="member-tag">
-							<uni-icons type="star" v-for="(item, index) in jobUser.multiScore" :key="index" size="14" color="#FFD700"></uni-icons>
-							<text>劳模</text>
-						</view>
-						<view class="setting-icon">
-							<uni-icons type="gear" size="28" color="#fff" @click="navigateTo('/pages/job/user/user_setting')"></uni-icons>
-						</view>
-					</view>
-					
-                </view>
-            </view>
-		
-			<view class="slider-container" style="z-index: 9999;">
-				<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
-				 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value></u-slider>
-				<!-- <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text> -->
-			</view>
-            <view class="profile-stats">
-                <view class="stat-item">
-                    <text class="num">1280</text>
-            		<uni-icons type="hand-up-filled" size="28" color="#FFCC33" ></uni-icons>
-                    <text class="label">获赞</text>
-                </view>
-                <view class="stat-item">
-                    <text class="num">328</text>
-            		<uni-icons type="star-filled" size="28" color="#FFCC33" ></uni-icons>
-                    <text class="label">收藏</text>
-                </view>
-                <view class="stat-item">
-                    <text class="num">999</text>
-            		<uni-icons type="redo-filled" size="28" color="#FFCC33" ></uni-icons>
-                    <text class="label">分享</text>
-                </view>
-            </view>
-        </view>
-
+<!-- 		<profile-card
+		      :is-logined="isLogined"
+		      :job-user="jobUser"
+		      :font-set="fontSet"
+		      :font-scale="fontScale"
+		      :font-size-scale="fontSizeScale"
+		      :stats="stats"
+		      :score-text="scoreText"
+		      @longpress-avatar="longPressEditHeadImage"
+		      @navigate-to="navigateToLogined"
+		      @font-size-change="onFontSizeChange"
+		></profile-card> -->
 
         <!-- 最近动态 -->
         <view class="recent-section">
@@ -78,12 +32,29 @@
 
 <script>
 	
+import ProfileCard from '@/components/ProfileCard/ProfileCard.vue';
+
 const SYS_ID = 2025040301;
 const JOB_TOKEN = 'JOB_TOKEN';
 const JOB_USER_FONT_SET = "jobUserMySet";
 const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
 
+const workerScoreMap = 
+	{
+		"-5":"",	"-4":"",	"-3":"",		"-2":"",		"-1":"",
+		"0":"",		"1":"",		"2":"",			"3":"",			"4":"",			"5":"",
+		"6":"",		"7":"",		"8":"劳模",		"9":"工匠",		"10":"",
+		"11":"",	"12":"",	"13":"",		"13":"",
+	}
+	
 export default {
+	components:{
+		ProfileCard
+	},
+	onShow() {
+		// this.getToken();
+		this.initGetFontSize(); // 页面重新加载-恢复
+	},
 	onLoad() {
 
 	},
@@ -97,7 +68,7 @@ export default {
 				_this.isLogined = false
 				// 加载用户信息
 				_this.getJobUserByUserId();
-				if(_this.userToken?.userId>0) _this.isLogined = true
+				if(_this.userToken?.token) _this.isLogined = true
 				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 				_this.readHistoryRecord();
 			},
@@ -122,7 +93,12 @@ export default {
                 { title: '点赞了《前端开发》', 	time: '2小时前', 	image: '/static/logo.png' }
             ],
 			fontSizeScale: 100, // 默认100%比例
-			historyRecord: []
+			historyRecord: [],
+			stats: {
+				likes: 1280,
+				favorites: 128,
+				shares: 59
+			  },
         }
     },
     methods: {
@@ -187,6 +163,46 @@ export default {
 		  
 		},
 		
+		
+		initGetFontSize(){
+			// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)
+			var _this = this
+			uni.getStorage({
+				key: JOB_USER_FONT_SET,
+				success: function(resp){
+					// console.log("key:", JOB_USER_FONT_SET, "返回内存原值：", JSON.stringify(resp))
+					_this.fontSizeScale = resp.data
+					_this.onFontSizeChange(_this.fontSizeScale); // 初始化设置一次
+					// console.log("初始从缓存中取值，设置字体比例：" + _this.fontSizeScale)
+				},
+				fail:function(){
+					// console.log("首次存储，未取得 key:"+JOB_USER_FONT_SET);
+				}
+			});
+		},
+		
+		onFontSizeChange(scale) {
+			// this.fontSizeScale = e.detail.value;
+			this.fontSizeScale = scale;
+			const scaleValue = this.fontSizeScale / 100;
+			this.fontScale = scaleValue
+			// console.log("字体大小设置为：" + this.fontSizeScale)
+			
+			// console.log("实时计算比例："+ this.fontScale)
+			
+			/* #ifdef MP-WEIXIN */
+			this.fontSet = 'font-size :' + 37.5*scaleValue + 'rpx;'
+			// console.log("WEIXIN 实时计算样式："+ this.fontSet)
+			/* #endif */
+			
+			/* #ifndef MP-WEIXIN */
+			this.fontSet = 'font-size :' + 1*scaleValue + 'rem;'
+			// console.log("APP/H5 实时计算样式："+ this.fontSet)
+			/* #endif */
+			var _this = this
+			// 字体大小存入缓存记忆
+			uni.setStorage({key:JOB_USER_FONT_SET, data: _this.fontSizeScale});
+		},
 		calculateAge(birth){
 		  if(!birth) return;
 		  const bIndex = birth.indexOf(' 00:00:00');
@@ -214,7 +230,19 @@ export default {
                 url: item.path
             });
         }
-    }
+    },
+	computed: {
+		scoreText() {
+		  // 计算分数文本的逻辑
+		  const workerScoreMap = {
+			"-5":"", "-4":"", "-3":"", "-2":"", "-1":"",
+			"0":"", "1":"", "2":"", "3":"", "4":"", "5":"",
+			"6":"", "7":"", "8":"劳模", "9":"工匠", "10":"",
+			"11":"", "12":"", "13":"", "13":"",
+		  };
+		  return workerScoreMap[this.jobUser.multiScore] || '';
+		}
+	},
 }
 </script>
 

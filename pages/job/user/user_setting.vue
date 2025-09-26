@@ -5,7 +5,7 @@
     <!-- 服务菜单列表 -->
 		<view class="service-list">
 			
-			<view class="service-item" style="display: block; align-items: center;" >
+			<view v-if="isLogined" class="service-item" style="display: block; align-items: center;" >
 				<view style="display: flex; justify-content: space-between;">
 					<view class="left" >
 						<view class="service-icon bg-orange" >
@@ -20,7 +20,7 @@
 				</view>				
 			</view>
 			
-			<view class="service-item" v-for="(item, index) in allServices.slice(0, 2)" :key="index" @click="navigateTo(item.path)" >
+<!-- 			<view class="service-item"  v-for="(item, index) in allServices.slice(0, 2)" :key="index"  @click="navigateTo(item.path)" >
 			
 				<view class="left">
 					<view class="service-icon" :class="item.class">
@@ -34,10 +34,39 @@
 					<uni-icons type="right" size="14" color="#999"></uni-icons>
 				</view>
 			
+			</view> -->
+			
+			<view class="service-item" @click="personNavigateTo()" >
+				<view class="left">
+					<view class="service-icon" :class="allServices[0].class">
+						<uni-icons :type="allServices[0].icon" size="20" color="#fff"></uni-icons>
+					</view>
+					<text class="service-name">{{ allServices[0].name }}</text>
+				</view>
+				
+				<view class="right">
+					<text v-if="allServices[0].desc" class="desc">{{ allServices[0].desc }}</text>
+					<uni-icons type="right" size="14" color="#999"></uni-icons>
+				</view>
+			</view>
+			
+			<view class="service-item" @click="navigateTo(allServices[1].path)" >
+				<view class="left">
+					<view class="service-icon" :class="allServices[1].class">
+						<uni-icons :type="allServices[1].icon" size="20" color="#fff"></uni-icons>
+					</view>
+					<text class="service-name">{{ allServices[1].name }}</text>
+				</view>
+				
+				<view class="right">
+					<text v-if="allServices[1].desc" class="desc">{{ allServices[1].desc }}</text>
+					<uni-icons type="right" size="14" color="#999"></uni-icons>
+				</view>
+			
 			</view>
 			
 			<!-- 手机号授权 -->
-			<view class="service-item" style="display: block; padding-top: 0rpx; align-items: center;" >
+			<view v-if="isLogined" class="service-item" style="display: block; padding-top: 0rpx; align-items: center;" >
 				<view style="display: flex; justify-content: space-between;">
 					<view class="left" >
 						<view class="service-icon bg-green" >
@@ -100,10 +129,10 @@
 
 <script>
 
-    import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
-	const SYS_ID = 2025040301;
-	const JOB_TOKEN = 'JOB_TOKEN';
-	const JOB_USER_FONT_SET = "jobUserMySet";
+import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
+const SYS_ID = 2025040301;
+const JOB_TOKEN = 'JOB_TOKEN';
+const JOB_USER_FONT_SET = "jobUserMySet";
 
 export default {
 	components: { uniListItem },
@@ -115,7 +144,12 @@ export default {
 			success: function(resp){
 				_this.userToken = resp.data
 				// 加载用户日程信息
-				_this.getUserScheduleByUserId();
+				if(_this.userToken.token) {
+					_this.getUserScheduleByUserId();
+				}else{
+					// 未登录
+					_this.isLogined = false;
+				}
 				// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 			},
 			fail:function(){
@@ -136,6 +170,7 @@ export default {
 				customize:[]
 			},
 			isShowMobile: false,
+			isLogined: true,
 			showMobileText: "未授权",
             features: [
                 { name: '我的收藏', icon: 'star-filled', bgColor: '#FFE8E8', iconColor: '#FF4D4F', path: '/pages/collect' },
@@ -241,6 +276,31 @@ export default {
         }
     },
     methods: {
+		personNavigateTo(){
+			console.log("进入跳转："+this.isLogined)
+			if(this.isLogined){
+				console.log("this.isLogined:"+this.isLogined)
+				uni.navigateTo({url: "/pages/job/user/user_add"});
+				// uni.navigateTo();
+				return
+			}
+			// uni.navigateTo();
+			// uni.navigateTo(`/pages/job/index`)
+			console.log(getCurrentPages())
+			console.log("跳转：/pages/job/index")
+			uni.navigateTo({url: "/pages/job/index"});
+			// uni.navigateTo({
+			//   url: "/pages/job/index",
+			//   success: function () {
+			//     console.log("跳转成功");
+			//   },
+			//   fail: function (err) {
+			//     console.error("跳转失败", err);
+			//   }
+			// });
+			
+		},
+		
 		workStatusChange(e) {
 			// console.log('Selected value changed:', e);
 			// console.log('Selected value changed:', e.detail.value);
@@ -256,7 +316,24 @@ export default {
 				success: (res) => {
 					if (res.confirm) {
 						// uni.removeStorage({key:JOB_TOKEN});
-						uni.removeStorageSync(JOB_TOKEN);
+						// uni.removeStorageSync(JOB_TOKEN);
+						uni.getStorage({
+							key: JOB_TOKEN,
+							success: async function(resp){
+								_this.userToken = resp.data
+								// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+								if(_this.userToken?.userId) _this.userToken.userId=null;
+								// 替换 token（userId 置空）
+								uni.setStorage({
+									key:JOB_TOKEN,
+									data: _this.userToken
+								});
+							},
+							fail:function(){
+							},
+							complete() {
+							}
+						});
 						uni.reLaunch({url:'/pages/job/index'});
 						// 跳转 登录页
 						// uni.navigateTo({ url: '/pages/job/index' });

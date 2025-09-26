@@ -28,7 +28,7 @@
 			// this.getStorage()
 		},
 		onShow() {
-			console.log("talk_list.onShow() 被执行……")
+			console.log("talk_list.onShow() 已运行……")
 			this.initData();
 			this.getStorage();
 		},

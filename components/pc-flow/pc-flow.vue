@@ -104,15 +104,12 @@
 			width: 50%;
 			flex: 1;
 			overflow: hidden;
-			.pc_img_max{
+			.pc_img_max, .pc_img_min{
 				width: 100%;
 				border-radius: 20upx;
 				overflow: hidden;
-			}
-			.pc_img_min{
-				width: 100%;
-				border-radius: 20upx;
-				overflow: hidden;
+				/* 可以设置一个最大高度，防止图片过长 */
+				max-height: 500rpx;
 			}
 		}
 		.pc_flow_right{

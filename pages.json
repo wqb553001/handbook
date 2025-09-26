@@ -17,14 +17,23 @@
 				"enablePullDownRefresh": true
 			}
 		}
-		, 
-		{
+		,{
 			"path" : "pages/job/index",
 			"style" : 
 			{
-				"navigationBarTitleText" : ""
+				"navigationBarTitleText" : "登录",
+				"enablePullDownRefresh" : false
 			}
-		},
+		}
+		// , 
+		// {
+		// 	"path" : "pages/job/index",
+		// 	"style" : 
+		// 	{
+		// 		"navigationBarTitleText" : ""
+		// 	}
+		// }
+		,
 		{
 			"path": "pages/stock/add",
 			"style": {
