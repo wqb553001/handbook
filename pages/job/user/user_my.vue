@@ -261,7 +261,7 @@ export default {
 			],
 			
 			// 字体缩放
-			fontSet: '',
+			fontSet: 'font-size:37.5rpx;',
 			fontScale: 1.0,
 			fontSizeScale: 100, // 默认100%比例
 			baseFontSize: 16,   // 基础字体大小（根据设计稿调整）

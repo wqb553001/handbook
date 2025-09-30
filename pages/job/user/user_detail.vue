@@ -6,46 +6,46 @@
 		
 
 		<view class="uni-padding-wrap uni-common-mt">
-		<view class="profile-card">
-			<view class="profile-info">
-			<!-- <uni-card :is-shadow="false" is-full style="text-align: center; display: block; ">
-				
-			</uni-card> -->
-			<view>
-				<text class="uni-h6" style="line-height: 35px;"  :style="fontScaleChange(0.8)">无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
-			</view>
-			
-			<view class="headRight">
-				<view class="member-tag">
-					<uni-icons type="star" v-for="(item, index) in jobUser.jobUserDO.multiScore" :key="index" :size="18*fontScale" color="#FFD700"></uni-icons>
-					<text :style="fontSet">{{score(jobUser.jobUserDO.multiScore)}}</text>
+			<view class="profile-card">
+				<view class="profile-info">
+				<!-- <uni-card :is-shadow="false" is-full style="text-align: center; display: block; ">
+					
+				</uni-card> -->
+					<view>
+						<text class="uni-h6" style="line-height: 35px;"  :style="fontScaleChange(0.8)">无所事事，难获持久尊重；劳逸结合，过好健康人生</text>
+					</view>
+					
+					<view class="headRight">
+						<view class="member-tag">
+							<uni-icons type="star" v-for="(item, index) in jobUser.jobUserDO.multiScore" :key="index" :size="18*fontScale" color="#FFD700"></uni-icons>
+							<text :style="fontSet">{{score(jobUser.jobUserDO.multiScore)}}</text>
+						</view>
+					</view>
 				</view>
-			</view>
-			</view>
-			
-			<view class="slider-container">
-				<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
-				 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value> </u-slider>
-			</view>
-			
-			
-			<view class="profile-stats">
-			    <view class="stat-item">
-			        <text class="num" :style="fontSet">1280</text>
-					<uni-icons type="hand-up-filled" :size="23*fontScale" color="#FFCC33" ></uni-icons>
-			        <text class="label" :style="fontSet">获赞</text>
-			    </view>
-			    <view class="stat-item">
-			        <text class="num" :style="fontSet">128</text>
-					<uni-icons type="star-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
-			        <text class="label" :style="fontSet">收藏</text>
-			    </view>
-			    <view class="stat-item">
-			        <text class="num" :style="fontSet">59</text>
-					<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
-			        <text class="label" :style="fontSet">分享</text>
-			    </view>
-			</view>
+				
+				<view class="slider-container">
+					<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
+					 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value> </u-slider>
+				</view>
+				
+				
+				<view class="profile-stats">
+					<view class="stat-item">
+						<text class="num" :style="fontSet">1280</text>
+						<uni-icons type="hand-up-filled" :size="23*fontScale" color="#FFCC33" ></uni-icons>
+						<text class="label" :style="fontSet">获赞</text>
+					</view>
+					<view class="stat-item">
+						<text class="num" :style="fontSet">128</text>
+						<uni-icons type="star-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+						<text class="label" :style="fontSet">收藏</text>
+					</view>
+					<view class="stat-item">
+						<text class="num" :style="fontSet">59</text>
+						<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+						<text class="label" :style="fontSet">分享</text>
+					</view>
+				</view>
 			</view>
 			<view class="uni-flex uni-row" style="display: flex;">
 				<view class="uni-flex uni-column" style="-webkit-flex: 1; flex: 1; -webkit-justify-content: space-between; justify-content: space-between;">
@@ -111,69 +111,70 @@
 
 	</view>
 	
-	<uni-card class="detail-uni-card" v-if="jobUser?.moreReturnDOList?.length>0" :is-shadow="false" is-full style="text-align: center; display: block; margin-top: 40rpx; background-color: #f0f8ff;" custom-style="background-color: #f0f8ff;">
-		<text class="uni-h1" >详情展示</text>
-	</uni-card>
-	
-	<view  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
-		<view :style="fontScaleChange(1.1)"  class="section-title" >{{more.title}}</view>
-		<view :style="fontScaleChange(0.85)" class="section-summary" >{{more.summary}}</view>
-		<pc-flow :data="more.images" :limitation="true" :all-images="more.images" @image-click="openPreview(more.images, $event.positionIndex)">
-			<template #default="{row, rowIndex}" width="160rpx;" height="160rpx;" >
-			</template>
-		</pc-flow>
-	</view>
-	
-	<view :style="fontScaleChange(1)" v-html="jobUser.content"></view>
-	
-	<!-- 垂直排列，略缩图显示大图 -->
-<!-- 	<view>
-		<uni-list  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
-		    <uni-list-item direction="column" :note="more.summary">
-		        <template v-slot:header>
-		            <view class="uni-title">{{more.title}}</view>
-		            <view class="uni-thumb uni-content list-picture" v-for="(imgs, rowIndex) in more.images" :key="rowIndex" >
-						<image :src="imgs" mode="aspectFill" @click="openPreview(more.images, rowIndex, index)"></image>
+	<view v-if="jobUser.jobUserDO.level>0">
+		<uni-card class="detail-uni-card" v-if="jobUser?.moreReturnDOList?.length>0" :is-shadow="false" is-full style="text-align: center; display: block; margin-top: 40rpx; background-color: #f0f8ff;" custom-style="background-color: #f0f8ff;">
+			<text class="uni-h1" >详情展示</text>
+		</uni-card>
+		
+		<view  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
+			<view :style="fontScaleChange(1.1)"  class="section-title" >{{more.title}}</view>
+			<view :style="fontScaleChange(0.85)" class="section-summary" >{{more.summary}}</view>
+			<pc-flow :data="more.images" :limitation="true" :all-images="more.images" @image-click="openPreview(more.images, $event.positionIndex)">
+				<template #default="{row, rowIndex}" width="160rpx;" height="160rpx;" >
+				</template>
+			</pc-flow>
+		</view>
+		
+		<view :style="fontScaleChange(1)" v-html="jobUser.content"></view>
+		
+		<view>
+			<!-- 在模板末尾添加预览组件 -->
+			<image-preview
+			  v-if="previewVisible"
+			  ref="imagePreview"
+			  :imageUrl="previewList[previewIndex]"
+			  :imageList="previewList"
+			  :initialIndex="previewIndex"
+			  @close="closePreview"
+			/>
+		</view>
+		<view class="am-panel am-panel-default">
+			<view style="display: grid;">
+				<view v-for="(comment, index) in commentPageList" :key="index" style="box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); padding: 10px 0;"><!-- v-for="(comment,index) in commentPageList" :key="index"  电话、手机号、QQ、微信 等，方便与您取得联系~-->
+					<hr>
+					<view style="float: left; display: block; margin-bottom: 15px;">
+						<span>&nbsp;&nbsp;</span><span>{{comment.content}}</span>
 					</view>
-		        </template>
-		    </uni-list-item>
-		</uni-list>
-	</view> -->
-	
-	<view>
-		<!-- 在模板末尾添加预览组件 -->
-		<image-preview
-		  v-if="previewVisible"
-		  ref="imagePreview"
-		  :imageUrl="previewList[previewIndex]"
-		  :imageList="previewList"
-		  :initialIndex="previewIndex"
-		  @close="closePreview"
-		/>
-	</view>
-	<view class="am-panel am-panel-default">
-	<view style="display: grid;">
-		<view v-for="(comment, index) in commentPageList" :key="index" style="box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); padding: 10px 0;"><!-- v-for="(comment,index) in commentPageList" :key="index"  电话、手机号、QQ、微信 等，方便与您取得联系~-->
-			<hr>
-			<view style="float: left; display: block; margin-bottom: 15px;">
-				<span>&nbsp;&nbsp;</span><span>{{comment.content}}</span>
-			</view>
-			
-			<view style="float: right; display: flex; ">
-				<span :class="'want-yes-'+ comment.id">{{comment.agree}}&nbsp;</span><a href="#" title="赞同" @click.prevent.stop="voteComment(comment, 1)"><uni-icons type="hand-up-filled" :size="13*fontScale" color="#FFCC33" >赞同</uni-icons></a>&nbsp;&nbsp;
-				<span :class="'want-no-'+ comment.id">{{comment.disagree}}&nbsp;</span><a href="#" title="不赞同" @click.prevent.stop="voteComment(comment, -1)"><uni-icons type="hand-down-filled" :size="13*fontScale" color="#FFCC33" >不赞同</uni-icons></a>&nbsp;
-				<label style="font-weight: normal; padding-right: 5px;">{{comment.updateTime}}</label> 
-				<view>{{comment.nickname}}</view>
+					
+					<view style="float: right; display: flex; ">
+						<span :class="'want-yes-'+ comment.id">{{comment.agree}}&nbsp;</span><a href="#" title="赞同" @click.prevent.stop="voteComment(comment, 1)"><uni-icons type="hand-up-filled" :size="13*fontScale" color="#FFCC33" >赞同</uni-icons></a>&nbsp;&nbsp;
+						<span :class="'want-no-'+ comment.id">{{comment.disagree}}&nbsp;</span><a href="#" title="不赞同" @click.prevent.stop="voteComment(comment, -1)"><uni-icons type="hand-down-filled" :size="13*fontScale" color="#FFCC33" >不赞同</uni-icons></a>&nbsp;
+						<label style="font-weight: normal; padding-right: 5px;">{{comment.updateTime}}</label> 
+						<view>{{comment.nickname}}</view>
+					</view>
+				</view>
 			</view>
 		</view>
 	</view>
+	<view v-if="jobUser.jobUserDO.level>0"><!-- #5ECCBBB3; #ff4d4f-->
+		<floating-menu
+		  :menu-items="menuList"
+		  icon-text="版本切换"
+		  icon="＋"
+		  color="#5ECCBBB3"
+		  position="right-bottom"
+		  menu-direction="up"
+		  @select="onMenuSelect"
+		/>
 	</view>
+	
 	
 </template>
 
 <script>
 	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
 	import ImagePreview from '@/components/image-preview/index.vue';//注意路径是否正确
+	import FloatingMenu from '@/components/floating-menu/floating-menu.vue';
 	
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
@@ -191,9 +192,7 @@
 		}
 		
 	export default {
-		components: {
-			ImagePreview
-		},
+		components: { ImagePreview, FloatingMenu },
 		data() {
 			return {
 				detailId: 0,
@@ -245,7 +244,13 @@
 				previewVisible: false,     // 控制预览显示
 				previewList: [],           // 预览图片列表
 				previewIndex: 0,           // 当前预览图片索引
-				
+				menuList: [
+					{ label: '下一版本', icon: 'am-icon-arrow-down', 	iconText: '📝', key: 'new' 		},
+					{ label: '×', 		icon: 'am-icon-check-circle-o', iconText: '🔗', key: 'share', 	menuBtnStyle: 'font-size:80rpx; color:red;',	tooltip:'启用版本'},
+					{ label: '√', 		icon: 'am-icon-check-circle-o', iconText: '🔗', key: 'share',	menuBtnStyle: 'font-size:70rpx;',				tooltip:'删除版本'},
+					{ label: '上一版本', icon: 'am-icon-arrow-up', 		iconText: '⚙️', key: 'setting' }
+				],
+				oldLevel:null,
 			}
 		},
 		computed: {
@@ -296,9 +301,91 @@
 			this.initGetFontSize(); // 页面重新加载-恢复
 		},
 		methods: {
+			onMenuSelect({ item, idx }) {
+			  uni.showToast({ title: `点击了：${item.label+idx}`, icon: 'none' });
+			  // 【idx】3：上一版本；2：启用版本；1：删除版本；0：下一版本。
+			  // 删除版本（弹窗提醒）
+			  if(idx==1){
+				return this.removeByUserIdAndLevel();
+			  }
+			  // 启用版本
+			  if(idx==2){
+				  const form = {
+				  	moreLevel : this.jobUser.moreReturnDOList[0].level
+				  }
+				  if(this.oldLevel == this.jobUser.moreReturnDOList[0].level) {
+					uni.showToast({
+					  title:'当前版本，已启用！',
+					  icon:'success',
+					  position:'top'
+					});
+					return
+				  }
+				  this.updateUser(form);
+				  uni.showToast({
+				    title:'已启用成功！',
+				    icon:'success',
+				    position:'top'
+				  });
+				  return
+			  }
+			  // 上一版本、下一版本
+			  const level = idx==3?this.jobUser.moreReturnDOList[0].preLevel:this.jobUser.moreReturnDOList[0].nextLevel;
+			  this.getJobUserByLevel(level);
+			  return
+			},
+			getJobUserByLevel(level){
+				const _this = this;
+				let data = {sysId: SYS_ID, userId: this.jobUser.jobUserDO.userId, level: level}; // , selfId: this.userToken.userId, token: this.userToken.token
+				if(this.userToken?.userId) data.selfId = this.userToken?.userId;
+				if(this.userToken?.token) data.token = this.userToken?.token;
+				uni.request({
+					url: process.env.UNI_BASE_URL+'/api/job/getUserMore',  // 板块更多信息
+					data: data,
+					method: 'POST',
+					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+					success: result => {
+						// console.log('user_detail.getUser 返回值' + JSON.stringify(result));
+						if (result.statusCode == 200 && result.data.code == 0) {
+							const respData = result.data.data;
+							// console.log("user_detail.getUser返回值："+JSON.stringify(respData))
+							if(respData) {
+								// console.log("转化前："+respData.jobUserDO.skills)
+								_this.jobUser.moreReturnDOList = respData.moreReturnDOList;
+								_this.jobUser.content = respData.content
+								// console.log("转化后："+respData.jobUserDO.allSkills)
+							};
+							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
+						}
+					},
+					fail: (result, code) => {
+						console.log('fail' + JSON.stringify(result));
+					}
+				});
+			},
+			removeByUserIdAndLevel(){
+				const params = {userId: 	this.jobUser.jobUserDO.userId,
+								preLevel: 	this.jobUser.jobUserDO.preLevel,
+								level:		this.jobUser.jobUserDO.level,
+								nextLevel:	this.jobUser.jobUserDO.nextLevel
+								}
+				uni.request({
+					url: process.env.UNI_BASE_URL + '/api/job/removeUserMore',
+					header: { 'Content-Type': 'application/json' },
+					method: 'GET',
+					data: params,
+					success() {
+						uni.showToast({ title: `修改成功！` });
+					},
+					fail() {
+						uni.showToast({ title: '更新失败，请稍后重试！', icon: 'none' });
+					}
+				});
+			},
 			getJobUserByUserId(detailId){
 				const _this = this;
 				let data = {sysId: SYS_ID, userId: detailId}; // , selfId: this.userToken.userId, token: this.userToken.token
+				// , level: this.jobUser.jobUserDO.moreLeve
 				if(this.userToken?.userId) data.selfId = this.userToken?.userId;
 				if(this.userToken?.token) data.token = this.userToken?.token;
 				uni.request({
@@ -327,6 +414,7 @@
 								// console.log("转化后："+respData.jobUserDO.allSkills)
 							};
 							_this.jobUser = respData;
+							_this.oldLevel = _this.jobUser.jobUserDO.moreLevel;
 							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
 						}
 					},
@@ -439,7 +527,7 @@
 						const respData = result.data;
 						if (result.statusCode == 200) {
 							if(respData.code == 0){
-								uni.showToast({ title: '地址更新成功！' });
+								uni.showToast({ title: '更新成功！' });
 								return;
 							}
 							

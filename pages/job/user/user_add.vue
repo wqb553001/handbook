@@ -1131,10 +1131,13 @@
 				// return new Promise((resolve, reject) => {
 				const _this = this;
 				console.log("this.userToken.userId：" + this.userToken.userId)
+				const params = {sysId: SYS_ID, userId: this.userToken.userId, 
+								selfId: this.userToken.userId, token: this.userToken.token,
+								level: this.baseFormData.jobUserDO.moreLevel}
 				return new Promise((resolve, reject) => {
 						uni.request({
 						url: process.env.UNI_BASE_URL + '/api/job/getUserDetail',  // 用户数据 getUserDetail  getUser
-						data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
+						data: params,
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						success: async (result) => {
