@@ -1,11 +1,11 @@
 <template>
   <view class="fab-wrapper" :style="wrapperStyle">
     <view
-      v-for="(item, idx) in menuItems"
-      :key="item.key || idx"
+      v-for="item in displayedMenuItems"
+      :key="item.key"
       class="fab-menu-item"
-      :style="menuItemStyle(idx)"
-      @click="onMenuClick(item, idx)"
+      :style="menuItemStyle(item.key)"
+      @click="onMenuClick(item)"
       v-show="showMenu"
     >
       <!-- <text :class="['fab-menu-icon', item.icon]">{{ item.iconText }}</text> -->
@@ -91,6 +91,14 @@ export default {
         fontSize: '48rpx',
         transition: 'background 0.2s'
       };
+    },
+    // 只显示 display 为 true 的菜单项
+    displayedMenuItems() {
+      return this.menuItems.filter(item => item.display !== false);
+    },
+    // 定义按钮顺序映射，确保位置固定
+    buttonOrder() {
+      return ['preLevel', 'used', 'delete', 'nextLevel']; // 上一版本、启用版本、删除版本、下一版本
     }
   },
   methods: {
@@ -103,8 +111,14 @@ export default {
 	  // console.log("item:"+JSON.stringify(item)+"；idx:"+idx)
 	  // if(this.showMenu) this.$emit('select', { item, idx });
     },
-    menuItemStyle(idx) {
+    // 根据 key 计算位置
+    getPositionIndex(key) {
+      const displayedKeys = this.displayedMenuItems.map(item => item.key);
+      return displayedKeys.indexOf(key);
+    },
+    menuItemStyle(key) {
       const gap = 120;
+      const positionIndex = this.getPositionIndex(key);
       let style = {
         position: 'absolute',
         opacity: this.showMenu ? 1 : 0,
@@ -120,13 +134,13 @@ export default {
       let transform = `translate(-50%, -50%)`;
       if (this.showMenu) {
         if (this.menuDirection === 'up') {
-          transform += ` translateY(-${(idx + 1) * gap}rpx)`;
+          transform += ` translateY(-${(positionIndex  + 1) * gap}rpx)`;
         } else if (this.menuDirection === 'down') {
-          transform += ` translateY(${(idx + 1) * gap}rpx)`;
+          transform += ` translateY(${(positionIndex  + 1) * gap}rpx)`;
         } else if (this.menuDirection === 'left') {
-          transform += ` translateX(-${(idx + 1) * gap}rpx)`;
+          transform += ` translateX(-${(positionIndex  + 1) * gap}rpx)`;
         } else if (this.menuDirection === 'right') {
-          transform += ` translateX(${(idx + 1) * gap}rpx)`;
+          transform += ` translateX(${(positionIndex  + 1) * gap}rpx)`;
         }
       }
       style.transform = transform;
@@ -142,15 +156,15 @@ export default {
       style.fontSize = '40rpx';
       return style;
     },
-    onMenuClick(item, idx) {
+    onMenuClick(item) {
 	  console.log("点击菜单："+this.showMenu)
 	  this.iconText = this.showText
 	  // console.log("item:"+JSON.stringify(item)+"；idx:"+idx)
       // this.showMenu = false;
       // this.showMenu = !this.showMenu;
-	  if(this.showMenu) this.$emit('select', { item, idx });
+	  if(this.showMenu) this.$emit('select', { item });
 	  this.showMenu = true;
-    }
+    },
   }
 };
 </script>

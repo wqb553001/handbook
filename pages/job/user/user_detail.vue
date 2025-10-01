@@ -245,10 +245,10 @@
 				previewList: [],           // 预览图片列表
 				previewIndex: 0,           // 当前预览图片索引
 				menuList: [
-					{ label: '下一版本', icon: 'am-icon-arrow-down', 	iconText: '📝', key: 'new' 		},
-					{ label: '×', 		icon: 'am-icon-check-circle-o', iconText: '🔗', key: 'share', 	menuBtnStyle: 'font-size:80rpx; color:red;',	tooltip:'启用版本'},
-					{ label: '√', 		icon: 'am-icon-check-circle-o', iconText: '🔗', key: 'share',	menuBtnStyle: 'font-size:70rpx;',				tooltip:'删除版本'},
-					{ label: '上一版本', icon: 'am-icon-arrow-up', 		iconText: '⚙️', key: 'setting' }
+					{ label: '下一版本', icon: 'am-icon-arrow-down', 	iconText: '📝', key: 'nextLevel',	display: false },
+					{ label: '×', 		icon: 'am-icon-check-circle-o', iconText: '🔗', key: 'delete', 		display: true,	menuBtnStyle: 'font-size:80rpx; color:red;',	tooltip:'删除版本'},
+					{ label: '√', 		icon: 'am-icon-check-circle-o', iconText: '🔗', key: 'used',	 	display: false,	menuBtnStyle: 'font-size:70rpx;',				tooltip:'启用版本'},
+					{ label: '上一版本', icon: 'am-icon-arrow-up', 		iconText: '⚙️', key: 'preLevel',	display: false }
 				],
 				oldLevel:null,
 			}
@@ -301,49 +301,85 @@
 			this.initGetFontSize(); // 页面重新加载-恢复
 		},
 		methods: {
-			onMenuSelect({ item, idx }) {
-			  uni.showToast({ title: `点击了：${item.label+idx}`, icon: 'none' });
+			// 更新菜单显示状态的方法
+			updateMenuDisplay() {
+			  if (this.jobUser.moreReturnDOList && this.jobUser.moreReturnDOList.length > 0) {
+			    const more = this.jobUser.moreReturnDOList[0];
+			    
+			    this.menuList = this.menuList.map(item => {
+			      let display = true;
+			      
+			      switch (item.key) {
+			        case 'nextLevel': // 下一版本
+			          display = more.nextLevel >= 1;
+			          break;
+			        case 'preLevel': // 上一版本
+			          display = more.preLevel >= 1;
+			          break;
+			        case 'used': // 启用版本
+			          display = more.level != this.oldLevel;
+			          break;
+			        case 'delete': // 删除版本
+			          display = true; // 始终显示
+			          break;
+			      }
+			      
+			      return { ...item, display };
+			    });
+			  }
+			},
+			onMenuSelect({ item }) {
+			  uni.showToast({ title: `点击了：${item.label}(${item.key})`, icon: 'none' });
 			  // 【idx】3：上一版本；2：启用版本；1：删除版本；0：下一版本。
-			  // 删除版本（弹窗提醒）
-			  if(idx==1){
-				return this.removeByUserIdAndLevel();
+			  switch (item.key) {
+			    case 'nextLevel': // 下一版本
+			      this.getJobUserByLevel(this.jobUser.moreReturnDOList[0].nextLevel);
+			      break;
+			    case 'preLevel': // 上一版本
+			      this.getJobUserByLevel(this.jobUser.moreReturnDOList[0].preLevel);
+			      break;
+			    case 'used': // 启用版本
+			      this.enableVersion();
+			      break;
+			    case 'delete': // 删除版本
+			      this.removeByUserIdAndLevel();
+			      break;
 			  }
-			  // 启用版本
-			  if(idx==2){
-				  const form = {
-				  	moreLevel : this.jobUser.moreReturnDOList[0].level
-				  }
-				  if(this.oldLevel == this.jobUser.moreReturnDOList[0].level) {
-					uni.showToast({
-					  title:'当前版本，已启用！',
-					  icon:'success',
-					  position:'top'
-					});
-					return
-				  }
-				  this.updateUser(form);
-				  uni.showToast({
-				    title:'已启用成功！',
-				    icon:'success',
-				    position:'top'
-				  });
-				  return
+			},
+		
+			// 启用版本的方法
+			enableVersion() {
+			  const form = {
+			    moreLevel: this.jobUser.moreReturnDOList[0].level
+			  };
+			  
+			  if (this.oldLevel == this.jobUser.moreReturnDOList[0].level) {
+			    uni.showToast({
+			      title: '当前版本，已启用！',
+			      icon: 'success',
+			      position: 'top'
+			    });
+			    return;
 			  }
-			  // 上一版本、下一版本
-			  const level = idx==3?this.jobUser.moreReturnDOList[0].preLevel:this.jobUser.moreReturnDOList[0].nextLevel;
-			  this.getJobUserByLevel(level);
-			  return
+			  
+			  this.updateUser(form);
+			  uni.showToast({
+			    title: '已启用成功！',
+			    icon: 'success',
+			    position: 'top'
+			  });
 			},
 			getJobUserByLevel(level){
 				const _this = this;
-				let data = {sysId: SYS_ID, userId: this.jobUser.jobUserDO.userId, level: level}; // , selfId: this.userToken.userId, token: this.userToken.token
+				let data = {sysId: SYS_ID, userId: this.jobUser.jobUserDO.userId, level: level, enabled: 0}; // , selfId: this.userToken.userId, token: this.userToken.token
 				if(this.userToken?.userId) data.selfId = this.userToken?.userId;
 				if(this.userToken?.token) data.token = this.userToken?.token;
+				console.log("user_detail.getJobUserByLevel(level) 参数："+JSON.stringify(data))
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getUserMore',  // 板块更多信息
-					data: data,
+					data: JSON.stringify(data),
 					method: 'POST',
-					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+					header: { 'Content-Type': 'application/json' },
 					success: result => {
 						// console.log('user_detail.getUser 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
@@ -357,6 +393,8 @@
 							};
 							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
 						}
+						// 更新菜单显示状态
+						_this.updateMenuDisplay();
 					},
 					fail: (result, code) => {
 						console.log('fail' + JSON.stringify(result));
@@ -365,13 +403,14 @@
 			},
 			removeByUserIdAndLevel(){
 				const params = {userId: 	this.jobUser.jobUserDO.userId,
-								preLevel: 	this.jobUser.jobUserDO.preLevel,
-								level:		this.jobUser.jobUserDO.level,
-								nextLevel:	this.jobUser.jobUserDO.nextLevel
+								preLevel: 	this.jobUser.moreReturnDOList[0].preLevel,
+								level:		this.jobUser.moreReturnDOList[0].level,
+								nextLevel:	this.jobUser.moreReturnDOList[0].nextLevel
 								}
+				// console.log("removeByUserIdAndLevel() 参数："+JSON.stringify(params))
 				uni.request({
 					url: process.env.UNI_BASE_URL + '/api/job/removeUserMore',
-					header: { 'Content-Type': 'application/json' },
+					// header: { 'Content-Type': 'application/json' },
 					method: 'GET',
 					data: params,
 					success() {
@@ -417,6 +456,8 @@
 							_this.oldLevel = _this.jobUser.jobUserDO.moreLevel;
 							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
 						}
+						// 更新菜单显示状态
+						_this.updateMenuDisplay();
 					},
 					fail: (result, code) => {
 						console.log('fail' + JSON.stringify(result));
