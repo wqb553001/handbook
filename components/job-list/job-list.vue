@@ -262,10 +262,10 @@
 					_this.writeTempUserId();
 				},
 				complete() {
-					_this.getBanner();			// 获取，标题展示数据
 					_this.getLocalFromStore();	// 读取位置信息
 					_this.getStoreList();		// 我的收藏
 					_this.getList();			// 获取，内容列表数据
+					_this.getBanner();			// 获取，标题展示数据
 				}
 			});
 			
