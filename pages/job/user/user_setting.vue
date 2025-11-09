@@ -315,25 +315,27 @@ export default {
 				cancelText: '保持登录',
 				success: (res) => {
 					if (res.confirm) {
-						// uni.removeStorage({key:JOB_TOKEN});
+						uni.removeStorage({key:JOB_TOKEN});
 						// uni.removeStorageSync(JOB_TOKEN);
-						uni.getStorage({
-							key: JOB_TOKEN,
-							success: async function(resp){
-								_this.userToken = resp.data
-								// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-								if(_this.userToken?.userId) _this.userToken.userId=null;
-								// 替换 token（userId 置空）
-								uni.setStorage({
-									key:JOB_TOKEN,
-									data: _this.userToken
-								});
-							},
-							fail:function(){
-							},
-							complete() {
-							}
-						});
+						
+						// 重置登录信息
+						// uni.getStorage({
+						// 	key: JOB_TOKEN,
+						// 	success: async function(resp){
+						// 		_this.userToken = resp.data
+						// 		// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+						// 		if(_this.userToken?.userId) _this.userToken.userId=null;
+						// 		// 替换 token（userId 置空）
+						// 		uni.setStorage({
+						// 			key:JOB_TOKEN,
+						// 			data: _this.userToken
+						// 		});
+						// 	},
+						// 	fail:function(){
+						// 	},
+						// 	complete() {
+						// 	}
+						// });
 						uni.reLaunch({url:'/pages/job/index'});
 						// 跳转 登录页
 						// uni.navigateTo({ url: '/pages/job/index' });

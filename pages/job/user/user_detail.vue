@@ -23,27 +23,40 @@
 					</view>
 				</view>
 				
+				<!-- <banner-swiper 
+				    :banners="banners" 
+				    :font-set="fontSet"
+				    @item-click="handleBannerClick"
+				    @swiper-change="onBannerSwiperChange"
+				    @video-play="onBannerVideoPlay"
+				    @video-pause="onBannerVideoPause"
+				    @video-ended="onBannerVideoEnded"
+				    @video-error="onBannerVideoError"
+				  ></banner-swiper> -->
+				<banner-swiper :banners="banners" :font-set="fontSet" ></banner-swiper>
+				
 				<view class="slider-container">
 					<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
-					 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" show-value> </u-slider>
+					 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" @change="onFontSizeChange" show-value> </u-slider>
 				</view>
 				
 				
 				<view class="profile-stats">
-					<view class="stat-item">
-						<text class="num" :style="fontSet">1280</text>
-						<uni-icons type="hand-up-filled" :size="23*fontScale" color="#FFCC33" ></uni-icons>
-						<text class="label" :style="fontSet">获赞</text>
+					<view class="stat-item" @click="opt(1, !storeTypeLike)">
+						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.likeNum||1280}}</text>
+						<uni-icons type="hand-up-filled" :size="23*fontScale" :color="storeTypeLike?'#FFCC33':'#808080'" ></uni-icons>
+						<text class="label" :style="fontSet">{{storeTypeLike?"已":""}}点赞</text>
 					</view>
-					<view class="stat-item">
-						<text class="num" :style="fontSet">128</text>
-						<uni-icons type="star-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
-						<text class="label" :style="fontSet">收藏</text>
+					<view class="stat-item" @click="opt(0, !storeTypeStore)">
+						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.storeNum||128}}</text>
+						<uni-icons type="star-filled"  :size="23*fontScale" :color="storeTypeStore?'#FFCC33':'#808080'" ></uni-icons>
+						<text class="label" :style="fontSet">{{storeTypeStore?"已":""}}收藏</text>
 					</view>
-					<view class="stat-item">
-						<text class="num" :style="fontSet">59</text>
+					<view class="stat-item" @click="shareToWeChat">
+						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.shareNum||59}}</text>
 						<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
 						<text class="label" :style="fontSet">分享</text>
+						<!-- <button class="share-btn"  open-type="share" data-source="button">分享给好友</button> -->
 					</view>
 				</view>
 			</view>
@@ -86,7 +99,7 @@
 							<view v-if="showDistance" style="margin-left: 20rpx; margin-right: 10rpx;">
 								<view :style="fontScaleChange(0.85)">
 									<text>直线距离：</text>
-									<text style="white-space: nowrap;">{{calculateDistance(location.latitude, location.longitude, jobUser.jobUserDO.latitude, jobUser.jobUserDO.longitude)}}</text>
+									<text style="white-space: nowrap;">{{ cachedDistance }}</text>
 									<text>公里</text>
 								 </view>
 							</view>
@@ -109,79 +122,121 @@
 			<button type="primary" @click="submit">提交</button>
 		</view>
 
-	</view>
 	
-	<view v-if="jobUser.jobUserDO.level>0">
-		<uni-card class="detail-uni-card" v-if="jobUser?.moreReturnDOList?.length>0" :is-shadow="false" is-full style="text-align: center; display: block; margin-top: 40rpx; background-color: #f0f8ff;" custom-style="background-color: #f0f8ff;">
-			<text class="uni-h1" >详情展示</text>
-		</uni-card>
-		
-		<view  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
-			<view :style="fontScaleChange(1.1)"  class="section-title" >{{more.title}}</view>
-			<view :style="fontScaleChange(0.85)" class="section-summary" >{{more.summary}}</view>
-			<pc-flow :data="more.images" :limitation="true" :all-images="more.images" @image-click="openPreview(more.images, $event.positionIndex)">
-				<template #default="{row, rowIndex}" width="160rpx;" height="160rpx;" >
-				</template>
-			</pc-flow>
-		</view>
-		
-		<view :style="fontScaleChange(1)" v-html="jobUser.content"></view>
-		
-		<view>
-			<!-- 在模板末尾添加预览组件 -->
-			<image-preview
-			  v-if="previewVisible"
-			  ref="imagePreview"
-			  :imageUrl="previewList[previewIndex]"
-			  :imageList="previewList"
-			  :initialIndex="previewIndex"
-			  @close="closePreview"
-			/>
-		</view>
-		<view class="am-panel am-panel-default">
-			<view style="display: grid;">
-				<view v-for="(comment, index) in commentPageList" :key="index" style="box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); padding: 10px 0;"><!-- v-for="(comment,index) in commentPageList" :key="index"  电话、手机号、QQ、微信 等，方便与您取得联系~-->
-					<hr>
-					<view style="float: left; display: block; margin-bottom: 15px;">
-						<span>&nbsp;&nbsp;</span><span>{{comment.content}}</span>
-					</view>
-					
-					<view style="float: right; display: flex; ">
-						<span :class="'want-yes-'+ comment.id">{{comment.agree}}&nbsp;</span><a href="#" title="赞同" @click.prevent.stop="voteComment(comment, 1)"><uni-icons type="hand-up-filled" :size="13*fontScale" color="#FFCC33" >赞同</uni-icons></a>&nbsp;&nbsp;
-						<span :class="'want-no-'+ comment.id">{{comment.disagree}}&nbsp;</span><a href="#" title="不赞同" @click.prevent.stop="voteComment(comment, -1)"><uni-icons type="hand-down-filled" :size="13*fontScale" color="#FFCC33" >不赞同</uni-icons></a>&nbsp;
-						<label style="font-weight: normal; padding-right: 5px;">{{comment.updateTime}}</label> 
-						<view>{{comment.nickname}}</view>
+		<view v-if="jobUser.jobUserDO.level>0">
+			<uni-card class="detail-uni-card" v-if="jobUser?.moreReturnDOList?.length>0" :is-shadow="false" is-full style="text-align: center; display: block; margin-top: 40rpx; background-color: #f0f8ff;" custom-style="background-color: #f0f8ff;">
+				<text class="uni-h1" >详情展示</text>
+			</uni-card>
+			
+			<view  v-for="(more, index) in jobUser.moreReturnDOList" :key="index">
+				<view :style="fontScaleChange(1.1)"  class="section-title" >{{more.title}}</view>
+				<view :style="fontScaleChange(0.85)" class="section-summary" >{{more.summary}}</view>
+				<pc-flow :data="more.images" :limitation="true" :all-images="more.images" @image-click="openPreview(more.images, $event.positionIndex)">
+					<template #default="{row, rowIndex}" width="160rpx;" height="160rpx;" >
+					</template>
+				</pc-flow>
+			</view>
+			
+			<view :style="fontScaleChange(1)" v-html="jobUser.content"></view>
+			
+			<view>
+				<!-- 在模板末尾添加预览组件 -->
+				<image-preview
+				  v-if="previewVisible"
+				  ref="imagePreview"
+				  :imageUrl="previewList[previewIndex]"
+				  :imageList="previewList"
+				  :initialIndex="previewIndex"
+				  @close="closePreview"
+				/>
+			</view>
+			<view class="am-panel am-panel-default">
+				<view style="display: grid;">
+					<view v-for="(comment, index) in commentPageList" :key="index" style="box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05); padding: 10px 0;"><!-- v-for="(comment,index) in commentPageList" :key="index"  电话、手机号、QQ、微信 等，方便与您取得联系~-->
+						<hr>
+						<view style="float: left; display: block; margin-bottom: 15px;">
+							<span>&nbsp;&nbsp;</span><span>{{comment.content}}</span>
+						</view>
+						
+						<view style="float: right; display: flex; ">
+							<span :class="'want-yes-'+ comment.id">{{comment.agree}}&nbsp;</span><a href="#" title="赞同" @click.prevent.stop="voteComment(comment, 1)"><uni-icons type="hand-up-filled" :size="13*fontScale" color="#FFCC33" >赞同</uni-icons></a>&nbsp;&nbsp;
+							<span :class="'want-no-'+ comment.id">{{comment.disagree}}&nbsp;</span><a href="#" title="不赞同" @click.prevent.stop="voteComment(comment, -1)"><uni-icons type="hand-down-filled" :size="13*fontScale" color="#FFCC33" >不赞同</uni-icons></a>&nbsp;
+							<label style="font-weight: normal; padding-right: 5px;">{{comment.updateTime}}</label> 
+							<view>{{comment.nickname}}</view>
+						</view>
 					</view>
 				</view>
 			</view>
 		</view>
-	</view>
-	<view v-if="jobUser.jobUserDO.level>0"><!-- #5ECCBBB3; #ff4d4f-->
-		<floating-menu
-		  :menu-items="menuList"
-		  icon-text="版本切换"
-		  icon="＋"
-		  color="#5ECCBBB3"
-		  position="right-bottom"
-		  menu-direction="up"
-		  @select="onMenuSelect"
-		/>
+		<view v-if="jobUser.jobUserDO.level>0"><!-- #5ECCBBB3; #ff4d4f-->
+			<floating-menu
+			  :menu-items="menuList"
+			  icon-text="版本切换"
+			  icon="＋"
+			  color="#5ECCBBB3"
+			  position="left-bottom"
+			  menu-direction="up"
+			  @select="onMenuSelect"
+			/>
+		</view>
+		<view style="float: right; margin-bottom: 50px; padding-bottom: 50px;">
+			<view v-if="jobUser.jobUserDO.userId != this.userToken?.userId" 
+				class="text" style="display: flex; font-weight: bold; color: #2E8B57;" 
+				@click="makePhoneCall(jobUser.jobUserDO.userId)" :style="fontScaleChange(1)" >立即联系
+				<u-icon name="chat" :color="headTipColor(jobUser.jobUserDO.workStatus)"  size="36rpx" />
+			</view>
+			<view v-else :style="fontScaleChange(1)" style="margin-right: 10rpx;"><uni-icons type="contact" size="34" color="#FFCC33"></uni-icons></view>
+			
+		</view>
+
+		<!-- 分享菜单 -->
+		<uni-popup ref="sharePopup" type="bottom" background-color="#fff">
+			<view class="share-popup">
+				<!-- <view class="share-title">
+					<text :style="fontScaleChange(1)">分享到</text>
+				</view> -->
+				<!-- <scroll-view scroll-x class="share-scroll noScorll"> -->
+				<!-- <view class="share-options"> -->
+					<button class="share-option uni-share-button" open-type="share">
+						<view class="share-icon">
+							<uni-icons type="weixin" size="50" color="#07C160"></uni-icons>
+						</view>
+						<text class="share-label" :style="fontScaleChange(1)">微信好友</text>
+					</button>
+					<!-- <view class="share-item share-option" @click="shareToTimeline">
+						<view class="share-icon">
+							<uni-icons type="pyq" size="50" color="#07C160"></uni-icons>
+						</view>
+						<text class="share-label" :style="fontScaleChange(0.8)">朋友圈</text>
+					</view> -->
+				<!-- </view> -->
+				<!-- </scroll-view> -->
+				<!-- <view class="share-item share-cancel" @click="closeShareMenu">
+					<text :style="fontScaleChange(1)">取消</text>
+				</view> -->
+			</view>
+		</uni-popup>
 	</view>
 	
-	
+<!-- 	<uni-fab ref="fab" :pattern="fab.pattern" :content="fab.content" 
+		:horizontal="fab.horizontal" :vertical="fab.vertical"
+		:direction="fab.direction" @trigger="trigger" 
+		@fabClick="fabClick" /> -->
 </template>
 
 <script>
 	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
 	import ImagePreview from '@/components/image-preview/index.vue';//注意路径是否正确
 	import FloatingMenu from '@/components/floating-menu/floating-menu.vue';
+	import share from '@/components/job-share/share.vue';
+	import BannerSwiper from '@/components/banner-swiper/banner-swiper.vue';
 	
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
 	const JOB_USER_FONT_SET = "jobUserDetailFontSet"
 	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
-	const MAP_PICKER_POSITION = "map_Picker_Position"
 	const JOB_OPT_HISTORY_RECORD_LEN = 20;
+	const MAP_PICKER_POSITION = "map_Picker_Position"
 	
 	const workerScoreMap = 
 		{
@@ -192,7 +247,7 @@
 		}
 		
 	export default {
-		components: { ImagePreview, FloatingMenu },
+		components: { ImagePreview, FloatingMenu, BannerSwiper },
 		data() {
 			return {
 				detailId: 0,
@@ -208,9 +263,15 @@
 						headImgPath:'',
 						introduction:'',
 						allSkills:'',
-						address:'', 
+						address:'',
+						isPlus:false
 					},
-					moreReturnDOList:[]
+					moreReturnDOList:[],
+					activityDO: {
+						likeNum:	0,
+						storeNum:	0,
+						shareNum:	0,
+					}
 					
 				},
 				commentPageList: [
@@ -226,6 +287,10 @@
 					longitude: ""
 				},
 				showDistance: true,
+				hasComputedDistance: false, // 标记是否已经计算过距离
+				distance: 0,
+				hasLocation: false,
+				hasUserInfo: false,
 				
 				// 基础表单数据
 				talk: {
@@ -234,12 +299,6 @@
 					talk: ''
 				},
 				isMyself: false,
-				
-				// 长按 收藏/取消收藏
-				jobManager: null,
-				isStore: true,
-				readHistoryRecord: true,
-				historyRecord: [],
 				
 				previewVisible: false,     // 控制预览显示
 				previewList: [],           // 预览图片列表
@@ -251,6 +310,77 @@
 					{ label: '上一版本', icon: 'am-icon-arrow-up', 		iconText: '⚙️', key: 'preLevel',	display: false }
 				],
 				oldLevel:null,
+				defaultShareImage: '/static/img/向劳动者致敬.jpg',
+				compressedImage: '', // 存储压缩后的图片路径
+				
+				// 浮动按钮
+				fab:{
+					title: 'uni-fab',
+					horizontal: 'right',
+					vertical: 'bottom',
+					direction: 'vertical',// vertical   horizontal
+					pattern: {
+						color: '#7A7E83',
+						backgroundColor: '#fff',
+						selectedColor: '#007AFF',
+						buttonColor: '#007AFF',
+						iconColor: '#fff'
+					},
+					content: [
+						{
+							text: '立即联系',
+							active: false
+						}
+					],
+					is_color_type: false,
+				},
+				
+				// 长按 收藏/取消收藏
+				jobManager: null,
+				readHistoryRecord: true,
+				historyRecord: [],
+				
+				storeTypeLike: false,
+				storeTypeStore: false,
+				
+				banners: [{
+					mediumType: 2,
+					url: '',
+					titile: '',
+					fontColor: '',
+					noticeShow: false
+				},{
+					mediumType: 2,
+					url: '',
+					titile: '',
+					fontColor: '',
+					noticeShow: false
+				}],
+				
+				// 轮播图配置对象
+				swiperConfig: {
+					indicatorDots: true,    // 是否显示指示点
+					autoplay: true,         // 是否自动播放
+					interval: 6000,         // 自动播放间隔（毫秒）
+					duration: 3000          // 滑动动画时长（毫秒）
+				},
+				
+				currentVideoUrl: '',
+				currentSwiperIndex: 2, // 当前轮播图索引
+				isVideoPlaying: false, // 是否有视频正在播放
+				playingVideoIndex: -1, // 正在播放的视频索引
+				videoContexts: [], // 视频上下文对象数组
+				danmuList: [{
+						text: '第 1s 出现的弹幕',
+						color: '#ff0000',
+						time: 1
+					},
+					{
+						text: '第 3s 出现的弹幕',
+						color: '#ff00ff',
+						time: 3
+					}
+				],
 			}
 		},
 		computed: {
@@ -270,6 +400,7 @@
 				fail:function(){
 				},
 				complete() {
+					_this.getBanner();	// 获取，标题展示数据
 					_this.getLocalFromStore();	// 读取位置信息
 					// 加载用户信息
 					_this.getJobUserByUserId(_this.detailId);
@@ -278,7 +409,7 @@
 			// console.log("参数："+ e.detailId)
 			// 监听全局事件（获取选择的地址）
 			uni.$on('acceptAddress', (data) => {
-			    // console.log("接收地址：" + JSON.stringify(data))
+			    console.log("接收地址：" + JSON.stringify(data))
 				// this.baseFormData.address = data.title;
 				const form = {
 					latitude 	: data.location.lat,	// 纬度
@@ -300,7 +431,200 @@
 		onShow(){
 			this.initGetFontSize(); // 页面重新加载-恢复
 		},
+		// 小程序端分享给好友（与onLoad同级）
+		onShareAppMessage(res) {
+		  return {
+			type: 0, // 分享类型，0：图文；1：纯文字；2：纯图片；
+		    title: this.jobUser.jobUserDO.username || '用户分享',
+		    path: `pages/job/user/user_detail?detailId=${this.detailId}`,
+			desc: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
+			// summary: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
+		    imageUrl: this.getCompressedImage(), // 同步获取
+		    success: (res) => {
+			  // 可以在这里记录分享统计
+			  this.recordShareAction();
+		      uni.showToast({
+		        title: "分享成功",
+		        icon: "success",
+		      });
+		    },
+		    fail: (err) => {
+		      console.error("分享给朋友失败:", err);
+		    },
+		  }
+		},
+		
+		// 微信小程序分享到朋友圈
+		onShareTimeline() {
+			return {
+				title: this.jobUser.jobUserDO.username || '用户分享',
+				imageUrl: this.jobUser.jobUserDO.headImgPath || '',
+				query: `detailId=${this.detailId}`
+			};
+		},
+		// #ifdef APP-PLUS
+		// 监听APP导航栏按钮
+		// app端分享
+		onNavigationBarButtonTap(e) {
+			if (e.type === 'share') {
+				this.$refs.share.showHandler()
+			}
+		},
+		// #endif
 		methods: {
+			// 获取，标题展示数据
+			getBanner() {
+				let data = {sysId: SYS_ID, showWhere: 1, selfId: this.userToken.userId, token: this.userToken.token, level: 0};
+				if(this.userToken?.level) data.level = this.userToken.level;	// 存在就覆盖
+				uni.request({
+					url: process.env.UNI_BASE_URL+'/api/job/getBanner',
+					data: JSON.stringify(data),
+					method: 'POST',
+					success: data => {
+						// console.log("getBanner() 返回值："+JSON.stringify(data))
+						if (data.statusCode == 200 && data.data.code == 0) {
+							this.banners = data.data.data;
+							// this.onVideoJudge(this.banners[0], 0);
+						}
+						// uni.stopPullDownRefresh();
+					},
+					fail: (data, code) => {
+						console.log('fail' + JSON.stringify(data));
+					}
+				});
+			},
+			
+			// // 处理轮播图项的点击
+			// handleItemClick(banner, index) {
+			//   console.log("点击执行 handleItemClick(banner, index)，其中 index = "+index)
+			// },
+			// // 视频播放结束
+			// onVideoJudge(banner, index) {
+			//   if (banner.mediumType === 3) {
+			// 	// 是视频播放
+			// 	this.isVideoPlaying = true;
+			// 	// 点击的是视频项
+			// 	this.currentVideoUrl = banner.url;
+			// 	this.playingVideoIndex = index;
+			// 	// 暂停轮播图的自动播放
+			// 	this.autoplay = false;
+			// 	return true;
+			//   }
+			//   // 不是视频播放
+			//   this.isVideoPlaying = false;
+			//   // 恢复轮播
+			//   this.autoplay = true;
+			//   // 轮播下一张
+			//   this.currentSwiperIndex = index;
+			//   return false;
+			// },
+			
+			// // 视频暂停
+			// onVideoPause() {
+			// 	console.log('视频暂停，索引:', this.playingVideoIndex);
+			// 	// this.isVideoPlaying = false;
+			// 	// this.playingVideoIndex = -1;
+				
+			// 	// // 恢复轮播
+			// 	// this.autoplay = true;
+			// },
+			
+			// // 视频播放结束
+			// onVideoEnded() {
+			// 	console.log('视频播放结束，索引:', this.playingVideoIndex);
+			// 	this.isVideoPlaying = false;
+			// 	this.playingVideoIndex = -1;
+			// 	// 恢复轮播
+			// 	this.autoplay = true;
+			// 	// 轮播下一张
+			// 	this.currentSwiperIndex = this.playingVideoIndex+1;
+				
+			// 	// 可选：视频播放结束后自动切换到下一张
+			// 	setTimeout(() => {
+			// 		if (!this.isVideoPlaying) {
+			// 			this.nextSwiper();
+			// 		}
+			// 	}, 500);
+			// },
+			// // 轮播图切换事件
+			// onSwiperChange(e) {
+			// 	const newIndex = e.detail.current;
+			// 	console.log('轮播图切换至:', newIndex);
+			// 	this.currentSwiperIndex = newIndex;
+			// 	this.onVideoJudge(this.banners[newIndex], newIndex);
+			// },
+			// // 视频错误回调
+			// videoErrorCallback(e) {
+			// 	console.error('视频播放错误:', e);
+			// 	console.error('具体错误:', e.target.errMsg);
+			// 	uni.showToast({
+			// 		title: '视频加载失败，自动播放下一条',
+			// 		icon: 'none'
+			// 	});
+			// 	// 视频加载失败时恢复轮播
+			// 	this.nextSwiper();
+			// },
+			// 压缩图片 - 修改为同步获取
+			getCompressedImage() {
+				// 如果有缓存的压缩图片，直接返回
+				if (this.compressedImage) {
+					return this.compressedImage;
+				}
+				// 否则返回原始图片（在onLoad中预先压缩）
+				return this.jobUser.jobUserDO.headImgPath || '';
+			},
+			// 预先压缩图片（在页面加载时调用）
+			async preCompressImage() {
+				try {
+					const compressedPath = await this.compress();
+					this.compressedImage = compressedPath;
+				} catch (error) {
+					console.error('图片压缩失败:', error);
+					this.compressedImage = this.jobUser.jobUserDO.headImgPath || '';
+				}
+			},
+				
+			// 显示分享菜单
+			shareToWeChat() {
+				this.$refs.sharePopup.open();
+			},
+			
+			// 关闭分享菜单
+			closeShareMenu() {
+				this.$refs.sharePopup.close();
+			},
+			// 分享到朋友圈
+			shareToTimeline() {
+				this.closeShareMenu();
+				// 在微信小程序中，朋友圈分享需要通过右上角菜单实现
+				// 这里我们只能提示用户操作
+				uni.showModal({
+					title: '分享到朋友圈',
+					content: '请点击右上角菜单，选择"分享到朋友圈"',
+					showCancel: false,
+					confirmText: '知道了'
+				});
+			},
+			// 记录分享行为（可选）
+			recordShareAction() {
+				// 这里可以调用API记录用户的分享行为
+				// 例如：统计分享次数、记录分享用户等
+				console.log('2记录分享行为，用户ID:', this.detailId);
+				
+				// 示例：调用后端API记录分享
+				uni.request({
+					url: process.env.UNI_BASE_URL + '/api/job/plusActivity',
+					method: 'POST',
+					data: {
+						userId: this.detailId,
+						shareType: 'wechat'
+					},
+					success: (res) => {
+						console.log('分享记录成功');
+					}
+				});
+			},
+			
 			// 更新菜单显示状态的方法
 			updateMenuDisplay() {
 			  if (this.jobUser.moreReturnDOList && this.jobUser.moreReturnDOList.length > 0) {
@@ -329,7 +653,7 @@
 			  }
 			},
 			onMenuSelect({ item }) {
-			  uni.showToast({ title: `点击了：${item.label}(${item.key})`, icon: 'none' });
+			  // uni.showToast({ title: `点击了：${item.label}(${item.key})`, icon: 'none' });
 			  // 【idx】3：上一版本；2：启用版本；1：删除版本；0：下一版本。
 			  switch (item.key) {
 			    case 'nextLevel': // 下一版本
@@ -342,7 +666,18 @@
 			      this.enableVersion();
 			      break;
 			    case 'delete': // 删除版本
-			      this.removeByUserIdAndLevel();
+					uni.showModal({
+						title: '提示',
+						content: `确定删除当前版本？`,
+						confirmText: '确定',
+						cancelText: '退出',
+						success: (res) => {
+							if (res.confirm) {
+								this.removeByUserIdAndLevel();
+							}
+						}
+					});
+			      
 			      break;
 			  }
 			},
@@ -369,6 +704,7 @@
 			    position: 'top'
 			  });
 			},
+			
 			getJobUserByLevel(level){
 				const _this = this;
 				let data = {sysId: SYS_ID, userId: this.jobUser.jobUserDO.userId, level: level, enabled: 0}; // , selfId: this.userToken.userId, token: this.userToken.token
@@ -401,6 +737,7 @@
 					}
 				});
 			},
+			
 			removeByUserIdAndLevel(){
 				const params = {userId: 	this.jobUser.jobUserDO.userId,
 								preLevel: 	this.jobUser.moreReturnDOList[0].preLevel,
@@ -421,6 +758,7 @@
 					}
 				});
 			},
+			
 			getJobUserByUserId(detailId){
 				const _this = this;
 				let data = {sysId: SYS_ID, userId: detailId}; // , selfId: this.userToken.userId, token: this.userToken.token
@@ -433,11 +771,18 @@
 					method: 'POST',
 					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: result => {
-						// console.log('user_detail.getUser 返回值' + JSON.stringify(result));
+						console.log('user_detail.getUser 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200 && result.data.code == 0) {
 							const respData = result.data.data;
 							// console.log("user_detail.getUser返回值："+JSON.stringify(respData))
 							if(respData) {
+								_this.jobUser = respData;
+								// 展示活动
+								_this.storeTypeLike = _this.jobUser.like
+								_this.storeTypeStore = _this.jobUser.store
+								_this.hasUserInfo = true;
+								// 重置距离缓存，因为位置可能变化了
+								_this.getCachedDistance();
 								// console.log("转化前："+respData.jobUserDO.skills)
 								respData.jobUserDO.allSkills = respData.jobUserDO.skillsName || '';
 								// respData.allSkills = JSON.parse(respData.skills)
@@ -446,13 +791,20 @@
 								//   .join(',');
 								let otherSkills = respData.jobUserDO.otherSkills;
 								if(otherSkills){
-									const otherSkillsName = Object.values(JSON.parse(otherSkills)).join("，")
-									respData.jobUserDO.allSkills += respData.jobUserDO.allSkills ? '；' + otherSkillsName : otherSkillsName;
+									try{
+										const otherSkillsName = Object.values(JSON.parse(otherSkills)).join("，")
+										respData.jobUserDO.allSkills += respData.jobUserDO.allSkills ? '；' + otherSkillsName : otherSkillsName;
+									}catch (error){
+										respData.jobUserDO.allSkills += ('；' + otherSkills)
+									}
+									
 								}
 								respData.jobUserDO.allSkills += "。"
 								// console.log("转化后："+respData.jobUserDO.allSkills)
+								// 预压缩分享图片
+								_this.preCompressImage();
 							};
-							_this.jobUser = respData;
+							// _this.jobUser = respData;
 							_this.oldLevel = _this.jobUser.jobUserDO.moreLevel;
 							// console.log("转化后："+JSON.stringify(respData.moreReturnDOList))
 						}
@@ -474,7 +826,9 @@
 				    // console.log('获取到的数据为：', rLocal);
 					_this.location.latitude	= rLocal.position?.latitude;
 					_this.location.longitude= rLocal.position?.longitude;
-				    // 在这里对获取到的数据进行处理
+					_this.hasLocation = true;
+				    // 重置距离缓存，因为位置可能变化了
+					_this.getCachedDistance();
 				  },
 				  fail: function(err) {
 				    console.error('获取数据失败：', err);
@@ -619,33 +973,79 @@
 			closePreview() {
 			  this.previewVisible = false;
 			},
+			// storeType类型：0-收藏；1-点赞；2-分享
+			opt(type, isPlus){
+				console.log("点击前 ：this.storeTypeLike："+ this.storeTypeLike+ "；this.storeTypeStore："+this.storeTypeStore)
+				console.log("点击了："+(type==1?"点赞":type==0?"收藏":"分享")+"type："+type+" isPlus:"+isPlus);
+				this.jobUser.jobUserDO.isPlus = isPlus
+				switch(type){
+					case 0:	// 收藏
+						this.jobUser.activityDO.storeNum +=(1*(isPlus?1:-1));
+						this.jobUser.jobUserDO.opt = '收藏';
+						this.jobUser.jobUserDO.storeType = 0;// storeType类型：0-收藏；1-点赞；2-分享
+						this.storeOpt(this.jobUser.jobUserDO);
+						this.storeTypeStore?this.storeTypeStore=false:this.storeTypeStore=true;
+						break;
+					case 1: // 点赞
+						this.jobUser.activityDO.likeNum +=(1*(isPlus?1:-1));
+						this.jobUser.jobUserDO.opt = '点赞';
+						this.jobUser.jobUserDO.storeType = 1;// storeType类型：0-收藏；1-点赞；2-分享
+						this.storeOpt(this.jobUser.jobUserDO);
+						this.storeTypeLike?this.storeTypeLike=false:this.storeTypeLike=true;
+						break;
+					case 2:	// 分享
+						this.jobUser.activityDO.shareNum +=(1*(isPlus?1:-1));
+						break;
+				}
+				console.log("点击后 ：this.storeTypeLike："+ this.storeTypeLike+ "；this.storeTypeStore："+this.storeTypeStore)
+			},
+			storeOpt(obj){
+				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
+				this.jobManager.storeOpt(obj, this.userToken)
+			},
 			blackClick(item){
 				// 点击事件  item为{img:'图片地址',sname:'山海恋'}
 				console.log("板块信息："+JSON.stringify(item));
 			},
-			// 根据地理坐标，计算直线距离
-			calculateDistance(lat1, lon1, lat2, lon2) {
-				// console.log(" lat1:",lat1,";lon1 :", lon1,"; lat2:", lat2,";lon2 :", lon2)
-				// 地球半径，单位为公里
-				const R = 6371.0;
-				if (lat1&&lon1&&lat2&&lon2) {
-					// console.log("可以计算距离")
-					this.showDistance = true;
-				}else{
+			getCachedDistance(){
+				// 如果已经计算过距离，直接返回缓存值
+				// console.log("当前 getCachedDistance()：this.hasComputedDistance = " + this.hasComputedDistance)
+				if (this.hasComputedDistance) {
+					return this.cachedDistance;
+				}
+				if(!this.hasLocation || !this.hasUserInfo) {
 					// console.log("无法计算距离");
 					return 0;
 				}
-				// if (!lat1 || !lon1 || !lat2 || !lon2) {
-				//   console.log("无法计算距离");
-				//   this.showDistance = false;
-				//   return 0; // 或者返回其他适当的值或抛出异常
-				// }
 				
+				const { latitude: latLocal, longitude: lonLocal } = this.location;
+				const { latitude: latUser, longitude: lonUser } = this.jobUser.jobUserDO;
+				// 如果坐标数据不全，返回0
+				if (!latLocal || !lonLocal || !latUser || !lonUser) {
+					this.showDistance = false;
+					return 0;
+				}
+				// 计算距离并缓存
+				this.cachedDistance = this.calculateDistance(latLocal, lonLocal, latUser, lonUser);
+				this.hasComputedDistance = true;
+				console.log("计算 calculateDistance() 后：this.hasComputedDistance："+ this.hasComputedDistance)
+				return this.cachedDistance;
+			},
+			// 根据地理坐标，计算直线距离
+			calculateDistance(latLocal, lonLocal, latUser, lonUser) {
+				console.log("latLocal:",latLocal,";lonLocal :", lonLocal,"; latUser:", latUser,";lonUser :", lonUser)
+				// 地球半径，单位为公里
+				const R = 6371.0;
+				if (!latLocal || !lonLocal || !latUser || !lonUser) {
+				  console.log("无法计算距离 latLocal:",latLocal,";lonLocal :", lonLocal,"; latUser:", latUser,";lonUser :", lonUser);
+				  this.showDistance = false;
+				  return 0; // 或者返回其他适当的值或抛出异常
+				}
 				// 将经纬度从度数转换为弧度
-				const lat1Rad = this.degToRad(lat1);
-				const lon1Rad = this.degToRad(lon1);
-				const lat2Rad = this.degToRad(lat2);
-				const lon2Rad = this.degToRad(lon2);
+				const lat1Rad = this.degToRad(latLocal);
+				const lon1Rad = this.degToRad(lonLocal);
+				const lat2Rad = this.degToRad(latUser);
+				const lon2Rad = this.degToRad(lonUser);
 				
 				// 计算纬度和经度的差值
 				const deltaLat = lat2Rad - lat1Rad;
@@ -661,6 +1061,7 @@
 				// console.log("精确直线距离：", distance)
 				// 距离单位为公里，四舍五入保留两位小数
 				distance = Math.round(distance * 100) / 100;
+				this.showDistance = true;
 				return distance;
 			},
 			// 辅助函数：将角度转换为弧度
@@ -689,41 +1090,19 @@
 					}
 				});
 			},
-			async longPressEditHeadImage(){
-				// console.log("selfId:"+this.userToken.userId+"；userId:"+this.detailId)
-				
+			// 长按头像
+			longPressEditHeadImage(){
 				if(this.isMyself){
+					// 修改头像
 					const url = `/pages/job/head_img/head_img?userId=${this.userToken.userId}&afterUrl=/pages/job/user/user_detail?detailId=${this.detailId}&headPath=${this.jobUser.jobUserDO.headImgPath}`;
 					uni.navigateTo({ url });
 					return ;
 				}
 				if(!this.userToken?.userId) return ;
-				
-				if(this.readHistoryRecord){
-					const _this = this;
-					await uni.getStorage({
-						key: JOB_OPT_HISTORY_RECORD,
-						success: function(resp){
-							_this.historyRecord = resp.data
-							// console.log("user_detail 缓存取值："+ JSON.stringify(resp.data));
-							// console.log("user_detail 赋值后："+ JSON.stringify(_this.historyRecord));
-							if(!_this.jobManager) _this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-							_this.jobManager.storeOpt(_this.jobUser, '收藏', _this.isStore, _this.userToken, [..._this.historyRecord])
-						},
-						fail:function(){
-						}
-					});
-				}else{
-					if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-					this.jobManager.storeOpt(this.jobUser, '收藏', this.isStore, this.userToken, [...this.historyRecord])
-				}
-				
-				// 已经读取过
-				this.readHistoryRecord = false
-				// 变更 收藏/取消收藏 标识
-				this.isStore?this.isStore=false:this.isStore=true;
-				
+				// 收藏该用户
+				this.opt(0, !this.storeTypeStore);
 			},
+			
 			initGetFontSize(){
 				// console.log("从内存读取，字体设置数据："+ JOB_USER_FONT_SET)
 				var _this = this
@@ -741,14 +1120,221 @@
 				});
 			},
 			
+			// 压缩图片逻辑优化
+			async compress() {
+				console.log('开始压缩');
+				let img = this.jobUser.jobUserDO.headImgPath;
+				if (!img) {
+					console.log('没有头像图片');
+					return '';
+				}
+				
+				// 如果是网络图片，先下载
+				if (img.startsWith("http")) {
+					try {
+						img = await this.downFiled(img);
+					} catch (error) {
+						console.error('下载图片失败:', error);
+						return this.jobUser.jobUserDO.headImgPath;
+					}
+				}
+				
+				try {
+					const fileInfo = await uni.getFileInfo({ filePath: img });
+					console.log('图片大小:', fileInfo.size, '字节');
+					
+					if (fileInfo.size > 20 * 1024) {
+						console.log('图片超过20KB，需要压缩');
+						const compressedPath = await this.compressImage(img);
+						return compressedPath;
+					} else {
+						console.log('图片大小未超过20KB，无需压缩');
+						return img;
+					}
+				} catch (error) {
+					console.error('获取文件信息失败:', error);
+					return img;
+				}
+			},
 			
+			compressImage(img) {
+				return new Promise((resolve, reject) => {
+					uni.compressImage({
+						src: img,
+						quality: 60, // 降低质量到60，确保小于20KB
+						success: (res) => {
+							console.log('压缩后的图片路径:', res.tempFilePath);
+							// 检查压缩后的大小
+							uni.getFileInfo({
+								filePath: res.tempFilePath,
+								success: (fileRes) => {
+									console.log('压缩后图片大小:', fileRes.size, '字节');
+									if (fileRes.size > 20 * 1024) {
+										// 如果还是太大，继续压缩
+										console.log('压缩后仍然超过20KB，继续压缩');
+										this.compressImageWithLowerQuality(img, 40)
+											.then(resolve)
+											.catch(reject);
+									} else {
+										resolve(res.tempFilePath);
+									}
+								},
+								fail: () => {
+									resolve(res.tempFilePath);
+								}
+							});
+						},
+						fail: (err) => {
+							console.error('图片压缩失败:', err);
+							reject(err);
+						}
+					});
+				});
+			},
+			
+			// 更低质量的压缩
+			compressImageWithLowerQuality(img, quality) {
+				return new Promise((resolve, reject) => {
+					uni.compressImage({
+						src: img,
+						quality: quality,
+						success: (res) => {
+							console.log(`质量${quality}%压缩后的图片路径:`, res.tempFilePath);
+							resolve(res.tempFilePath);
+						},
+						fail: (err) => {
+							console.error('二次压缩失败:', err);
+							reject(err);
+						}
+					});
+				});
+			},
+			
+			downFiled(url) {
+				return new Promise((resolve, reject) => {
+					uni.downloadFile({
+						url,
+						success: (res) => {
+							if (res.statusCode === 200) {
+								console.log("下载完成", res.tempFilePath);
+								resolve(res.tempFilePath);
+							} else {
+								reject(new Error('下载失败'));
+							}
+						},
+						fail: (err) => {
+							reject(err);
+						}
+					});
+				});
+			},
+			
+			// 打电话 => 发信息
+			makePhoneCall: function (receiverId) {
+				if(!this.userToken?.userId){
+					uni.showToast({ title: '先登录，才能有效联系对方！', icon: 'none' });
+					return;
+				}
+				
+				uni.navigateTo({
+					url:`/pages/job/online/message?senderId=${this.userToken.userId}&receiverId=${receiverId}`
+				})
+				return;
+				
+				uni.showModal({
+					title: '提示',
+					content: '不允许骚扰对方，本次通话会被记录，可能会录音，若被举报，会降低本人的信誉值，请正常开展！',
+					confirmText: '同意',
+					cancelText: '退出',
+					success: (res) => {
+						if (res.confirm) {
+							let data = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, receiverId: receiverId, userId: receiverId}
+							
+							uni.request({
+								url: process.env.UNI_BASE_URL+'/api/job/userMobile',  // 获取手机号
+								data: JSON.stringify(data),
+								method: 'POST',
+								success: result => {
+									// console.log('userMobile 返回值' + JSON.stringify(result));
+									if (result.statusCode == 200 && result.data.code == 0) {
+										const respData = result.data.data;
+										uni.makePhoneCall({
+											phoneNumber: respData,
+											success: () => {
+												// data.username = _this.username;
+												uni.request({
+													url: process.env.UNI_BASE_URL+'/api/job/recordCallMobile',  // 数据源的数据是 有序的
+													data: JSON.stringify(data),
+													method: 'POST',
+													success: result => {
+														console.log("完成记录。")
+													},
+												});
+												console.log("成功拨打电话:"+respData)
+											}
+										});
+									}
+								},
+								fail: (result, code) => {
+									console.log('fail' + JSON.stringify(result));
+								},
+								complete: (result) =>{
+									// console.log('result' + JSON.stringify(result));
+								},
+							});
+						}
+					}
+				});
+				
+				
+				
+			},
+			
+			headTipColor(workStatus){
+				if(workStatus==0) return '#62ed0d';		// 开放接单中
+				if(workStatus==10) return '#ed1941';	// 工作中 #ff6043  #ffe600
+				if(workStatus==20) return '#D3D3D3';	// 休假中 #deab8a  #D3D3D3
+			},
+			trigger(e){
+				this.makePhoneCall(this.receiverId)
+			},
+			fabClick(){
+				
+			},
 		}
 	}
 </script>
 
 <style lang="scss">
+	$mxg-text-color-grey: #808080;
+	
 	.example {
 		
+	}
+	
+	.banner {
+		// height: 360rpx;
+		overflow: hidden;
+		position: relative;
+		background-color: #ccc;
+	}
+	
+	.banner-img {
+		width: 100%;
+	}
+	
+	.banner-title {
+		min-height: 54rpx;
+		overflow: hidden;
+		position: absolute;
+		left: 30rpx;
+		bottom: 30rpx;
+		width: 90%;
+		font-size: 32rpx;
+		font-weight: 400;
+		line-height: 84rpx;
+		color: white;
+		z-index: 11;
 	}
 	
 	::v-deep .uni-easyinput__content-textarea  {
@@ -946,5 +1532,136 @@
 	
 	.am-panel-default {
 	  border-color: #ddd;
+	}
+	
+	/* 分享弹窗样式 */
+	.share-popup {
+		background: #fff;
+		border-radius: 20rpx 20rpx 0 0;
+		padding: 40rpx 0 0;
+	}
+	
+	.share-title {
+		text-align: center;
+		padding: 20rpx 0;
+		font-weight: bold;
+		color: #333;
+		border-bottom: 1rpx solid #f0f0f0;
+	}
+	
+	.share-options {
+		display: flex;
+		justify-content: space-around;
+		padding: 40rpx 0;
+	}
+	
+	.share-option {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	
+	.share-icon {
+		width: 100rpx;
+		height: 100rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 20rpx;
+	}
+	
+	.share-label {
+		color: #666;
+	}
+	
+	.share-cancel {
+		text-align: center;
+		padding: 30rpx 0;
+		background: #f8f8f8;
+		color: #333;
+		font-weight: bold;
+		border-top: 1rpx solid #f0f0f0;
+	}
+	
+	
+	.share-body {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 100;
+	
+		.share-cancel {
+			background-color: #FFF;
+			text-align: center;
+			width: 100%;
+			padding: 25rpx 0;
+		}
+	
+		.share-scroll {
+			background-color: #f7f7f7;
+			width: 100%;
+			height: 200rpx;
+			display: flex;
+			white-space: nowrap;
+			padding-top: 45rpx;
+	
+			.share-item {
+				display: inline-flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				width: 25%;
+			}
+	
+			view {
+				color: $mxg-text-color-grey;
+				font-size: 25rpx;
+				padding: 10rpx;
+			}
+	
+			image {
+				height: 60rpx;
+				width: 60rpx;
+			}
+		}
+	}
+	
+	deo-poster {
+	  position: relative;
+	  width: 100%;
+	  height: 100%;
+	}
+	.play-icon {
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  width: 80rpx;
+	  height: 80rpx;
+	  background: rgba(0, 0, 0, 0.6);
+	  border-radius: 50%;
+	  color: white;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  font-size: 36rpx;
+	}
+	.fullscreen-video {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  height: 100%;
+	  background: black;
+	  z-index: 9999;
+	}
+	.close-video {
+	  position: absolute;
+	  top: 60rpx;
+	  right: 30rpx;
+	  color: white;
+	  font-size: 60rpx;
+	  z-index: 10000;
 	}
 </style>

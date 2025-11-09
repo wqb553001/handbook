@@ -115,7 +115,9 @@
         	"style" : 
         	{
         		"navigationBarTitleText" : "详情"
-        	}
+        	},
+			"enableShareAppMessage": true,
+			"enableShareTimeline": true
         },
         {
         	"path" : "pages/job/user/user_self",

@@ -212,6 +212,7 @@ export default {
 		ProfileCard
 	},
 	onLoad() {
+		this.getToken();
 	},
 	onShow() {
 		// this.getToken();
@@ -288,12 +289,14 @@ export default {
 			const _this = this
 			uni.getStorage({
 				key: JOB_TOKEN,
-				success: function(resp){
+				success: async function(resp){
 					_this.userToken = resp.data
 					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
 					// _this.isLogined = false
 					if(_this.userToken?.token) _this.isLogined = true
-					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					// if(_this.userToken?.userId) await _this.writeTempUserId();
+					// console.log("设置临时userId后："+ JSON.stringify(_this.userToken))
 				},
 				fail:function(){
 					 _this.isLogined = false
@@ -307,9 +310,14 @@ export default {
 		},
 		getJobUserByUserId(){
 			const _this = this;
+			var param = {sysId: SYS_ID}
+			if(this.userToken?.userId) param.userId = this.userToken.userId
+			if(this.userToken?.userId) param.selfId = this.userToken.userId
+			if(this.userToken?.token) param.token = this.userToken.token
 			uni.request({
 				url: process.env.UNI_BASE_URL+'/api/job/userMy',  // 用户数据
-				data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
+				// data: {sysId: SYS_ID, userId: this.userToken.userId, selfId: this.userToken.userId, token: this.userToken.token},
+				data: param,
 				method: 'POST',
 				header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 				success: result => {

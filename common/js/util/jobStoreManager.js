@@ -2,19 +2,20 @@ export class JobStoreManager {
   constructor({
     sysId,
     historyRecordKey = "JOB_OPT_HISTORY_RECORD",
-    maxHistoryLength = 20
+    maxHistoryLength = 50
   }) {
     this.SYS_ID = sysId
     this.JOB_OPT_HISTORY_RECORD = historyRecordKey
     this.JOB_OPT_HISTORY_RECORD_LEN = maxHistoryLength
   }
 
-  async storeOpt(obj, opt='收藏', isStore = true, userToken) {
+  async storeOpt(obj, userToken) {
 	// console.log("操作1："+opt)
+	let opt = obj.opt;
     let enabled = 0
-    if (!isStore) {
+    if (!obj.isPlus) {
       enabled = 1
-      opt = '取消收藏'
+      opt = '取消'+obj.opt
     }
     const url = `/pages/job/user/user_detail?detailId=${obj.userId}`
     this.writeHistoryRecord(opt, obj.username, obj.headImgPath, url)
@@ -24,9 +25,10 @@ export class JobStoreManager {
       selfId: userToken.userId,
       token: userToken.token,
       userId: obj.userId,
+      storeType: obj.storeType,
       enabled: enabled
     }
-	// console.log("传递参数："+JSON.stringify(store))
+	console.log("传递参数："+JSON.stringify(store))
     try {
       const result = await uni.request({
         url: process.env.UNI_BASE_URL + '/api/job/storeOpt',

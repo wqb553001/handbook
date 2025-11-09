@@ -68,33 +68,35 @@ export default {
 				title: '提示',
 				content: `确定需要清除${obj}缓存？`,
 				confirmText: '确定',
-				cancelText: '退出',
+				cancelText: '返回',
 				success: (res) => {
 					if (res.confirm) {
 						uni.removeStorage({key:JOB_TOKEN});
 						
-						_this.userToken.userId = null
-						_this.userToken.token = null
-						_this.userToken.level = null
+						// _this.userToken?.userId = null
+						// _this.userToken?.token = null
+						// _this.userToken?.level = null
 						// 清空登录信息
-						uni.setStorage({
-							key:JOB_TOKEN,
-							data: _this.userToken
-						});
+						// uni.setStorage({
+						// 	key:JOB_TOKEN,
+						// 	data: {userToken:{userId:null,token:null,level:null}}
+						// });
+						
 						// uni.getStorage({
 						// 	key: JOB_TOKEN,
 						// 	success: async function(resp){
 						// 		_this.userToken = resp.data
-						// 		// console.log("缓存取值："+ JSON.stringify(_this.userToken))
-						// 		// if(_this.userToken?.userId) {
-						// 		// 	_this.userToken.userId=null;
-						// 		// 	_this.userToken.token=null;
-						// 		// }
+						// 		console.log("缓存取值："+ JSON.stringify(_this.userToken))
+						// 		if(_this.userToken?.userId) {
+						// 			_this.userToken.userId=null;
+						// 			_this.userToken.token=null;
+						// 			_this.userToken.level=null;
+						// 		}
 								
 						// 		// 清空登录信息
 						// 		uni.setStorage({
 						// 			key:JOB_TOKEN,
-						// 			data: {}
+						// 			data: _this.userToken
 						// 		});
 						// 	},
 						// 	fail:function(){
@@ -105,6 +107,7 @@ export default {
 						
 						
 						// 跳转 登录页
+						uni.reLaunch({url:'/pages/job/index'});
 						uni.navigateTo({ url: '/pages/job/index' });
 					}
 				}

@@ -265,6 +265,7 @@
 						introduction: '',			// 简介
 						detail: '',					// 详情
 						selectedCity:'',
+						moreLevel:0
 					},
 					moreReturnDOList:[]
 					
@@ -547,6 +548,7 @@
 				try {
 					// 解析保存的技能数据
 					// console.log("初始数据："+JSON.stringify(this.baseFormData))
+					// debugger
 					const skillsObj = JSON.parse(this.baseFormData.jobUserDO.skills);
 					const careerId = this.baseFormData.jobUserDO.careerId;
 					// 根据careerId找到对应的职业
@@ -1132,8 +1134,8 @@
 				const _this = this;
 				console.log("this.userToken.userId：" + this.userToken.userId)
 				const params = {sysId: SYS_ID, userId: this.userToken.userId, 
-								selfId: this.userToken.userId, token: this.userToken.token,
-								level: this.baseFormData.jobUserDO.moreLevel}
+								selfId: this.userToken.userId, token: this.userToken.token}
+				if(this.baseFormData?.jobUserDO?.moreLevel) params.level = this.baseFormData.jobUserDO.moreLevel;
 				return new Promise((resolve, reject) => {
 						uni.request({
 						url: process.env.UNI_BASE_URL + '/api/job/getUserDetail',  // 用户数据 getUserDetail  getUser
@@ -1141,20 +1143,20 @@
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						success: async (result) => {
-							// console.log('user_add.getUserDetail 返回值' + JSON.stringify(result));
+							console.log('user_add.getUserDetail 返回值' + JSON.stringify(result));
 							if (result.statusCode == 200 && result.data.code == 0) {
 								const respData = result.data.data;
 								// console.log("user_add.getUserDetail返回值2："+JSON.stringify(respData))
 								if(respData) {
-									this.baseFormData = respData;
+									_this.baseFormData = respData;
 									// 存2份，提交时，比对是否对 后续部分进行了修改。
-									this.baseFormDataOld = {...respData};
+									_this.baseFormDataOld = {...respData};
 									if(respData.moreReturnDOList){
-										this.baseFormData.moreReturnDOList = this.transformImagesToObjectArray(respData.moreReturnDOList)
+										_this.baseFormData.moreReturnDOList = _this.transformImagesToObjectArray(respData.moreReturnDOList)
 									}
-									const userCareerId = this.baseFormData.jobUserDO?.careerId
+									const userCareerId = _this.baseFormData.jobUserDO?.careerId
 									if(userCareerId){
-										this.careerApiParam = {id: userCareerId}
+										_this.careerApiParam = {id: userCareerId}
 									}
 								};
 							}

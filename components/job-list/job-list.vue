@@ -5,7 +5,9 @@
 		</uni-card> -->
 		
 		<!-- #ifndef H5 -->
-		<uni-notice-bar v-if="banner?.noticeShow || banner.noticeShow===true" :fontSize="13*fontScale" :speed="20" class="fixed-notice" show-get-more show-icon scrollable :text="banner.noticeText" @getmore="getMore" @longpress="getMore"  />
+		<uni-notice-bar v-if="banners[0]?.noticeShow || banners[0].noticeShow===true" :fontSize="13*fontScale" :speed="20" 
+			class="fixed-notice" show-get-more show-icon scrollable 
+			:text="banners[0].noticeText" @getmore="getMore" @longpress="getMore"  />
 		<!-- #endif -->
 		<l-navbar title="找用工" leftColor="#ffffff" titleColor="#ffffff" iconColor="#ffffff" :search="true"
 			:showLeft="false" :showMid="true" :debounce-delay="500" centerMargin="195px" leftWidth="300px" :border="false" 
@@ -17,7 +19,9 @@
 		</l-navbar>
 		
 		<!-- #ifdef H5 -->
-		<uni-notice-bar v-if="banner?.noticeShow || banner.noticeShow===true" :fontSize="13*fontScale" :speed="10" style="position: absolute; margin-top: -70rpx; z-index: 99999;" show-get-more show-icon scrollable :text="banner.noticeText" @getmore="getMore" @longpress="getMore" />
+		<uni-notice-bar v-if="banners[0]?.noticeShow || banners[0].noticeShow===true" :fontSize="13*fontScale" :speed="10" 
+			style="position: absolute; margin-top: -70rpx; z-index: 99999;" show-get-more show-icon scrollable 
+			:text="banners[0].noticeText" @getmore="getMore" @longpress="getMore" />
 		<!-- #endif -->
 		
 		<view class="slider-container" style="z-index: 9999;">
@@ -26,11 +30,7 @@
 			<!-- <text style="text-align: center; display: block;">字体缩放比例：{{fontSizeScale}}%</text> -->
 		</view>
 		
-		<view class="banner" @click="goDetail(banner)">
-			<image v-if="banner.mediumType == 2" :src="banner.url" class="banner-img" style="object-fit: cover"></image>
-			<video v-if="banner.mediumType == 3" :src="banner.url" class="banner-img" controls></video>
-			<view class="banner-title" :style="fontSet+banner.fontColor+'text-align: center;'" ><rich-text :nodes="banner.title"></rich-text></view>
-		</view>
+		<banner-swiper :banners="banners" :font-set="fontSet" ></banner-swiper>
 		
 		<view class="uni-list">
 			<view style="margin: -10px;" v-for="(worker, index) in listData" :key="index">
@@ -94,7 +94,8 @@
 			<ad :adpid="adpid" @error="aderror"></ad>
 		</view>
 		<!-- #endif -->
-		<uni-fab ref="fab" :pattern="fab.pattern" :content="fab.content" :horizontal="fab.horizontal" :vertical="fab.vertical"
+		<uni-fab ref="fab" :pattern="fab.pattern" :content="fab.content" 
+			:horizontal="fab.horizontal" :vertical="fab.vertical"
 			:direction="fab.direction" @trigger="trigger" @fabClick="fabClick" />
 		<!--加载更多、向下-->
 		<uni-load-more :status="status" :load-more-style="{'fontSize': scaledFontSize+'px'}" :icon-size="16" :content-text="contentText" />
@@ -107,12 +108,13 @@
 	// import deviceInfoMixin 		from '../../common/js/util/deviceInfoMixin.js';
 	import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
 	import uniFab from '@/components/uni-fab/uni-fab.vue';
+	import BannerSwiper from '@/components/banner-swiper/banner-swiper.vue';
 	
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
 	const JOB_USER_FONT_SET = "job_User_List_Font_Set";
 	const JOB_OPT_HISTORY_RECORD = "JOB_OPT_HISTORY_RECORD";
-	const JOB_OPT_HISTORY_RECORD_LEN = 20;
+	const JOB_OPT_HISTORY_RECORD_LEN = 50;
 	const keyStr = "jobInfoMap";
 	const MAP_PICKER_POSITION = "map_Picker_Position"
 	const PAGE_LIMIT = 10
@@ -124,7 +126,7 @@
 	export default {
 		name: 'jobList',
 		// mixins: [deviceInfoMixin],   // 将 deviceInfoMixin 加入 mixins 数组
-	    components: { uniListItem, uniFab },
+	    components: { uniListItem, uniFab, BannerSwiper },
 		props: {
 			apiBaseUrl: {  // 新增API基础URL属性
 				type: String,
@@ -145,6 +147,20 @@
 				fontSizeScale: 100, // 默认100%比例
 				baseFontSize: 16,   // 基础字体大小（根据设计稿调整）
 				
+				
+				banners: [{
+					mediumType: 2,
+					url: '',
+					titile: '',
+					fontColor: '',
+					noticeShow: false
+				},{
+					mediumType: 2,
+					url: '',
+					titile: '',
+					fontColor: '',
+					noticeShow: false
+				}],
 				banner: {
 					mediumType: 2,
 					url: '',
@@ -200,6 +216,14 @@
 					is_color_type: false,
 				},
 				deviceInfo:{},
+				
+				// 轮播图配置对象
+				swiperConfig: {
+					indicatorDots: true,    // 是否显示指示点
+					autoplay: true,         // 是否自动播放
+					interval: 6000,         // 自动播放间隔（毫秒）
+					duration: 3000          // 滑动动画时长（毫秒）
+				},
 			};
 		},
 		onLoad() {
@@ -355,7 +379,8 @@
 			},
 			// 获取，标题展示数据
 			getBanner() {
-				let data = {sysId: SYS_ID, level: this.userToken.level, showWhere: this.showWhereBanner, selfId: this.userToken.userId, token: this.userToken.token};
+				let data = {sysId: SYS_ID, showWhere: this.showWhereBanner, selfId: this.userToken.userId, token: this.userToken.token, level: 0};
+				if(this.userToken?.level) data.level = this.userToken.level;	// 存在就覆盖
 				uni.request({
 					url: process.env.UNI_BASE_URL+'/api/job/getBanner',
 					data: JSON.stringify(data),
@@ -363,7 +388,7 @@
 					success: data => {
 						// console.log("getBanner() 返回值："+JSON.stringify(data))
 						if (data.statusCode == 200 && data.data.code == 0) {
-							this.banner = data.data.data;
+							this.banners = data.data.data;
 						}
 						// uni.stopPullDownRefresh();
 					},
@@ -540,6 +565,7 @@
 			},
 			
 			goDetail(e) {
+				console.log("点击了“表头”…… 工作可以是自由的！")
 				// let detail = {
 				// 	author_name: 	e.author_name,
 				// 	cover: 			e.cover,
@@ -743,7 +769,10 @@
 				const isStore = e.data ;
 				// this.storeOpt(e.switchObj, e.data);
 				if(!this.jobManager) this.jobManager = new JobStoreManager({sysId: SYS_ID, historyRecordKey: JOB_OPT_HISTORY_RECORD, maxHistoryLength: JOB_OPT_HISTORY_RECORD_LEN})
-				this.jobManager.storeOpt(obj, '收藏', isStore, this.userToken)
+				obj.storeType = 0;// storeType类型：0-收藏；1-点赞；2-分享
+				obj.opt = '收藏'
+				obj.isPlus = isStore
+				this.jobManager.storeOpt(obj, this.userToken)
 			},
 			// 我的收藏
 			async getStoreList(){
@@ -926,10 +955,10 @@
 				return 'fontSize: '+fontSize+'px; font-size: '+fontSize+'px;';
 			},
 			getMore(){
-				console.log("跳转至:", this.banner.noticeUrl)
-				if(!this.banner.noticeUrl) return;
+				console.log("跳转至:", this.banners[0].noticeUrl)
+				if(!this.banners[0].noticeUrl) return;
 				uni.navigateTo({
-					url: '/pages/job/user/'+this.banner.noticeUrl
+					url: '/pages/job/user/'+this.banners[0].noticeUrl
 				});
 			},
 		},

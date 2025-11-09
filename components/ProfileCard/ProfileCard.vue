@@ -94,8 +94,8 @@ export default {
     jobUser: {
       type: Object,
       default: () => ({
-        headImgPath: '',
-        username: '',
+        headImgPath: 'https://cdn.xny.world/job/46_1746277832161_54vfvgc8rvm.jpg',
+        username: '游客',
         mobile: '',
         multiScore: 0
       })
