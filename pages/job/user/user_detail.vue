@@ -43,17 +43,17 @@
 				
 				<view class="profile-stats">
 					<view class="stat-item" @click="opt(1, !storeTypeLike)">
-						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.likeNum||1280}}</text>
+						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.likeNum||0}}</text>
 						<uni-icons type="hand-up-filled" :size="23*fontScale" :color="storeTypeLike?'#FFCC33':'#808080'" ></uni-icons>
 						<text class="label" :style="fontSet">{{storeTypeLike?"已":""}}点赞</text>
 					</view>
 					<view class="stat-item" @click="opt(0, !storeTypeStore)">
-						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.storeNum||128}}</text>
+						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.storeNum||0}}</text>
 						<uni-icons type="star-filled"  :size="23*fontScale" :color="storeTypeStore?'#FFCC33':'#808080'" ></uni-icons>
 						<text class="label" :style="fontSet">{{storeTypeStore?"已":""}}收藏</text>
 					</view>
 					<view class="stat-item" @click="shareToWeChat">
-						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.shareNum||59}}</text>
+						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.shareNum||0}}</text>
 						<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
 						<text class="label" :style="fontSet">分享</text>
 						<!-- <button class="share-btn"  open-type="share" data-source="button">分享给好友</button> -->
@@ -168,7 +168,7 @@
 				</view>
 			</view>
 		</view>
-		<view v-if="jobUser.jobUserDO.level>0"><!-- #5ECCBBB3; #ff4d4f-->
+		<view v-if="jobUser.jobUserDO.userId == this.userToken?.userId && jobUser.jobUserDO.level>0"><!-- #5ECCBBB3; #ff4d4f-->
 			<floating-menu
 			  :menu-items="menuList"
 			  icon-text="版本切换"
@@ -216,20 +216,24 @@
 				</view> -->
 			</view>
 		</uni-popup>
+		
+		<uni-fab v-if="jobUser.jobUserDO.userId != this.userToken?.userId" 
+			ref="fab" :pattern="fab.pattern" :content="fab.content" 
+			:horizontal="fab.horizontal" :vertical="fab.vertical"
+			:direction="fab.direction" @trigger="trigger" 
+			@fabClick="fabClick" />
+			
 	</view>
 	
-<!-- 	<uni-fab ref="fab" :pattern="fab.pattern" :content="fab.content" 
-		:horizontal="fab.horizontal" :vertical="fab.vertical"
-		:direction="fab.direction" @trigger="trigger" 
-		@fabClick="fabClick" /> -->
 </template>
 
 <script>
 	import { JobStoreManager } from '../../../common/js/util/jobStoreManager.js'
 	import ImagePreview from '@/components/image-preview/index.vue';//注意路径是否正确
 	import FloatingMenu from '@/components/floating-menu/floating-menu.vue';
-	import share from '@/components/job-share/share.vue';
 	import BannerSwiper from '@/components/banner-swiper/banner-swiper.vue';
+	import share from '@/components/job-share/share.vue';
+	import uniFab from '@/components/uni-fab/uni-fab.vue';
 	
 	const SYS_ID = 2025040301
 	const JOB_TOKEN = 'JOB_TOKEN'
@@ -247,7 +251,7 @@
 		}
 		
 	export default {
-		components: { ImagePreview, FloatingMenu, BannerSwiper },
+		components: { ImagePreview, FloatingMenu, uniFab, BannerSwiper },
 		data() {
 			return {
 				detailId: 0,
@@ -316,6 +320,7 @@
 				// 浮动按钮
 				fab:{
 					title: 'uni-fab',
+					directionStr: '垂直',
 					horizontal: 'right',
 					vertical: 'bottom',
 					direction: 'vertical',// vertical   horizontal
@@ -433,15 +438,18 @@
 		},
 		// 小程序端分享给好友（与onLoad同级）
 		onShareAppMessage(res) {
+		  console.log('触发分享'); // 添加日志
 		  return {
 			type: 0, // 分享类型，0：图文；1：纯文字；2：纯图片；
 		    title: this.jobUser.jobUserDO.username || '用户分享',
 		    path: `pages/job/user/user_detail?detailId=${this.detailId}`,
-			desc: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
+			// desc: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
 			// summary: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
 		    imageUrl: this.getCompressedImage(), // 同步获取
 		    success: (res) => {
 			  // 可以在这里记录分享统计
+			  console.log('记录分享行为，用户ID:', this.detailId);
+			  this.jobUser.activityDO.shareNum += 1
 			  this.recordShareAction();
 		      uni.showToast({
 		        title: "分享成功",
@@ -484,7 +492,6 @@
 						// console.log("getBanner() 返回值："+JSON.stringify(data))
 						if (data.statusCode == 200 && data.data.code == 0) {
 							this.banners = data.data.data;
-							// this.onVideoJudge(this.banners[0], 0);
 						}
 						// uni.stopPullDownRefresh();
 					},
@@ -493,77 +500,6 @@
 					}
 				});
 			},
-			
-			// // 处理轮播图项的点击
-			// handleItemClick(banner, index) {
-			//   console.log("点击执行 handleItemClick(banner, index)，其中 index = "+index)
-			// },
-			// // 视频播放结束
-			// onVideoJudge(banner, index) {
-			//   if (banner.mediumType === 3) {
-			// 	// 是视频播放
-			// 	this.isVideoPlaying = true;
-			// 	// 点击的是视频项
-			// 	this.currentVideoUrl = banner.url;
-			// 	this.playingVideoIndex = index;
-			// 	// 暂停轮播图的自动播放
-			// 	this.autoplay = false;
-			// 	return true;
-			//   }
-			//   // 不是视频播放
-			//   this.isVideoPlaying = false;
-			//   // 恢复轮播
-			//   this.autoplay = true;
-			//   // 轮播下一张
-			//   this.currentSwiperIndex = index;
-			//   return false;
-			// },
-			
-			// // 视频暂停
-			// onVideoPause() {
-			// 	console.log('视频暂停，索引:', this.playingVideoIndex);
-			// 	// this.isVideoPlaying = false;
-			// 	// this.playingVideoIndex = -1;
-				
-			// 	// // 恢复轮播
-			// 	// this.autoplay = true;
-			// },
-			
-			// // 视频播放结束
-			// onVideoEnded() {
-			// 	console.log('视频播放结束，索引:', this.playingVideoIndex);
-			// 	this.isVideoPlaying = false;
-			// 	this.playingVideoIndex = -1;
-			// 	// 恢复轮播
-			// 	this.autoplay = true;
-			// 	// 轮播下一张
-			// 	this.currentSwiperIndex = this.playingVideoIndex+1;
-				
-			// 	// 可选：视频播放结束后自动切换到下一张
-			// 	setTimeout(() => {
-			// 		if (!this.isVideoPlaying) {
-			// 			this.nextSwiper();
-			// 		}
-			// 	}, 500);
-			// },
-			// // 轮播图切换事件
-			// onSwiperChange(e) {
-			// 	const newIndex = e.detail.current;
-			// 	console.log('轮播图切换至:', newIndex);
-			// 	this.currentSwiperIndex = newIndex;
-			// 	this.onVideoJudge(this.banners[newIndex], newIndex);
-			// },
-			// // 视频错误回调
-			// videoErrorCallback(e) {
-			// 	console.error('视频播放错误:', e);
-			// 	console.error('具体错误:', e.target.errMsg);
-			// 	uni.showToast({
-			// 		title: '视频加载失败，自动播放下一条',
-			// 		icon: 'none'
-			// 	});
-			// 	// 视频加载失败时恢复轮播
-			// 	this.nextSwiper();
-			// },
 			// 压缩图片 - 修改为同步获取
 			getCompressedImage() {
 				// 如果有缓存的压缩图片，直接返回
@@ -571,7 +507,7 @@
 					return this.compressedImage;
 				}
 				// 否则返回原始图片（在onLoad中预先压缩）
-				return this.jobUser.jobUserDO.headImgPath || '';
+				return this.defaultShareImage || '';
 			},
 			// 预先压缩图片（在页面加载时调用）
 			async preCompressImage() {
@@ -609,7 +545,7 @@
 			recordShareAction() {
 				// 这里可以调用API记录用户的分享行为
 				// 例如：统计分享次数、记录分享用户等
-				console.log('2记录分享行为，用户ID:', this.detailId);
+				console.log('记录分享行为，用户ID:', this.detailId);
 				
 				// 示例：调用后端API记录分享
 				uni.request({
@@ -1296,7 +1232,7 @@
 				if(workStatus==20) return '#D3D3D3';	// 休假中 #deab8a  #D3D3D3
 			},
 			trigger(e){
-				this.makePhoneCall(this.receiverId)
+				this.makePhoneCall(this.jobUser.jobUserDO.userId)
 			},
 			fabClick(){
 				
@@ -1664,4 +1600,13 @@
 	  font-size: 60rpx;
 	  z-index: 10000;
 	}
+	.uni-fab__item {
+		justify-content: unset !important;
+	}
+	
+	// 修改‘悬浮按钮的图标’为‘文字’ 【已验证可行】
+	// ::v-deep.uniui-plusempty:before {
+	//     content: '联\A系' !important;
+	//     font-size: 26upx;
+	// }
 </style>

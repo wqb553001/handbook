@@ -107,8 +107,8 @@
 	import { JobStoreManager } 	from '../../common/js/util/jobStoreManager.js';
 	// import deviceInfoMixin 		from '../../common/js/util/deviceInfoMixin.js';
 	import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
-	import uniFab from '@/components/uni-fab/uni-fab.vue';
 	import BannerSwiper from '@/components/banner-swiper/banner-swiper.vue';
+	import uniFab from '@/components/uni-fab/uni-fab.vue';
 	
 	const SYS_ID = 2025040301;
 	const JOB_TOKEN = 'JOB_TOKEN';
