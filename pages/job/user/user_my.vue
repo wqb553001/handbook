@@ -162,8 +162,7 @@
 				<uni-icons type="right" :style="fontSet" size="14" color="#999"></uni-icons>
 			</view>
 		</view> -->
-	  	  
-	  	  	  
+		
 	  	<view class="service-item" @click="navigateToLogined('/pages/job/user/user_setting')" >
 	  	  	<view class="left">
 	  	  		<view class="service-icon bg-gray" > <uni-icons type="gear" size="20" color="#fff"></uni-icons> </view>
@@ -173,7 +172,18 @@
 	  	  		<uni-icons type="right" size="14" color="#999"></uni-icons>
 	  	  	</view>
 	  	</view>
-	  	  	  
+		
+	  	<view v-if="jobUser.level == 1" class="service-item" @click="navigateToLogined('/pages/job/manage/manage_list')" >
+	  	  	<view class="left">
+	  	  		<view class="service-icon bg-manager" > <uni-icons type="auth" size="20" color="#fff"></uni-icons> </view>
+	  	  		<text class="service-name" :style="fontSet" >管理</text>
+	  	  	</view>
+	  	  	<view class="right">
+	  	  		<uni-icons type="right" size="14" color="#999"></uni-icons>
+	  	  	</view>
+	  	</view>
+		
+		
 	  
     </view>
 
@@ -275,8 +285,7 @@ export default {
     },
     methods: {
 		navigateToLogined(path){
-			uni.showToast({ title: '需要先登录！', icon: 'none' });
-			if(!this.isLogined) return;
+			if(!this.isLogined) return uni.showToast({ title: '需要先登录！', icon: 'none' });
 			uni.navigateTo({url: path});
 		},
 		
@@ -294,7 +303,7 @@ export default {
 					if(!_this.userToken) uni.removeStorage({key: JOB_TOKEN})
 					// _this.isLogined = false
 					if(_this.userToken?.token) _this.isLogined = true
-					console.log("缓存取值："+ JSON.stringify(_this.userToken))
+					// console.log("缓存取值："+ JSON.stringify(_this.userToken))
 					// if(_this.userToken?.userId) await _this.writeTempUserId();
 					// console.log("设置临时userId后："+ JSON.stringify(_this.userToken))
 				},
@@ -353,12 +362,13 @@ export default {
 		async writeTempUserId(){
 			const _this = this
 			const res = await uni.getSystemInfo();
+			const deviceId = res.deviceId;
 			// const res = uni.getSystemInfoSync();
 			uni.request({
 				url: process.env.UNI_BASE_URL+ '/api/job/checkTempUserIsExist',
 				header: { 'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
 				method: 'POST',
-				data: {sysId: SYS_ID, deviceId: res.deviceId},
+				data: {sysId: SYS_ID, deviceId: deviceId},
 				success: result => {
 					// console.log('saveUserTemp 返回值' + JSON.stringify(result));
 					if (result.statusCode == 200) {
@@ -366,7 +376,8 @@ export default {
 						console.log("index.saveUserTemp 返回值："+JSON.stringify(respData))
 						if(respData.code == 0) {
 							_this.userToken.userId = null
-							_this.userToken.token = null
+							_this.userToken.deviceId = deviceId;
+							// _this.userToken.token = deviceId
 							_this.userToken.userId = respData.data
 							uni.setStorage({ key:JOB_TOKEN, data: _this.userToken });
 							return;
@@ -844,5 +855,5 @@ export default {
 .bg-cyan { background: #13c2c2; }
 .bg-pink { background: #eb2f96; }
 .bg-gray { background: #666666; }
-
+.bg-manager{background: #5caafe;}
 </style> 

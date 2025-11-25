@@ -99,7 +99,7 @@
 					<view style="margin: -22px auto !important;">
 						<uni-forms-item label="自我详述" > <!-- detailOptions -->
 							<search-dropdown
-								disabled="false"
+								:disabled="false"
 								:fromOptions="introductionOptions"
 								v-model="baseFormData.jobUserDO.detail"
 								placeholder="只选，下方编辑"
@@ -187,7 +187,7 @@
 										></uni-file-picker>
 									</uni-forms-item>
 									
-									<button class="button" style="background-color: #ed1941; justify-content:center;" type="default" @click="delDynamicItem(item.id)">删除</button>
+									<button class="button" size="mini" style="background-color: #ed1941; justify-content:center; margin-left: 65%;" type="default" @click="delDynamicItem(item, index)">删除</button>
 									<!-- </view> -->
 									
 								<!-- </uni-forms-item> -->
@@ -448,7 +448,7 @@
 			},
 			
 			selectedCareerId(newVal) {
-				console.log('selectedCareerId变更:', newVal);
+				// console.log('selectedCareerId变更:', newVal);
 				
 				// 根据careerId查找对应的职业对象
 				if (newVal && this.careers.length > 0) {
@@ -540,7 +540,7 @@
 				this.initFormData();
 				this.careerApiParam = {}
 				this.isFirstLoad = false;
-				console.log("已完成职业列表的加载----------")
+				// console.log("已完成职业列表的加载----------")
 				// console.log("执行了onOptionsUpdate().执行后，this.careers："+JSON.stringify(this.careers))
 			},
 			// 初始化表单数据（数据回显）
@@ -704,7 +704,7 @@
 						delete otherSkillsObj[index];
 					}
 					this.baseFormData.jobUserDO.otherSkills = Object.keys(otherSkillsObj).length > 0 ? JSON.stringify(otherSkillsObj) : null;
-					console.log("updateOtherSkills("+index+", "+value+"): " + this.baseFormData.jobUserDO.otherSkills)
+					// console.log("updateOtherSkills("+index+", "+value+"): " + this.baseFormData.jobUserDO.otherSkills)
 				} catch (e) {
 					console.error("更新其他技能时出错:", e);
 				}
@@ -761,17 +761,17 @@
 				}
 			},
 			judgeOtherByIndex(index){
-				console.log("judgeOtherByIndex 根据index:"+this.baseFormData.jobUserDO.skills)
+				// console.log("judgeOtherByIndex 根据index:"+this.baseFormData.jobUserDO.skills)
 				const parsedMap = JSON.parse(this.baseFormData.jobUserDO.skills);
 				if(parsedMap.hasOwnProperty(index)) return true;
 				
 			},
 			getOtherByIndex(index){
-				console.log("根据index:"+index+";获取 ‘其他’")
+				// console.log("根据index:"+index+";获取 ‘其他’")
 				const parsedMap = JSON.parse(this.baseFormData.jobUserDO.otherSkills);
-				console.log("根据index:"+index+";获取 ‘其他s’"+JSON.stringify(parsedMap))
+				// console.log("根据index:"+index+";获取 ‘其他s’"+JSON.stringify(parsedMap))
 				if(parsedMap.hasOwnProperty(index)) {
-					console.log("根据index:"+index+";获取 ‘其他’："+parsedMap[index])
+					// console.log("根据index:"+index+";获取 ‘其他’："+parsedMap[index])
 					return parsedMap[index];
 				}
 			},
@@ -812,9 +812,21 @@
 				})
 			},
 			
-			delDynamicItem(id) {
-				let index = this.baseFormData.moreReturnDOList.findIndex(v => v.id === id)
-				this.baseFormData.moreReturnDOList.splice(index, 1)
+			delDynamicItem(item, index) {
+				const _this = this
+				uni.showModal({
+					title: '提示',
+					content: `确定删除，\r\n 标题为【${item.title}】的 [板块${index}] ？`,
+					confirmText: '确定',
+					cancelText: '返回',
+					success: (res) => {
+						if (res.confirm) {
+							let index = _this.baseFormData.moreReturnDOList.findIndex(v => v.id === item.id)
+							_this.baseFormData.moreReturnDOList.splice(index, 1)
+						}
+					}
+				});
+				
 			},
 		
 			// 处理文件选择事件
@@ -1024,9 +1036,9 @@
 				if (!this.canGetCode) return;
 				try {
 					const param = {
-							phone: this.baseFormData.jobUserDO.mobile,
-							opt: 'add jobUser',
-							sysId: SYS_ID
+						phone: this.baseFormData.jobUserDO.mobile,
+						opt: 'add jobUser',
+						sysId: SYS_ID
 					}
 					// 调用后端API发送验证码
 					const res = await uni.request({
@@ -1132,7 +1144,7 @@
 			async getJobUserByUserId(){
 				// return new Promise((resolve, reject) => {
 				const _this = this;
-				console.log("this.userToken.userId：" + this.userToken.userId)
+				// console.log("this.userToken.userId：" + this.userToken.userId)
 				const params = {sysId: SYS_ID, userId: this.userToken.userId, 
 								selfId: this.userToken.userId, token: this.userToken.token}
 				if(this.baseFormData?.jobUserDO?.moreLevel) params.level = this.baseFormData.jobUserDO.moreLevel;
@@ -1143,7 +1155,7 @@
 						method: 'POST',
 						header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 						success: async (result) => {
-							console.log('user_add.getUserDetail 返回值' + JSON.stringify(result));
+							// console.log('user_add.getUserDetail 返回值' + JSON.stringify(result));
 							if (result.statusCode == 200 && result.data.code == 0) {
 								const respData = result.data.data;
 								// console.log("user_add.getUserDetail返回值2："+JSON.stringify(respData))
@@ -1189,14 +1201,14 @@
 			
 			// 选择或者拍照
 			chooseImage() {
-			  console.log("选择图片")
+			  // console.log("选择图片")
 			  uni.chooseImage({
 			    count: 1, // 默认9，这里我们只选一张图
 			    sizeType: ['original', 'compressed'], // 可选择原图或压缩图
 			    sourceType: ['album', 'camera'], 	  // 支持从相册和摄像头选择
 			    success: async (res) => {
 					const filePaths = res.tempFilePaths; // 获取选择的图片路径
-					console.log("循环上传图片")
+					// console.log("循环上传图片")
 					// 在这里可以对图片进行进一步处理，如上传、预览等
 					
 					for (let i = filePaths.length - 1; i >= 0; i--) {
@@ -1237,7 +1249,7 @@
 			},
 			
 			async getToken(){
-				console.log("async getToken().this.userToken.userId："+this.userToken.userId)
+				// console.log("async getToken().this.userToken.userId："+this.userToken.userId)
 				this.uploadToken = await uploadUtils.getUploadToken(this.userToken.userId);
 			},
 			// 长按复制

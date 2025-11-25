@@ -253,7 +253,7 @@
 				}
 			},
 			async loadData() {
-				console.log("加载数据…………")
+				// console.log("加载数据…………")
 				this.loading = true;
 				this.error = null;
 				

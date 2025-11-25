@@ -262,9 +262,9 @@
 					_this.writeTempUserId();
 				},
 				complete() {
-					_this.getLocalFromStore();	// 读取位置信息
 					_this.getStoreList();		// 我的收藏
 					_this.getList();			// 获取，内容列表数据
+					_this.getLocalFromStore();	// 读取位置信息
 					_this.getBanner();			// 获取，标题展示数据
 				}
 			});
@@ -295,8 +295,8 @@
 			handlePullDownRefresh() {
 			  console.log("触发了 handlePullDownRefresh()")
 			  this.initData();
-			  this.getBanner();	// 获取，标题展示数据
 			  this.getList();		// 获取，内容列表数据
+			  this.getBanner();		// 获取，标题展示数据
 			  // 注意：这里不能直接调用uni.stopPullDownRefresh()，因为组件中无法停止页面事件，需要父页面停止
 			  // 所以，我们通过emit事件通知父页面停止
 			  this.$emit('stop-pull-down');
@@ -527,12 +527,13 @@
 			async writeTempUserId(){
 				const _this = this
 				const res = await uni.getSystemInfo();
+				const deviceId = res.deviceId
 				// const res = uni.getSystemInfoSync();
 				uni.request({
 					url: process.env.UNI_BASE_URL+ '/api/job/checkTempUserIsExist',
 					header: { 'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
 					method: 'POST',
-					data: {sysId: SYS_ID, deviceId: res.deviceId},
+					data: {sysId: SYS_ID, deviceId: deviceId},
 					success: result => {
 						// console.log('checkTempUserIsExist 返回值' + JSON.stringify(result));
 						if (result.statusCode == 200) {
@@ -540,7 +541,8 @@
 							console.log("index.checkTempUserIsExist 返回值："+JSON.stringify(respData))
 							if(respData.code == 0) {
 								_this.userToken.userId = respData.data
-								_this.userToken.deviceId = res.deviceId
+								_this.userToken.deviceId = deviceId;
+								// _this.userToken.token = deviceId;
 								uni.setStorage({ key:JOB_TOKEN, data: _this.userToken });
 								return;
 							}
@@ -776,7 +778,9 @@
 			},
 			// 我的收藏
 			async getStoreList(){
-				var store = {sysId: SYS_ID, selfId: this.userToken.userId, token: this.userToken.token, enabled: 0}
+				var store = {sysId: SYS_ID, enabled: 0, storeType: 0}
+				if(this.userToken?.userId) store.selfId = this.userToken.userId;
+				if(this.userToken?.token) store.token = this.userToken.token;
 				// console.log("取值："+JSON.stringify(store))
 				try{
 					const result = await uni.request({

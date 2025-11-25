@@ -53,9 +53,11 @@
 						<text class="label" :style="fontSet">{{storeTypeStore?"已":""}}收藏</text>
 					</view>
 					<view class="stat-item" @click="shareToWeChat">
-						<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.shareNum||0}}</text>
-						<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
-						<text class="label" :style="fontSet">分享</text>
+						<!-- <button class="share-btn" open-type="share" data-source="button" @tap="onShareTap"> -->
+							<text class="num" :style="fontSet" style="color: #ed1941;">{{jobUser.activityDO.shareNum||0}}</text>
+							<uni-icons type="redo-filled"  :size="23*fontScale" color="#FFCC33" ></uni-icons>
+							<text class="label" :style="fontSet">分享</text>
+						<!-- </button> -->
 						<!-- <button class="share-btn"  open-type="share" data-source="button">分享给好友</button> -->
 					</view>
 				</view>
@@ -197,7 +199,7 @@
 				</view> -->
 				<!-- <scroll-view scroll-x class="share-scroll noScorll"> -->
 				<!-- <view class="share-options"> -->
-					<button class="share-option uni-share-button" open-type="share">
+					<button class="share-option uni-share-button" data-source="button" open-type="share">
 						<view class="share-icon">
 							<uni-icons type="weixin" size="50" color="#07C160"></uni-icons>
 						</view>
@@ -386,6 +388,7 @@
 						time: 3
 					}
 				],
+				hasShared: false,// 分享标志
 			}
 		},
 		computed: {
@@ -405,10 +408,10 @@
 				fail:function(){
 				},
 				complete() {
-					_this.getBanner();	// 获取，标题展示数据
-					_this.getLocalFromStore();	// 读取位置信息
 					// 加载用户信息
 					_this.getJobUserByUserId(_this.detailId);
+					_this.getLocalFromStore();	// 读取位置信息
+					_this.getBanner();	// 获取，标题展示数据
 				}
 			});
 			// console.log("参数："+ e.detailId)
@@ -438,19 +441,20 @@
 		},
 		// 小程序端分享给好友（与onLoad同级）
 		onShareAppMessage(res) {
-		  console.log('触发分享'); // 添加日志
+		  this.hasShared = true; // 设置标志位
+		  this.recordShareAction();
 		  return {
 			type: 0, // 分享类型，0：图文；1：纯文字；2：纯图片；
 		    title: this.jobUser.jobUserDO.username || '用户分享',
 		    path: `pages/job/user/user_detail?detailId=${this.detailId}`,
 			// desc: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
 			// summary: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
+			content: this.jobUser.jobUserDO.allSkills || '这是一个很棒的用户',
 		    imageUrl: this.getCompressedImage(), // 同步获取
+			provider: 'weixin',
 		    success: (res) => {
 			  // 可以在这里记录分享统计
 			  console.log('记录分享行为，用户ID:', this.detailId);
-			  this.jobUser.activityDO.shareNum += 1
-			  this.recordShareAction();
 		      uni.showToast({
 		        title: "分享成功",
 		        icon: "success",
@@ -480,6 +484,15 @@
 		},
 		// #endif
 		methods: {
+			handleShareSuccess(){
+			  this.jobUser.activityDO.shareNum += 1
+			  this.recordShareAction();
+			},
+			// 分享按钮点击事件
+			onShareTap() {
+			  console.log('点击分享按钮，用户ID:', this.detailId);
+			  // 这里不直接记录，等 onShareAppMessage 触发
+			},
 			// 获取，标题展示数据
 			getBanner() {
 				let data = {sysId: SYS_ID, showWhere: 1, selfId: this.userToken.userId, token: this.userToken.token, level: 0};
@@ -555,10 +568,12 @@
 						userId: this.detailId,
 						shareType: 'wechat'
 					},
+					header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 					success: (res) => {
 						console.log('分享记录成功');
 					}
 				});
+				
 			},
 			
 			// 更新菜单显示状态的方法

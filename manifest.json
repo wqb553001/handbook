@@ -90,6 +90,13 @@
             }
         },
         "usingComponents" : true
+		// ,
+		// "plugins": {
+		//   "WechatSI": {
+		//   "version": "0.3.6",
+		//   "provider": "wx10dd6c67bc7c45cb"
+		//   }
+		// }
     },
     "mp-alipay" : {
         "usingComponents" : true

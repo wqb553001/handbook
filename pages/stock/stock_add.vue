@@ -587,7 +587,7 @@
 							}else{						// 做空
 								downRatio = val.upRatio
 							}
-							ratio = _this.decimal(ratio)
+							ratio = _this.decimalLocal(ratio)
 							// 建议投资金额 = 投入资金占 * 总金
 							var calculAdvsIvsMoney = (new Decimal(val.adviseInvestRatio).div(new Decimal(100)).mul(new Decimal(totalAmount))).toFixed(4);
 							// 股数
@@ -919,7 +919,7 @@
 				this.selectExpectValue = item.selectExpectValue
 				this.tradeRealCount = item.tradeRealCount
 				// 总金 * 占比 / 100 = 建议投资金额  ==>  总金 = 建议投资金额 / 占比 × 100 
-				this.totalAmount = this.decimal((item.calculAdvsIvsMoney).replace(/,/g, "") / item.adviseInvestRatio * 100)
+				this.totalAmount = this.decimalLocal((item.calculAdvsIvsMoney).replace(/,/g, "") / item.adviseInvestRatio * 100)
 				this.isNewStockCode = false
 				// this.calculateInvestMoney(true)  // 试算并展示
 				this.inputTradeRealCountChange(this)
@@ -1016,7 +1016,7 @@
 					}
 				}, 1)
 			}
-			,decimal(num) { // 只有整数，则只保留整数；有小数，超过4位则四舍五入。
+			,decimalLocal(num) { // 有小数，超过4位则四舍五入；只有整数，则只保留整数。
 				// 检查输入是否为整数
 				if (Number.isInteger(num)) {
 					// 如果是整数，直接返回

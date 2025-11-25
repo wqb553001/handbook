@@ -35,7 +35,7 @@
 		// }
 		,
 		{
-			"path": "pages/stock/add",
+			"path": "pages/stock/stock_add",
 			"style": {
 				"navigationBarTitleText": "%schema.tb.working%"
 			}
@@ -67,19 +67,28 @@
             
         }
         ,{
-            "path" : "pages/stock/show",
+            "path" : "pages/job/manage/stock_list",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "%schema.tb.looking%",
+                "navigationBarTitleText": "股票管理",
                 "enablePullDownRefresh": false
             }
             
         }
         ,{
-            "path" : "pages/stock/rule",
+            "path" : "pages/stock/stock_show",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "%schema.tb.rule%",
+                "navigationBarTitleText": "股票列表查看",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/stock/stock_rule",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "股票规则配置",
                 "enablePullDownRefresh": false
             }
             
@@ -185,6 +194,24 @@
         		"navigationBarTitleText" : "头像编辑"
         	}
         },
+		{
+			"path" : "pages/job/manage/manage_list",
+			"style" : 
+			{
+				"navigationBarTitleText" : "管理中心", 
+				"enablePullDownRefresh" : false
+			}
+		}
+		,
+		{
+			"path" : "pages/job/manage/manage_talk_list",
+			"style" : 
+			{
+				"navigationBarTitleText" : "用户列表", 
+				"enablePullDownRefresh" : false
+			}
+		}
+		,
         {
         	"path" : "pages/job/agreement/user",
         	"style" : 
@@ -243,6 +270,27 @@
 			{
 				"navigationBarTitleText" : "帮助中心", 
 				"enablePullDownRefresh" : false
+			}
+		},
+		{
+			"path": "pages/job/manage/manage_user_list",
+			"style": {
+				"navigationBarTitleText": "用户中心",
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/job/manage/table/index",
+			"style": {
+				"navigationBarTitleText": "首页"
+			}
+		},
+		{
+			"path": "pages/job/manage/table/mytable",
+			"style": {
+				"navigationBarTitleText": "表格"
 			}
 		}
   //       ,{
@@ -304,22 +352,8 @@
 	
 	"tabBar": {
 		"list": [
-			// {
-			// 	"pagePath": "pages/stock/show",
-			// 	"text": "%schema.tb.looking%"
-			// }
-			// ,{
-			// 	"pagePath": "pages/stock/popup",
-			// 	"text": "弹窗"
-			// }
-			// ,{
-			// 	"pagePath": "pages/stock/add",
-			// 	"text": "%schema.tb.working%"
-			// }
-			// ,{
-			// 	"pagePath": "pages/stock/rule",
-			// 	"text": "%schema.tb.rule%"
-			// },
+			
+			// ,                               
 			// {
 				
 			// 	"pagePath" : "pages/job/index",
@@ -334,7 +368,8 @@
 				"pagePath" : "pages/job/user/user_my",
 				"text" : "我的"
 			}
-			// ,{
+			// ,
+			// {
 			// 	"pagePath" : "pages/job/user/user_add",
 			// 	"text" : "我的"
 			// }
@@ -342,7 +377,24 @@
 			// 	"pagePath" : "pages/job/user/user_add",
 			// 	"text" : "找工" 
 			// }
-			
+			// ,{
+			// 	"pagePath": "pages/stock/popup",
+			// 	"text": "弹窗"
+			// }
+			// ,
+			// {
+			// 	"pagePath": "pages/stock/show",
+			// 	"text": "%schema.tb.looking%"
+			// }
+			// ,
+			// {
+			// 	"pagePath": "pages/stock/add",
+			// 	"text": "%schema.tb.working%"
+			// }
+			// ,{
+			// 	"pagePath": "pages/stock/rule",
+			// 	"text": "%schema.tb.rule%"
+			// }
 			
 			// ,{
 			// 	"pagePath": "pages/list/list",

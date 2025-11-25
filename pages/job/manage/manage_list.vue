@@ -8,7 +8,7 @@
 			<view v-if="isLogined" class="service-item" style="display: block; align-items: center;" >
 				<view style="display: flex; justify-content: space-between;">
 					<view class="left" >
-						<view class="service-icon" :class="statueBgClass" >
+						<view class="service-icon bg-orange" >
 							<uni-icons type="auth" size="20" color="#fff"></uni-icons>
 						</view>
 						<text class="service-name">状态</text>
@@ -19,33 +19,32 @@
 					</view>
 				</view>				
 			</view>
-			
-<!-- 			<view class="service-item"  v-for="(item, index) in allServices.slice(0, 2)" :key="index"  @click="navigateTo(item.path)" >
-			
+			<!-- /pages/job/manage/manage_user_list -->
+			<!-- /pages/job/manage/table/index -->
+			<view class="service-item" @click="isLoginedNavigateTo('/pages/job/manage/manage_user_list')" >
 				<view class="left">
-					<view class="service-icon" :class="item.class">
-						<uni-icons :type="item.icon" size="20" color="#fff"></uni-icons>
+					<view class="service-icon bg-manager" >
+						<uni-icons type="personadd-filled" size="20" color="#fff"></uni-icons>
 					</view>
-					<text class="service-name">{{ item.name }}</text>
+					<text class="service-name">人员管理</text>
 				</view>
 				
 				<view class="right">
-					<text v-if="item.desc" class="desc">{{ item.desc }}</text>
+					<text class="desc">权限</text>
 					<uni-icons type="right" size="14" color="#999"></uni-icons>
 				</view>
+			</view>
 			
-			</view> -->
-			
-			<view class="service-item" @click="personNavigateTo()" >
+			<view class="service-item" @click="isLoginedNavigateTo('/pages/job/manage/stock_list')" ><!--  pages/stock/add -->
 				<view class="left">
-					<view class="service-icon" :class="allServices[0].class">
-						<uni-icons :type="allServices[0].icon" size="20" color="#fff"></uni-icons>
+					<view class="service-icon bg-red" >
+						<uni-icons type="medal" size="20" color="#fff"></uni-icons>
 					</view>
-					<text class="service-name">{{ allServices[0].name }}</text>
+					<text class="service-name">股票管理</text>
 				</view>
 				
 				<view class="right">
-					<text v-if="allServices[0].desc" class="desc">{{ allServices[0].desc }}</text>
+					<text class="desc">维护</text>
 					<uni-icons type="right" size="14" color="#999"></uni-icons>
 				</view>
 			</view>
@@ -262,24 +261,43 @@ export default {
 			
 			workStatus: [
 				{
-					text: "开放",
-					// text: "开放接单中",
+					text: "开放接单中",
 					value: 0,
 				},{
-					text: "繁忙",
-					// text: "工作繁忙中",
+					text: "工作繁忙中",
 					value: 10,
 				},{
-					text: "休假",
-					// text: "闭关休假中",
+					text: "闭关休假中",
 					value: 20,
 				},
 			],
-			statueBgClass: 'bg-orange',
 			
         }
     },
     methods: {
+		
+		navigateTo(path) {
+		  uni.navigateTo({ url: path })
+		},
+		
+        handleFeature(item) {
+            uni.navigateTo({
+                url: item.path
+            });
+        },
+		
+		isLoginedNavigateTo(url){
+			// console.log("跳转进入："+url)
+			if(this.isLogined){
+				// console.log("this.isLogined:"+this.isLogined)
+				uni.navigateTo({url: url});
+				// uni.navigateTo();
+				return
+			}
+			// console.log(getCurrentPages())
+			// console.log("跳转登录页：/pages/job/index")
+			uni.navigateTo({url: "/pages/job/index"});
+		},
 		personNavigateTo(){
 			// console.log("进入跳转："+this.isLogined)
 			if(this.isLogined){
@@ -291,7 +309,8 @@ export default {
 			// uni.navigateTo();
 			// uni.navigateTo(`/pages/job/index`)
 			// console.log(getCurrentPages())
-			// console.log("跳转：/pages/job/index")
+			// console.log("跳转登录页：/pages/job/index")
+			
 			uni.navigateTo({url: "/pages/job/index"});
 			// uni.navigateTo({
 			//   url: "/pages/job/index",
@@ -306,28 +325,9 @@ export default {
 		},
 		
 		workStatusChange(e) {
-			this.bgChange(e);
 			// console.log('Selected value changed:', e);
 			// console.log('Selected value changed:', e.detail.value);
 			this.updateUserSchedule({workStatus: e});
-		},
-		
-		bgChange(workStatus){
-			// console.log('bgChange('+workStatus+')');
-			switch(workStatus){
-				case 0:	// "开放接单中"
-					this.statueBgClass = 'bg-green'
-				break;
-				
-				case 10:// "工作繁忙中"
-					this.statueBgClass = 'bg-red'
-				break;
-				
-				case 20:// "闭关休假中"
-					this.statueBgClass = 'bg-gray'
-				break;
-				
-			}
 		},
 		
 		logout(){
@@ -375,13 +375,13 @@ export default {
 				method: 'POST',
 				header: {'content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 				success: result => {
-					// console.log('user_setting.getUserScheduleByUserId 返回值' + JSON.stringify(result));
+					// console.log('userStream 返回值' + JSON.stringify(result));
 					if (result.statusCode == 200 && result.data.code == 0) {
 						const respData = result.data.data;
 						// console.log("user_setting.getUserSchedule返回值："+JSON.stringify(respData))
 						if(respData) {
 							_this.userSchedule = respData;
-							_this.bgChange(respData.workStatus);	// 初始化背景颜色
+							
 							// _this.userSchedule = respData;
 							// console.log("转化前："+respData.skills)
 							// console.log("转化后 _this.userSchedule?.customize ：" + JSON.stringify(_this.userSchedule?.customize))
@@ -420,16 +420,6 @@ export default {
 			  }
 			}
 		},
-		
-		navigateTo(path) {
-		  uni.navigateTo({ url: path })
-		},
-		
-        handleFeature(item) {
-            uni.navigateTo({
-                url: item.path
-            });
-        },
 		
 		switchAuthoChange(e){
 			if(!this.userToken){
@@ -654,6 +644,7 @@ export default {
 .bg-cyan { background: #13c2c2; }
 .bg-pink { background: #eb2f96; }
 .bg-gray { background: #666666; }
+.bg-manager{background: #5caafe;}
 
 
 .content {

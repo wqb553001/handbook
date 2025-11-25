@@ -126,10 +126,10 @@
 						<uni-td style="padding: 0px 4px;">{{ index + 1    			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectValue 		}}</uni-td>
 						<uni-td style="padding: 0px 4px;">
-							<span :style="fontColor.up">＋{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >－{{item.downRatio}}</span>
+							<span style="white-space: nowrap;"><span :style="fontColor.up">＋{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >－{{item.downRatio}}</span></span>
 						</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.adviseInvestRatio 	}}</uni-td>
-						<uni-td style="padding: 0px 4px;">{{ item.updateTime 			}}</uni-td>
+						<uni-td style="padding: 0px 4px;"><span style="white-space: nowrap;">{{ item.updateTime 			}}</span></uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectEnd 			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">
 							<view class="uni-group">
@@ -156,10 +156,10 @@
 						<uni-td style="padding: 0px 4px;">{{ index + 1    			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectValue 		}}</uni-td>
 						<uni-td style="padding: 0px 4px;">
-							<span :style="fontColor.up">－{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >＋{{item.downRatio}}</span>
+							<span style="white-space: nowrap;"><span :style="fontColor.up">－{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >＋{{item.downRatio}}</span></span>
 						</uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.adviseInvestRatio 	}}</uni-td>
-						<uni-td style="padding: 0px 4px;">{{ item.updateTime 			}}</uni-td>
+						<uni-td style="padding: 0px 4px;"><span style="white-space: nowrap;">{{ item.updateTime 			}}</span></uni-td>
 						<uni-td style="padding: 0px 4px;">{{ item.expectEnd 			}}</uni-td>
 						<uni-td style="padding: 0px 4px;">
 							<view class="uni-group">
@@ -172,6 +172,7 @@
 			</uni-group>
 		</uni-section>
 			
+		<button @click="clearCache(1)" class="button large" style="float: right; margin: 8px 10px 50px 0; background-color: #09bb07;" type="primary" >恢复默认做多规则</button>
 		<uni-group title="做多规则:" >
 			<uni-table border stripe emptyText="暂无更多数据">
 				<uni-tr>
@@ -184,12 +185,14 @@
 					<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
 					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
 					<uni-td style="padding: 0px 4px; text-align: center;">
-						<span :style="fontColor.up">＋{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >－{{item.downRatio}}</span>
+						<span style="white-space: nowrap;"><span :style="fontColor.up">＋{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down" >－{{item.downRatio}}</span></span>
 					</uni-td>
 					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.adviseInvestRatio 	}}</uni-td>
 				</uni-tr>
 			</uni-table>					
 		</uni-group>
+		
+		<button @click="clearCache(2)" class="button large" style="float: right; margin: 8px 10px 50px 0; background-color: #09bb07;" type="primary" >恢复默认做空规则</button>
 		<uni-group title="做空规则:" >
 			<uni-table border stripe emptyText="暂无更多数据">
 				<uni-tr>
@@ -202,7 +205,7 @@
 					<uni-td style="padding: 0px 4px; text-align: center;">{{ index + 1    			}}</uni-td>
 					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.expectValue 		}}</uni-td>
 					<uni-td style="padding: 0px 4px; text-align: center;">
-						<span :style="fontColor.up">-{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down">+{{item.downRatio}}</span>
+						<span style="white-space: nowrap;"><span :style="fontColor.up">-{{ item.upRatio}}</span><span style="font-size: 25px; font-weight: bold;">|</span><span :style="fontColor.down">+{{item.downRatio}}</span></span>
 					</uni-td>
 					<uni-td style="padding: 0px 4px; text-align: center;">{{ item.adviseInvestRatio 	}}</uni-td>
 				</uni-tr>
@@ -237,31 +240,52 @@
 	import { formatMoney } from '@/common/js/util/formatMoney.js'
 	
 	export default {
-		components: {
-			tTable, tTh, tTr, tTd
-		},
+		components: { tTable, tTh, tTr, tTd },
 		data() {
 			return {
 				tableUpRuleData: []		// 做多·规则记录 收录
 				,tableUpRuleDataInit: [
-					//编号	|预期收益率（%）				|预期收益上限率			|建议出手收益率（%）			|正收益率%			|负收益率%			|投入资金比（%）					|投入资金额				
-					{id: 0,	expectValue: '0~5', 		expectEnd: '5',			adviseValue: '+3	|-2', 	upRatio: '3',		downRatio: '2', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
-					{id: 1,	expectValue: '5~10', 		expectEnd: '10',		adviseValue: '+8	|-2', 	upRatio: '8',		downRatio: '2', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
-					{id: 2,	expectValue: '10~20', 		expectEnd: '20',		adviseValue: '+14	|-2', 	upRatio: '14',		downRatio: '2', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
-					{id: 3,	expectValue: '20~50', 		expectEnd: '50',		adviseValue: '+35	|-2', 	upRatio: '35',		downRatio: '2', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
-					{id: 4,	expectValue: '50~100', 		expectEnd: '100',		adviseValue: '+60	|-8', 	upRatio: '60',		downRatio: '8', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
-					{id: 5,	expectValue: '100~200', 	expectEnd: '200',		adviseValue: '+120	|-10', 	upRatio: '120',		downRatio: '10', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
-					{id: 6,	expectValue: '200~500',		expectEnd: '500',		adviseValue: '+200	|-50',	upRatio: '200',		downRatio: '50', 	adviseInvestRatio: '10',		adviseInvestMoney: '1000' },
-					{id: 7,	expectValue: '500~100000',	expectEnd: '100000',	adviseValue: '+300	|-50',	upRatio: '300',		downRatio: '50', 	adviseInvestRatio: '5',			adviseInvestMoney: '500'  }
+					//编号		|预期收益率（%）				|预期收益上限率			|建议出手收益率（%）			|正收益率%			|负收益率%			|投入资金比（%）					|投入资金额				
+					{id: 0,		expectValue: '0~5', 		expectEnd: '5',			adviseValue: '+3	|-2', 	upRatio: '3',		downRatio: '2', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					{id: 1,		expectValue: '5~8', 		expectEnd: '8',			adviseValue: '+5	|-2', 	upRatio: '5',		downRatio: '2', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 2,		expectValue: '8~10', 		expectEnd: '10',		adviseValue: '+8	|-5', 	upRatio: '8',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 3,		expectValue: '10~13', 		expectEnd: '13',		adviseValue: '+9	|-5', 	upRatio: '9',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 4,		expectValue: '13~15', 		expectEnd: '15',		adviseValue: '+10	|-5', 	upRatio: '10',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 5,		expectValue: '15~20', 		expectEnd: '20',		adviseValue: '+14	|-5', 	upRatio: '14',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 6,		expectValue: '20~30', 		expectEnd: '30',		adviseValue: '+18	|-5', 	upRatio: '18',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 7,		expectValue: '30~40', 		expectEnd: '40',		adviseValue: '+25	|-10', 	upRatio: '25',		downRatio: '10', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 8,		expectValue: '40~50', 		expectEnd: '50',		adviseValue: '+30	|-15', 	upRatio: '30',		downRatio: '15', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 9,		expectValue: '50~60', 		expectEnd: '60',		adviseValue: '+40	|-15', 	upRatio: '40',		downRatio: '15', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 10,	expectValue: '60~70', 		expectEnd: '70',		adviseValue: '+45	|-20', 	upRatio: '45',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 11,	expectValue: '70~80', 		expectEnd: '80',		adviseValue: '+50	|-20', 	upRatio: '50',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 12,	expectValue: '80~90', 		expectEnd: '90',		adviseValue: '+60	|-20', 	upRatio: '60',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 13,	expectValue: '90~100', 		expectEnd: '100',		adviseValue: '+70	|-30', 	upRatio: '70',		downRatio: '30', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					{id: 14,	expectValue: '100~120', 	expectEnd: '120',		adviseValue: '+80	|-40', 	upRatio: '80',		downRatio: '40', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					{id: 15,	expectValue: '120~150', 	expectEnd: '150',		adviseValue: '+100	|-50', 	upRatio: '100',		downRatio: '50', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					{id: 16,	expectValue: '150~200', 	expectEnd: '200',		adviseValue: '+120	|-50', 	upRatio: '120',		downRatio: '50', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					{id: 17,	expectValue: '200~300',		expectEnd: '300',		adviseValue: '+150	|-50',	upRatio: '150',		downRatio: '50', 	adviseInvestRatio: '10',		adviseInvestMoney: '1000' },
+					{id: 18,	expectValue: '300~400',		expectEnd: '400',		adviseValue: '+200	|-50',	upRatio: '200',		downRatio: '50', 	adviseInvestRatio: '10',		adviseInvestMoney: '1000' },
+					{id: 19,	expectValue: '400~500',		expectEnd: '500',		adviseValue: '+300	|-50',	upRatio: '300',		downRatio: '50', 	adviseInvestRatio: '5',			adviseInvestMoney: '500'  },
+					{id: 20,	expectValue: '500~1000',	expectEnd: '1000',		adviseValue: '+400	|-50',	upRatio: '400',		downRatio: '50', 	adviseInvestRatio: '5',			adviseInvestMoney: '500'  },
+					{id: 21,	expectValue: '1000~100000',	expectEnd: '100000',	adviseValue: '+500	|-50',	upRatio: '500',		downRatio: '50', 	adviseInvestRatio: '5',			adviseInvestMoney: '500'  }
 				]
 				,tableDownRuleData: []	// 做空·规则记录 收录
 				,tableDownRuleDataInit: [
-					//编号	|预期收益率（%）				|预期收益上限率			|建议出手收益率（%）			|正收益率%			|负收益率%			|投入资金比（%）					|投入资金额				
-					{id: 0,	expectValue: '0~5', 		expectEnd: '5',			adviseValue: '-3	|+2', 	upRatio: '3',		downRatio: '2', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
-					{id: 1,	expectValue: '5~10', 		expectEnd: '10',		adviseValue: '-8	|+2', 	upRatio: '8',		downRatio: '2', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
-					{id: 2,	expectValue: '10~20', 		expectEnd: '20',		adviseValue: '-14	|+2', 	upRatio: '14',		downRatio: '2', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
-					{id: 3,	expectValue: '20~50', 		expectEnd: '50',		adviseValue: '-35	|+2', 	upRatio: '35',		downRatio: '2', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
-					{id: 4,	expectValue: '50~100', 		expectEnd: '100',		adviseValue: '-60	|+8', 	upRatio: '60',		downRatio: '8', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					//编号		|预期收益率（%）				|预期收益上限率			|建议出手收益率（%）			|正收益率%			|负收益率%			|投入资金比（%）					|投入资金额				
+					{id: 0,		expectValue: '0~5', 		expectEnd: '5',			adviseValue: '-3	|+2', 	upRatio: '3',		downRatio: '2', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
+					{id: 1,		expectValue: '5~8', 		expectEnd: '8',			adviseValue: '-5	|+3', 	upRatio: '5',		downRatio: '3', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 2,		expectValue: '8~10', 		expectEnd: '10',		adviseValue: '-8	|+5', 	upRatio: '8',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 3,		expectValue: '10~13', 		expectEnd: '13',		adviseValue: '-10	|+5', 	upRatio: '10',		downRatio: '5', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 4,		expectValue: '13~15', 		expectEnd: '15',		adviseValue: '-13	|+8', 	upRatio: '13',		downRatio: '8', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 5,		expectValue: '15~20', 		expectEnd: '20',		adviseValue: '-14	|+10', 	upRatio: '14',		downRatio: '10', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 6,		expectValue: '20~30', 		expectEnd: '30',		adviseValue: '-17	|+10', 	upRatio: '17',		downRatio: '10', 	adviseInvestRatio: '20', 		adviseInvestMoney: '2000' },
+					{id: 7,		expectValue: '30~40', 		expectEnd: '40',		adviseValue: '-20	|+12', 	upRatio: '20',		downRatio: '12', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 8,		expectValue: '40~50', 		expectEnd: '50',		adviseValue: '-30	|+15', 	upRatio: '30',		downRatio: '15', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 9,		expectValue: '50~60', 		expectEnd: '60',		adviseValue: '-35	|+20', 	upRatio: '35',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 10,	expectValue: '60~70', 		expectEnd: '70',		adviseValue: '-40	|+20', 	upRatio: '40',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 11,	expectValue: '70~80', 		expectEnd: '80',		adviseValue: '-45	|+20', 	upRatio: '45',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 12,	expectValue: '80~90', 		expectEnd: '90',		adviseValue: '-55	|+20', 	upRatio: '55',		downRatio: '20', 	adviseInvestRatio: '15', 		adviseInvestMoney: '1500' },
+					{id: 13,	expectValue: '90~100', 		expectEnd: '100',		adviseValue: '-60	|+30', 	upRatio: '60',		downRatio: '30', 	adviseInvestRatio: '10', 		adviseInvestMoney: '1000' },
 				]
 				,duration :	2000
 				,type :	'center'
@@ -305,10 +329,35 @@
 		}
 		,onReady() {},
 		methods: {
+			clearCache(up_down){
+				const flag = (up_down===1?'做多':'做空')
+				uni.showModal({
+					title: '提示',
+					content: '确实要恢复'+flag+'规则？',
+					confirmText: '恢复',
+					cancelText: '取消',
+					success: (res) => {
+						if (res.confirm) {
+							if(up_down===1){
+								// console.log(flag+":clearCache("+up_down+")")
+								uni.removeStorageSync('inStorageUpRuleDataList');
+								this.loadTableStockList('inStorageUpRuleDataList', 'tableUpRuleData', 1);
+								return;
+							}
+							if(up_down===2){
+								// console.log(flag+":clearCache("+up_down+")")
+								uni.removeStorageSync('inStorageDownRuleDataList');
+								this.loadTableStockList('inStorageDownRuleDataList', 'tableDownRuleData', 2);
+								return;
+							}
+						}
+					}
+				});
+			},
 			loadTableStockList(strKey, table_tag_key, up_down){
 				const _this = this;
 				uni.getStorage({
-					key:strKey,
+					key: strKey,
 					success: function(resp){
 						// console.log("返回值："+ JSON.stringify(resp.data))
 						if(resp.data.length > 0){
@@ -329,9 +378,11 @@
 				let tableKeyStr = 'tableUpRuleData' 
 				let saveData = []
 				if(up_down==1){
+					// console.log("up_down==1: initData("+up_down+", _this)")
 					_this.tableUpRuleData = _this.tableUpRuleDataInit
 					saveData = _this.tableUpRuleDataInit
 				}else{
+					// console.log("up_down==2: initData("+up_down+", _this)")
 					_this.tableDownRuleData = _this.tableDownRuleDataInit
 					keyStr = 'inStorageDownRuleDataList'
 					tableKeyStr = 'tableDownRuleData' 
