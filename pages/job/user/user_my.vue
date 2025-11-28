@@ -173,7 +173,7 @@
 	  	  	</view>
 	  	</view>
 		
-	  	<view v-if="jobUser.level == 1" class="service-item" @click="navigateToLogined('/pages/job/manage/manage_list')" >
+	  	<view v-if="judgeManage(jobUser.level)" class="service-item" @click="navigateToLogined('/pages/job/manage/manage_list')" >
 	  	  	<view class="left">
 	  	  		<view class="service-icon bg-manager" > <uni-icons type="auth" size="20" color="#fff"></uni-icons> </view>
 	  	  		<text class="service-name" :style="fontSet" >管理</text>
@@ -516,6 +516,9 @@ export default {
 			    }
 			});
 			// console.log("异步复制……")
+		},
+		judgeManage(level){
+			return (level&8==8)
 		},
     },
 	computed: {

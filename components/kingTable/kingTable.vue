@@ -77,32 +77,15 @@
 				<view class="kingFlex">
 					<block v-for="(item1, index1) in tableHeadRKey" :key="index1">
 						<view class="" >
-							<uni-swipe-action ref="swipeAction">
 							<block v-for="(item, index) in tableData" :key="index">
 								<view v-if="item1 === 'opt'" @tap.stop
 									:style="{ backgroundColor: isIndex == index ? tableClickCol : '',
 										fontSize: getScaledFontSize(),
 										width: getColumnWidth('right', index1)
 									}" class="tableColmn opt-column">
-									<!-- <button @click="toggleSwipe(index)" class="opt-btn upgrade-btn">权限变更</button> -->
-									<!-- :show="currentSwipeIndex === index?'right':'none'" -->
-									
-										<uni-swipe-action-item
-											:right-options="swipeOptions"
-											:show="currentSwipeIndex === index?'right':'none'"
-											@change="onSwipeChange($event, index)"
-											@click="onSwipeClick($event, item, index)"
-										>
-										<view @click="toggleSwipe(index)" class="swipe-content">
-											权限变更
-										</view>
-										</uni-swipe-action-item>
-									
-									
-									<!-- <view class="opt-buttons-container">
-										<button @click="upgrade(item, index)" class="opt-btn upgrade-btn">升级</button>
-										<button @click="downgrade(item, index)" class="opt-btn downgrade-btn">降级</button>
-									</view> -->
+									<view @click="toggleSwipe(item, index)" class="swipe-content">
+										权限变更
+									</view>
 								</view>
 								
 								<view v-else  @tap="currentSwipeIndex=-1"
@@ -114,7 +97,6 @@
 									}" class="tableColmn">{{ item[item1] }}
 								</view>
 							</block>
-							</uni-swipe-action>
 						</view>
 					</block>
 				</view>
@@ -137,20 +119,55 @@
 		</view>
 		
 		<!-- 长按弹框 -->
-<!-- 		<view v-if="showPopup" class="popup-mask" @tap="closePopup">
+		<view v-if="showPopupLevel" class="popup-mask" @tap="closePopupLevel">
 			<view class="popup-content" @tap.stop>
-				<view class="popup-header">
-					<text class="popup-title">{{ popupTitle }}</text>
-					<text class="popup-close" @tap="closePopup">×</text>
-				</view>
-				<view class="popup-body">
-					<text class="popup-text">{{ popupContent }}</text>
-				</view>
-				<view class="popup-footer">
-					<button class="popup-btn" @tap="closePopup">确定</button>
-				</view>
+			  <view class="popup-header">
+				<text class="popup-title">{{ popupTitleLevel }}</text>
+				<text class="popup-close" @tap="closePopupLevel">×</text>
+			  </view>
+			  
+			  <!-- 多选选项区域 -->
+			  <view class="popup-body popup-level-body">
+				<scroll-view 
+				  class="dropdown-menu popup-level-menu"
+				  scroll-y="true"
+				  :lower-threshold="200"
+				>
+				  <template>
+					<view
+					  v-for="(item, index) in levelSettingOptions"
+					  :key="item.value"
+					  :class="['dropdown-item', 'level-item', { 
+						selected: isLevelSelected(item.value) 
+					  }]"
+					  @click="toggleLevelSelection(item)"
+					>
+					  <!-- 多选复选框 -->
+					  <view class="checkbox-wrapper">
+						<view :class="['checkbox', { checked: isLevelSelected(item.value) }]">
+						  <text v-if="isLevelSelected(item.value)" class="checkmark">✓</text>
+						</view>
+					  </view>
+					  
+					  <!-- 权限文本 -->
+					  <view class="level-text">
+						<!-- <text class="level-name" v-html="highlight(item.text, searchKeywordLevel)"></text> -->
+						<text v-if="item.desc" class="level-desc">{{ item.desc }}</text>
+						<text v-else class="level-desc">{{ item.text }}</text>
+					  </view>
+					</view>
+					
+				  </template>
+				</scroll-view>
+			  </view>
+			  
+			  <!-- 底部按钮 -->
+			  <view class="popup-footer popup-level-footer">
+				<button class="popup-btn popup-btn-cancel" @tap="cancelLevelSelection">取消</button>
+				<button class="popup-btn popup-btn-confirm" @tap="confirmLevelSelection">确定</button>
+			  </view>
 			</view>
-		</view> -->
+		</view>
 		
 	</view>
 </template>
@@ -179,11 +196,21 @@ export default {
 			showPopup: false,
 			popupTitle: '单元格内容',
 			popupContent: '',
+			showPopupLevel: false,
+			popupTitleLevel: '权限变更',
+			popupContentLevel: '',
+			
 			// 选中的行索引
 			selectedRows: [],
 			// 按钮收缩
 			isOpened: 'none',
 			currentSwipeIndex: -1,
+			
+			// 权限多选相关数据
+			currentLevelIndex: -1,
+			currentLevelId: 0,
+			selectedLevels: [], // 存储选中的权限值数组
+			preLevel: 0,
 		};
 	},
 	props: {
@@ -288,7 +315,13 @@ export default {
 				return [];
 			}
 		},
-		swipeOptions: {
+		exclusiveGroups: {
+			type: [Array],
+			default() {
+				return [[]];
+			}
+		},
+		levelSettingOptions: {
 			type: [Array],
 			default() {
 				return [];
@@ -315,6 +348,8 @@ export default {
 		// 	return show;
 		// }
 	},
+	mounted() {
+	},
 	watch: {
 		// 监听默认选中行变化
 		defaultSelectedRows: {
@@ -337,125 +372,195 @@ export default {
 		}
 	},
 	methods: {
-		toggleSwipe(index) {
-			// console.log("toggleSwipe(index, e) 的 e:"+e)
-			console.log("toggleSwipe(index, e) 的 this.currentSwipeIndex:"+this.currentSwipeIndex+"; index:"+index)
-			if (this.currentSwipeIndex === index) {
-				this.currentSwipeIndex = -1;
-			} else {
-				this.currentSwipeIndex = index;
-			}
-			console.log("this.swipeOptions:" + this.swipeOptions)
-			console.log("this.swipeOptionsJSON:" + JSON.stringify(this.swipeOptions))
-			console.log("toggleSwipe(index, e) 的 this.currentSwipeIndex:"+this.currentSwipeIndex+"; index:"+index)
+		// 打开权限选择弹窗
+		openLevelPopup() {
+		  this.showPopupLevel = true;
+		  // 初始化选中状态
+		  this.updateLevelSelectionFromValue();
 		},
 		
-		onSwipeChange(e, index) {
-			console.log("e:"+e)
-			console.log("e.show:"+e.show+";this.currentSwipeIndex:"+this.currentSwipeIndex+"; index:"+index)
-			return
-			// 当滑动菜单关闭时，e.show为false，如果当前索引是这一行，则重置为-1
-			if (!e.show && this.currentSwipeIndex === index) {
-				this.currentSwipeIndex = -1;
-			}
+		// 关闭弹窗
+		closePopupLevel() {
+		  this.showPopupLevel = false;
 		},
 		
-		onSwipeClick(e, item, index) {
-			console.log("onSwipeClick("+e+", "+item+", "+index+")")
-			this.isOpened = e
-			// e 是选项对象
-			this.$emit('swipe-action-click', {
-				option: e,
-				data: item,
-				index: index
-			});
-			this.currentSwipeIndex = -1;
-		},
-		// 打开滑动操作
-		openSwipeAction(index) {
-			console.log("openSwipeAction("+index+")")
-			// 关闭之前打开的项目
-			if (this.currentOpenIndex !== -1 && this.currentOpenIndex !== index) {
-				this.currentOpenIndex = index;
-				console.log("打开："+index)
-				// this.closeSwipeAction(this.currentOpenIndex);
-			}else{
-				console.log("关闭："+index)
-				this.currentOpenIndex = -1
-			}
-			return
-			// 打开当前项目
-			this.$nextTick(() => {
-				const swipeAction = this.$refs.swipeAction;
-				// debugger
-				if (swipeAction && swipeAction[index]) {
-					swipeAction[index].open();
-					this.currentOpenIndex = index;
-				}
-			});
+		// 取消选择
+		cancelLevelSelection() {
+		  this.closePopupLevel();
+		  // 可以在这里重置选择状态
+		  this.selectedLevels = [];
 		},
 		
-		// 关闭滑动操作
-		closeSwipeAction(index) {
-			const swipeAction = this.$refs.swipeAction;
-			if (swipeAction && swipeAction[index]) {
-				swipeAction[index].close();
-				if (this.currentOpenIndex === index) {
-					this.currentOpenIndex = -1;
-				}
-			}
+		// 确认选择
+		confirmLevelSelection() {
+		  // 计算最终的level值（位运算或）
+		  let sumLevel = this.selectedLevels.reduce((sum, level) => sum | level, 0);
+		  if(this.preLevel == sumLevel){
+			  uni.showToast({
+			      title: '未做任何修改！',
+			      icon: 'none'
+			  });
+			this.closePopupLevel();
+			return;
+		  }
+		  // 假设互斥分组为 [1,2,4,8] 和 [16,32]（根据你的需求调整）
+		  // const exclusiveGroups = [
+			 //  [2, 4], // 第一个互斥分组
+			 //  [16, 32] // 第二个互斥分组，如果有的话
+		  // ];// 如果处理后的权限和原选中的权限不同，说明有互斥被处理了，我们可以提示用户
+		  // console.log("假设互斥分组为："+JSON.stringify(this.exclusiveGroups))
+		  const processedLevels = this.resolveExclusiveLevels(this.selectedLevels, this.exclusiveGroups);
+		  // console.log("修改前："+JSON.stringify(this.selectedLevels))
+		  // console.log("修改后："+JSON.stringify(processedLevels))
+		  
+		   if (processedLevels.length != this.selectedLevels.length) {
+		  	 // console.log("提示用户，例如：‘由于权限互斥，已自动为您调整选中权限。’")
+		     // 提示用户，例如："由于权限互斥，已自动为您调整选中权限。"
+		     uni.showToast({
+				title: '已完成修改！  由于权限互斥，已自动为您调整选中权限。',
+				icon: 'none',
+				mask: true,
+				duration: 3000
+		     });
+		   }else{
+			   uni.showToast({
+			       title: '已完成修改！',
+			       icon: 'success'
+			   });
+		   }
+		  this.selectedLevels = processedLevels;
+		  sumLevel = this.selectedLevels.reduce((sum, level) => sum | level, 0);
+		  // 触发事件
+		  this.$emit('level-change-confirm', {
+			level: sumLevel,
+			selectedLevels: this.selectedLevels,
+			userId: this.currentLevelId,
+			levelText: this.getLevelText(sumLevel)
+		  });
+
+		  this.closePopupLevel();
 		},
 		
-		// 滑动操作项点击事件
-		onSwipeActionClick(e, item, index) {
-			console.log('滑动操作点击:', e, item, index);
+		// 切换权限选择状态
+		toggleLevelSelection(item) {
+		  const levelValue = item.value;
+		  const index = this.selectedLevels.indexOf(levelValue);
+		  
+		  if (index > -1) {
+			// 如果已选中，则移除
+			this.selectedLevels.splice(index, 1);
+		  } else {
+			// 如果未选中，则添加
+			this.selectedLevels.push(levelValue);
+		  }
+		},
+		
+		// 检查权限是否被选中
+		isLevelSelected(levelValue) {
+		  return this.selectedLevels.includes(levelValue);
+		},
+		
+		// 从level值解析选中的权限
+		updateLevelSelectionFromValue() {
+		  // 假设 this.currentLevel 是当前的权限值
+		  if (this.currentLevel) {
+			this.selectedLevels = [];
+			this.levelSettingOptions.forEach(item => {
+			  if ((this.currentLevel & item.value) === item.value) {
+				this.selectedLevels.push(item.value);
+			  }
+			});
+		  }
+		},
+		// // 高亮搜索文本
+		// highlight(label, keyword) {
+		//   if (!keyword) return label;
+		//   const reg = new RegExp(`(${this.escapeRegExp(keyword)})`, 'ig');
+		//   return label.replace(reg, '<span style="color: #007aff; font-weight: bold;">$1</span>');
+		// },
+		
+		// // 转义正则表达式特殊字符
+		// escapeRegExp(string) {
+		//   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		// },
+		
+		// 根据level值获取权限文本
+		getLevelText(level) {
+		  if (!level) return '';
+		  const permissions = [];
+		  this.levelSettingOptions.forEach(item => {
+			if ((level & item.value) === item.value) {
+			  permissions.push(item.text);
+			}
+		  });
+		  return permissions.join(', ');
+		},
+		
+		/**
+		 * 增强版权限解析函数
+		 * @param {number} level - 权限等级值
+		 * @param {Array} settingsJson - 权限配置数组
+		 * @param {Object} options - 配置选项
+		 * @returns {string|Array} 解析结果
+		 */
+		parseLevel(level, settingsJson, options = {}) {
+		    const {
+		        returnType = 'string', // 'string' | 'array'
+		        separator = ', ',
+		        showDesc = false,
+		        sortByValue = true
+		    } = options;
+		    
+		    if (!level || level === 0 || !settingsJson || !Array.isArray(settingsJson)) {
+		        return returnType === 'string' ? '' : [];
+		    }
+		    
+		    // 如果需要按值排序
+		    let permissionsList = settingsJson;
+		    if (sortByValue) {
+		        permissionsList = [...settingsJson].sort((a, b) => a.value - b.value);
+		    }
+		    
+		    const permissions = [];
+		    
+		    permissionsList.forEach(item => {
+		        if ((level & item.value) === item.value) {
+		            permissions.push(item.value);
+		        }
+		    });
+		    
+		    return returnType === 'string' ? permissions.join(separator) : permissions;
+		},
+		// 以前的
+		toggleSwipe(item, index) {
+			this.preLevel = item.levelValue
+			this.selectedLevels = this.parseLevel(item.levelValue, this.levelSettingOptions, { returnType: 'array' })
+			// console.log("选中值："+ JSON.stringify(this.selectedLevels))
+			this.currentLevelIndex = index;
+			this.currentLevelId = item.userId
+			// console.log("选中对象："+JSON.stringify(item))
+			this.openLevelPopup();
+			// console.log("this.levelSettingOptions:" + this.levelSettingOptions)
+			// console.log("this.levelSettingOptionsJSON:" + JSON.stringify(this.levelSettingOptions))
+			// console.log("toggleSwipe(index, e) 的 this.currentSwipeIndex:"+this.currentSwipeIndex+"; index:"+index)
+		},
+		// 互斥分组取最大值
+		resolveExclusiveLevels(selectedLevels, exclusiveGroups) {
+			// 创建副本，避免修改原数组
+			let result = [...selectedLevels];
 			
-			// 关闭滑动操作
-			this.closeSwipeAction(index);
-			
-			// 根据点击的选项 value 触发不同的事件
-			const optionValue = e.content.value;
-			
-			// 触发权限变更事件，传递选项值、数据和索引
-			this.$emit('permission-change', {
-				action: optionValue,
-				data: item,
-				index: index
+			exclusiveGroups.forEach(group => {
+			  // 找出当前分组与result的交集
+			  const intersection = result.filter(level => group.includes(level));
+			  if (intersection.length > 1) {
+				// 找到交集的最大值
+				const maxInGroup = Math.max(...intersection);
+				// 将交集中除最大值外的其他权限从result中移除
+				result = result.filter(level => !group.includes(level) || level === maxInGroup);
+			  }
 			});
 			
-			// 也可以根据不同的 value 触发不同的事件
-			switch(optionValue) {
-				case 'upgrade':
-					this.$emit('upgrade', { data: item, index: index });
-					break;
-				case 'downgrade':
-					this.$emit('downgrade', { data: item, index: index });
-					break;
-				// 可以添加更多的 case 来处理其他操作
-				default:
-					console.log('未知操作:', optionValue);
-			}
-		},
-		setOpened(){
-			if (this.isOpened === 'right') {
-				this.isOpened = 'none';
-				return;
-			}
-		},
-		change(e){
-			this.isOpened = e;
-			console.log('返回：', e);
-		},
-		swipeChange(e, index) {
-			console.log('返回：', e);
-			console.log('当前索引：', index);
-		},
-		bindClick(e) {
-			console.log(e);
-			uni.showToast({
-				title: `点击了${e.position === 'left' ? '左侧' : '右侧'} ${e.content.text}按钮`,
-				icon: 'none'
-			});
+			return result;
 		},
 		// 点击的时候，转换下标
 		getIndex(cell, idx) {
@@ -532,6 +637,12 @@ export default {
 			this.popupTitle = '单元格内容';
 			this.popupContent = '';
 		},
+		// 关闭弹框
+		closePopupLevel() {
+			this.showPopupLevel = false;
+			this.popupTitleLevel = '权限变更';
+			this.popupContentLevel = '';
+		},
 		// 选择行
 		toggleSelect(index, value) {
 			console.log("kingTable.toggleSelect() 选择行")
@@ -590,12 +701,6 @@ export default {
 			console.log("kingTable.getSelectedData() 获取选中数据")
 			return this.selectedRows.map(idx => this.tableData[idx]);
 		},
-		upgrade(item, index) {
-		  this.$emit('upgrade', { data: item, index: index });
-		},
-		downgrade(item, index) {
-		  this.$emit('downgrade', { data: item, index: index });
-		}
 	}
 };
 </script>
@@ -639,10 +744,10 @@ export default {
 		text-align: center;
 		font-size: 10px;
 		color: #333333;
-		// // 确保内容不换行
-		// white-space: nowrap;
-		// overflow: hidden;
-		// text-overflow: ellipsis;
+		// 确保内容不换行
+		white-space: nowrap;      /* 不换行 */
+		overflow: hidden;         /* 隐藏溢出 */
+		text-overflow: ellipsis;  /* 显示省略号 */
 	}
 
 	/* 长按弹框样式 */
@@ -671,7 +776,7 @@ export default {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 30rpx;
+		padding: 30rpx 30rpx 30rpx 240rpx;
 		border-bottom: 1rpx solid #eee;
 		background-color: #f8f8f8;
 	}
@@ -719,6 +824,7 @@ export default {
 	}
 	
 	.opt-column {
+		color: green;
 		// display: flex;
 		justify-content: center;
 		align-items: center;
@@ -772,5 +878,179 @@ export default {
 	
 	::v-deep .uni-swipe-action-group {
 		width: 100%;
+	}
+	
+	
+	/* 搜索区域 */
+	.popup-search-container {
+	  padding: 24rpx 32rpx 0;
+	}
+	
+	.popup-search-input {
+	  margin-bottom: 0;
+	}
+	
+	/* 弹窗主体 - 权限选择区域 */
+	.popup-level-body {
+	  flex: 1;
+	  padding: 0;
+	  min-height: 400rpx;
+	  max-height: 600rpx;
+	}
+	
+	.popup-level-menu {
+	  height: 600rpx;
+	  max-height: none;
+	  border: none;
+	  box-shadow: none;
+	  border-radius: 0;
+	}
+	
+	/* 权限选项样式 */
+	.level-item {
+	  display: flex;
+	  align-items: flex-start;
+	  padding: 24rpx 32rpx;
+	  border-bottom: 1rpx solid #f5f5f5;
+	}
+	
+	.level-item:last-child {
+	  border-bottom: none;
+	}
+	
+	.level-item.selected {
+	  background-color: #f0f8ff;
+	}
+	
+	/* 复选框样式 */
+	.checkbox-wrapper {
+	  margin-right: 20rpx;
+	  margin-top: 4rpx;
+	}
+	
+	.checkbox {
+	  width: 36rpx;
+	  height: 36rpx;
+	  border: 2rpx solid #ddd;
+	  border-radius: 6rpx;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  transition: all 0.3s;
+	}
+	
+	.checkbox.checked {
+	  background-color: #007aff;
+	  border-color: #007aff;
+	}
+	
+	.checkmark {
+	  color: white;
+	  font-size: 24rpx;
+	  font-weight: bold;
+	}
+	
+	/* 权限文本样式 */
+	.level-text {
+	  flex: 1;
+	  display: flex;
+	  flex-direction: column;
+	}
+	
+	.level-name {
+	  font-size: 32rpx;
+	  color: #333;
+	  line-height: 1.4;
+	}
+	
+	.level-desc {
+	  font-size: 24rpx;
+	  color: #999;
+	  margin-top: 8rpx;
+	  line-height: 1.3;
+	}
+	
+	/* 弹窗底部按钮 */
+	.popup-level-footer {
+	  display: flex;
+	  justify-content: space-between;
+	  padding: 24rpx 32rpx;
+	  border-top: 1rpx solid #f0f0f0;
+	  gap: 20rpx;
+	}
+	
+	.popup-btn {
+	  flex: 1;
+	  padding: 20rpx;
+	  border: none;
+	  border-radius: 12rpx;
+	  font-size: 32rpx;
+	  cursor: pointer;
+	  transition: all 0.3s;
+	}
+	
+	.popup-btn-cancel {
+	  background-color: #f5f5f5;
+	  color: #333;
+	}
+	
+	.popup-btn-cancel:active {
+	  background-color: #e8e8e8;
+	}
+	
+	.popup-btn-confirm {
+	  background-color: #007aff;
+	  color: white;
+	}
+	
+	.popup-btn-confirm:active {
+	  background-color: #0056cc;
+	}
+	
+	/* 空状态和加载更多 */
+	.empty, .no-more-data {
+	  text-align: center;
+	  padding: 60rpx 32rpx;
+	  color: #999;
+	  font-size: 28rpx;
+	}
+	
+	/* 响应式调整 */
+	@media (max-width: 750rpx) {
+	  .popup-content {
+	    width: 90%;
+	    max-width: none;
+	  }
+	  
+	  .popup-level-body {
+	    max-height: 500rpx;
+	  }
+	}
+	.checkbox-group {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-bottom: 10px;
+	}
+	.checkbox-item {
+		display: flex;
+		align-items: center;
+		background: #f5f7fa;
+		padding: 6px 12px;
+		border-radius: 4px;
+		transition: all 0.3s;
+		cursor: pointer;
+	}
+	.checkbox-item:hover {
+		background: #e6f7ff;
+		transform: translateY(-2px);
+	}
+	.checkbox-item input {
+		margin-right: 6px;
+		cursor: pointer;
+	}
+	.checkbox-item.selected {
+		background: #007aff;
+		color: white;
 	}
 </style>

@@ -2,13 +2,13 @@
 	<view class="uni-load-more" @click="onClick">
 		<!-- #ifdef APP-NVUE -->
 		<loading-indicator v-if="!webviewHide && status === 'loading' && showIcon"
-			:style="{color: color, width: iconSize+'px', height: iconSize+'px'}" :animating="true"
+			:style="{color: color,width:iconSize+'px',height:iconSize+'px'}" :animating="true"
 			class="uni-load-more__img uni-load-more__img--nvue"></loading-indicator>
 		<!-- #endif -->
 		<!-- #ifdef H5 -->
 		<svg width="24" height="24" viewBox="25 25 50 50"
 			v-if="!webviewHide && (iconType==='circle' || iconType==='auto' && platform === 'android') && status === 'loading' && showIcon"
-			:style="{width: iconSize+'px', height: iconSize+'px'}"
+			:style="{width:iconSize+'px',height:iconSize+'px'}"
 			class="uni-load-more__img uni-load-more__img--android-H5">
 			<circle cx="50" cy="50" r="20" fill="none" :style="{color:color}" :stroke-width="3"></circle>
 		</svg>
@@ -26,18 +26,23 @@
 		<!-- #ifndef APP-NVUE -->
 		<view v-else-if="!webviewHide && status === 'loading' && showIcon"
 			:style="{width:iconSize+'px',height:iconSize+'px'}" class="uni-load-more__img uni-load-more__img--ios-H5">
-			<image :src="imgBase64" mode="widthFix"></image>
+			<image class="image" :src="imgBase64" mode="widthFix"></image>
 		</view>
 		<!-- #endif -->
 		<text v-if="showText" class="uni-load-more__text"
-			:style="loadMoreStyle" style="color: #777777" >{{ status === 'more' ? contentdownText : status === 'loading' ? contentrefreshText : contentnomoreText }}</text>
+			:style="{color: color}">{{ status === 'more' ? contentdownText : status === 'loading' ? contentrefreshText : contentnomoreText }}</text>
 	</view>
 </template>
 
 <script>
 	let platform
 	setTimeout(() => {
+		// #ifdef MP-WEIXIN
+		platform = uni.getDeviceInfo().platform
+		// #endif
+		// #ifndef MP-WEIXIN
 		platform = uni.getSystemInfoSync().platform
+		// #endif
 	}, 16)
 
 	import {
@@ -90,10 +95,6 @@
 			color: {
 				type: String,
 				default: '#777777'
-			},
-			loadMoreStyle: {
-				type: Object,
-				default: {}
 			},
 			contentText: {
 				type: Object,
@@ -209,7 +210,7 @@
 		animation: loading-ios-H5 1s 0s step-end infinite;
 	}
 
-	.uni-load-more__img--ios-H5 image {
+	.uni-load-more__img--ios-H5 .image {
 		position: absolute;
 		width: 100%;
 		height: 100%;

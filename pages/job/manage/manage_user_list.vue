@@ -4,19 +4,30 @@
 			<u-slider v-model="fontSizeScale"  activeColor="#FFCC33" backgroundColor="#000000" block-color="#8A6DE9"
 			 min="50" max="200" step="10" block-size="20" @changing="onFontSizeChange" @change="onFontSizeChange" show-value></u-slider>
 		</view>
-		<view style="display: flex; justify-content: space-between; margin: 0 15rpx 10rpx 15rpx;">
+		<view style="display: flex; margin: 0 10rpx;">
 			<view class="left" >
-				<text class="service-name">每页条数:</text>
-				<uni-data-select style="min-width: 180rpx; margin-left: 10rpx;" v-model="pageSize" :localdata="workerPageSizes" @change="workerPageSizeChange"></uni-data-select>
+				<!-- <text class="service-name">每页条数:</text> -->
+				<uni-data-select style="argin-left: 10rpx;" v-model="pageSize" :localdata="workerPageSizes" @change="workerPageSizeChange"></uni-data-select>
+			</view>
+			<view class="right">
+				<!-- <text class="service-name">状态筛选:</text> -->
+				<uni-data-select multiple style="" v-model="workerLevel" :localdata="workerStatus" @change="workerStatusChange"></uni-data-select>
+			</view>
+			
+		</view>
+<!-- 		<view style="display: flex;">
+			<view class="left">
+				<text class="service-name" style="padding-top: 10rpx; margin: 0 10rpx;">每页条数:</text>
+				<uni-data-select style="margin-left: 10rpx; width: 150rpx !important; flex: none !important; " v-model="pageSize" :localdata="workerPageSizes" @change="workerPageSizeChange"></uni-data-select>
 			</view>
 			<view class="right">
 				<text class="service-name">状态筛选:</text>
-				<uni-data-select multiple style="min-width: 260rpx; margin-left: 10rpx;" v-model="workerLevel" :localdata="workerStatus" @change="workerStatusChange"></uni-data-select>
+				<uni-data-select multiple style="" v-model="workerLevel" :localdata="workerStatus" @change="workerStatusChange"></uni-data-select>
 			</view>
-		</view>
+		</view> -->
 		<!-- 操作按钮 -->
 		<view class="operation-buttons">
-			<button @tap="clearSelection" class="uni-button" size="mini" type="default" style="background-color: yellow;">清空选择</button>
+			<!-- <button @tap="clearSelection" class="uni-button" size="mini" type="default" style="background-color: yellow;">清空选择</button> -->
 			<button @tap="getSelectedData" class="uni-button" size="mini" type="primary">批量升级</button>
 			<button @tap="getSelectedData" class="uni-button" size="mini" type="warn">批量降级</button>
 		</view>
@@ -32,14 +43,16 @@
 				:tableHeadLWidth="tableHeadLWidth"
 				:tableHeadRWidth="tableHeadRWidth"
 				:longPressColumns="longPressColumns"
+				:exclusiveGroups="exclusiveGroups"
 				:fontSizeScale="fontScale"
 				:showCheckbox="true"
 				:checkboxColumnWidth="70"
-				:swipeOptions="permissionOptions"
+				:levelSettingOptions="permissionOptions"
 				@getCellVal="getCellVal"
 				@longpress="handleLongPress"
 				@selection-change="handleSelectionChange"
 				@permission-change="handlePermissionChange"
+				@level-change-confirm="levelConfirm"
 			></kingTable>
 			<kingTwoHead
 				v-if="isTwoHead"
@@ -191,53 +204,24 @@
 				tableHeadR: ['更新时间', '地区', '技能',  '评分', '权限', '操作'],
 				// 自定义右侧表头对应的字段（长度一定要跟表头的长度想对应）
 				tableHeadRKey: ['updateTime', 'address', 'allSkills', 'multiScore', 'level', 'opt'],
-				tableHeadRWidth: [260, 360, 360, 100, 100, 400],
+				tableHeadRWidth: [260, 360, 360, 100, 200, 150],
 				// 设置支持长按弹框的列索引（右侧表格的列索引，从0开始）
-				longPressColumns: [1, 2], // 地区 和 技能 列支持长按弹框
-				
+				longPressColumns: [1, 2, 4], // 地区 和 技能 列支持长按弹框
+				// 假设互斥分组为 [1,2,4,8] 和 [16,32]（根据你的需求调整）
+				exclusiveGroups: [[2, 4], [16, 32], [64, 128, 256, 512]],
 				workerStatus: [
-					{
-						text: "限制",
-						value: -10,
-					},{
-						text: "初始",
-						value: 0,
-					},{
-						text: "开放板块",
-						value: 10,
-					},{
-						text: "开放手机号",
-						value: 20
-					},
+					{text: "限制",value: -10,},{text: "初始",value: 0,},{text: "开放板块",value: 10,},{text: "开放手机号",value: 20},
 				],
-				workerLevel: 0,
+				workerLevel: [1],
+				includeLevel: 0,
 				workerPageSizes: workerInitPageSizes,
 				// 多选
 				multiple: true,
 				currentSelectedData: [], // 存储选中的行数据
-				
 				permissionOptions: [
-					{
-						text: '升级',
-						style: {
-							backgroundColor: '#4CD964'
-						},
-						value: -2
-					},
-					{
-						text: '降级', 
-						style: {
-							backgroundColor: '#DD524D'
-						},
-						value: -3
-					},
-					{
-						text: '重置',
-						style: {
-							backgroundColor: '#007AFF'
-						},
-						value: 0
-					}
+					{text: '升级',style: {backgroundColor: '#4CD964'},value: -2},
+					{text: '降级',style: {backgroundColor: '#DD524D'},value: -3},
+					{text: '重置',style: {backgroundColor: '#007AFF'},value: 0}
 				],
 			};
 		}
@@ -279,7 +263,7 @@
 								// 数据示例 [{"text": "他人不可见", "value": -2,"style": {"backgroundColor": '#007aff'}}, {"desc": "所有人(包括自己)不可见", "text": "所有人不可见", "value": -3,"style": {"backgroundColor": '#007aff'}}, {"text": "初始状态", "value": 0,"style": {"backgroundColor": '#007aff'}}, {"text": "管理员", "value": 2,"style": {"backgroundColor": '#007aff'}}, {"text": "开通板块信息", "value": 3,"style": {"backgroundColor": '#007aff'}}, {"text": "开通虚拟电话", "value": 5,"style": {"backgroundColor": '#007aff'}}]
 								_this.workerStatus = JSON.parse(respData.settingsJson);
 								_this.options2 = JSON.parse(respData.settingsJson);
-								// _this.permissionOptions = JSON.parse(respData.settingsJson);
+								_this.permissionOptions = JSON.parse(respData.settingsJson);
 								// console.log("转化后 _this.customizeSelecteds ：" + JSON.stringify(_this.customizeSelecteds))
 							}
 						}
@@ -289,8 +273,44 @@
 					}
 				});
 			},
-			levelDataHandle(data){
-				
+			/**
+			 * 增强版权限解析函数
+			 * @param {number} level - 权限等级值
+			 * @param {Array} settingsJson - 权限配置数组
+			 * @param {Object} options - 配置选项
+			 * @returns {string|Array} 解析结果
+			 */
+			parseLevel(level, settingsJson, options = {}) {
+			    const {
+			        returnType = 'string', // 'string' | 'array'
+			        separator = ', ',
+			        showDesc = false,
+			        sortByValue = true
+			    } = options;
+			    
+			    if (!level || level === 0 || !settingsJson || !Array.isArray(settingsJson)) {
+			        return returnType === 'string' ? '' : [];
+			    }
+			    
+			    // 如果需要按值排序
+			    let permissionsList = settingsJson;
+			    if (sortByValue) {
+			        permissionsList = [...settingsJson].sort((a, b) => a.value - b.value);
+			    }
+			    
+			    const permissions = [];
+			    
+			    permissionsList.forEach(item => {
+			        if ((level & item.value) === item.value) {
+			            if (showDesc && item.desc) {
+			                permissions.push(`${item.text}(${item.desc})`);
+			            } else {
+			                permissions.push(item.text);
+			            }
+			        }
+			    });
+			    
+			    return returnType === 'string' ? permissions.join(separator) : permissions;
 			},
 			// 处理权限变更
 			handlePermissionChange(event) {
@@ -401,10 +421,21 @@
 				// console.log('Selected value changed:', e.detail.value);
 				
 			},
-			workerStatusChange(e) {
-				console.log('workerStatusChange value changed:', e);
+			workerStatusChange(arr) {
+				console.log('workerStatusChange value changed:', arr);
 				// console.log('Selected value changed:', e.detail.value);
-				this.workerLevel = e;
+				// this.workerLevel = e;
+				if (arr.length === 0) {
+				    console.log("数组为空");
+				    this.includeLevel = 0;
+				  } else {
+				    let sum = 0;
+				    for (let i = 0; i < arr.length; i++) {
+				      sum += arr[i];
+				    }
+				    console.log("数组元素累加和为:", sum);
+				    this.includeLevel = sum;
+				  }
 				this.getList();
 			},
 			// 获取，内容列表数据
@@ -415,8 +446,8 @@
 				if(this.searchValue){
 					data.likeAllSkills =  "%"+this.searchValue+"%"
 				}
-				if(this.workerLevel){
-					data.level = this.workerLevel
+				if(this.includeLevel&&this.includeLevel>0){
+					data.includeLevel = this.includeLevel
 				}
 				data.isFirstLoad = false
 				data.limit = this.pageSize;
@@ -502,6 +533,8 @@
 					e.allSkills		= allSkills;
 					e.address = e.province+e.city+e.district+e.address
 					e.age 			= _this.calculateAge(e.birth);
+					e.levelValue = e.level
+					e.level = _this.parseLevel(e.level, _this.workerStatus)
 					e.index = index + 1
 					e.opt = ''
 					// e.tools 		= _this.truncateString(e.tools, 20);
@@ -620,8 +653,33 @@
 				this.getList();			// 获取，内容列表数据
 			},
 			handleLongPress(event) {
-			  console.log('长按事件:', event);
+			  console.log('长按事件，回调:', event);
 			  // 可以在这里处理长按事件的额外逻辑
+			},
+			levelConfirm(e){
+				console.log("点击了确认修改，传递值："+JSON.stringify(e))
+				this.updateJobUserLevel(e)
+			},
+			updateJobUserLevel(form){
+				form.sysId		= SYS_ID;
+				form.token 		= this.userToken.token;
+				form.selfId 	= this.userToken.userId;
+				// form.userId 	= this.userToken.userId;
+				// console.log("提交前参数：", JSON.stringify(form))
+				const _this = this
+				uni.request({
+					url: process.env.UNI_BASE_URL + '/api/job/updateJobUserLevel',
+					header: { 'Content-Type': 'application/json' },
+					method: 'POST',
+					data: JSON.stringify(form),
+					success() {
+						// uni.showToast({ title: `授权已变更！` });
+						_this.getList();
+					},
+					fail() {
+						// uni.showToast({ title: '授权失败，请稍后重试！', icon: 'none' });
+					}
+				});
 			},
 		},
 	}
@@ -639,8 +697,9 @@
 		margin-right: 20rpx;
 	}
 	
+	
 	.left {
-	  display: flex;
+	  width: 150rpx;
 	  align-items: center;
 		
 	  .service-icon {
@@ -660,7 +719,7 @@
 	}
 		
 	.right {
-	  display: flex;
+	  flex-grow: 1;
 	  align-items: center;
 		
 	  .desc {
@@ -673,4 +732,11 @@
 	.uni-select__selector{
 		z-index: 13 !important;
 	}
+	
+	// .page-size-select{
+	// 	.uni-stat__select {
+	// 		width: 150rpx !important;
+	// 		flex: none !important;
+	// 	}
+	// }
 </style>
